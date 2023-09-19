@@ -30,7 +30,7 @@ export default function Home() {
           <h1>
             Welcome,{' '}
             <span className={styles.userName}>
-              <strong>{session.user.name}</strong>
+              <strong className='text-green-600'>{session.user.name}</strong>
             </span>
             !
           </h1>
