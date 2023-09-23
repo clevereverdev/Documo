@@ -1,13 +1,16 @@
-import { SessionProvider } from "next-auth/react"
+import { AuthUserProvider } from "../firebase/auth";
 import '../styles/globals.css';
-function MyApp({
-  Component,
-  pageProps: { session, ...pageProps },
-}) {
+import Head from "next/head";
+
+export default function App({ Component, pageProps }) {
   return (
-    <SessionProvider session={session}>
-      <Component {...pageProps} />
-    </SessionProvider>
-  )
+    <>
+      <Head>
+        <title>Docomo</title>
+      </Head>
+      <AuthUserProvider>
+        <Component {...pageProps} />
+      </AuthUserProvider>
+    </>
+  );
 }
- export default MyApp;
