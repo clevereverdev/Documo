@@ -1,28 +1,4 @@
-/* styles/Home.module.css or your custom CSS file */
-.container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    text-align: center;
-  }
-  
-  .userInfo {
-    text-align: center;
-  }
-  
-  .userName {
-    color: blue; /* Change to your desired text color */
-    font-weight: bold;
-  }
-  
-  .signOutButton {
-    background-color: red; /* Change to your desired button background color */
-    color: white; /* Change to your desired button text color */
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-top: 20px;
-  }
+.custom-width {
+  width: 400px;
+}
   
