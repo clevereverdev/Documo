@@ -2,18 +2,21 @@ import "../../styles/Home.module.css";
 import React, { useState, useEffect } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { auth } from "../../firebase/firebase";
-import { createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithPopup,
+import {
+    createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithPopup,
 } from "firebase/auth";
 import { useAuth } from "../../firebase/auth";
 import { useRouter } from "next/router";
 import Loader from "../../components/loader";
-import { FaEnvelope, FaLock, FaUserAlt } from "react-icons/fa";
+import { FaEnvelope, FaEye, FaEyeSlash, FaLock, FaUserAlt } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 const provider = new GoogleAuthProvider();
 const RegisterForm = () => {
     const [username, setUsername] = useState(null);
     const [email, setEmail] = useState(null);
     const [password, setPassword] = useState(null);
+    const [showPassword, setShowPassword] = useState(false);
     const { authUser, isLoading, setAuthUser } = useAuth();
     const router = useRouter();
     useEffect(() => {
@@ -25,11 +28,7 @@ const RegisterForm = () => {
     const signupHandler = async () => {
         if (!email || !username || !password) return;
         try {
-            const user = await createUserWithEmailAndPassword(
-                auth,
-                email,
-                password
-            );
+            const user = await createUserWithEmailAndPassword(auth, email, password);
             await updateProfile(auth.currentUser, {
                 displayName: username,
             });
@@ -41,6 +40,18 @@ const RegisterForm = () => {
             console.log(user);
         } catch (error) {
             console.error("An error occurred", error);
+
+            // Display a toast error message for the error
+            toast.error('An error occured while signup', {
+                position: "top-center",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "dark",
+            });
         }
     };
     const signInWithGoogle = async () => {
@@ -54,6 +65,10 @@ const RegisterForm = () => {
 
     const goLogin = () => {
         router.push("../Authentication/login");
+    };
+
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
     };
 
     return isLoading || (!isLoading && authUser) ? (
@@ -109,14 +124,22 @@ const RegisterForm = () => {
                                     <FaLock className="text-gray-400" />
                                 </div>
                                 <input
-                                    type="password"
+                                    type={showPassword ? "text" : "password"} 
                                     placeholder="Password"
                                     className="font-medium border bg-transparent border-[#374151] pl-10 pr-2 w-3/4 py-4 rounded-md outline-0 hover:border-[#52525b]"
                                     required
-                                    onChange={(e) =>
-                                        setPassword(e.target.value)
-                                    }
+                                    onChange={(e) => setPassword(e.target.value)}
                                 />
+                                <div
+                                    className="absolute right-9 p-11 top-1/2 transform -translate-y-1/2 cursor-pointer"
+                                    onClick={togglePasswordVisibility}
+                                >
+                                    {showPassword ? (
+                                        <FaEyeSlash className="text-gray-400" />
+                                    ) : (
+                                        <FaEye className="text-gray-400" />
+                                    )}
+                                </div>
                             </div>
                         </div>
                         <div className="flex justify-center">

@@ -7,12 +7,16 @@ import { useAuth } from "../../firebase/auth";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Loader from "../../components/loader";
-import { FaEnvelope, FaLock } from "react-icons/fa";
+import { FaEnvelope, FaEye, FaEyeSlash, FaLock } from "react-icons/fa";
+import { toast } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
+
 const provider = new GoogleAuthProvider();
 const LoginForm = () => {
     const [email, setEmail] = useState(null);
     const [password, setPassword] = useState(null);
     const { authUser, isLoading } = useAuth();
+    const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
     useEffect(() => {
         if (!isLoading && authUser) {
@@ -31,6 +35,17 @@ const LoginForm = () => {
             console.log(user);
         } catch (error) {
             console.error("An error occurred", error);
+            toast.error('Invalid email or password', {
+                position: "top-center",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "dark",
+            });
+
         }
     };
     const signInWithGoogle = async () => {
@@ -40,12 +55,29 @@ const LoginForm = () => {
         } catch (error) {
             console.error("An error occurred", error);
         }
+        toast.error('Invalid Google Account', {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "dark",
+        });
     };
 
     const goSignUp = () => {
         router.push("../Authentication/register");
     };
 
+    const goresetpass = () => {
+        router.push("../Authentication/reset_password");
+    }
+
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
+    };
     return isLoading || (!isLoading && authUser) ? (
         <Loader />
     ) : (
@@ -97,17 +129,27 @@ const LoginForm = () => {
                                     <FaLock className="text-gray-400" />
                                 </div>
                                 <input
-                                    type="password"
+                                    type={showPassword ? "text" : "password"} 
                                     placeholder="Password"
                                     className="font-medium border bg-transparent border-[#374151] pl-10 pr-2 w-3/4 py-4 rounded-md outline-0 hover:border-[#52525b]"
                                     required
                                     onChange={(e) =>
                                         setPassword(e.target.value)
-                                    }/>
+                                    } />
+                                <div
+                                    className="absolute right-9 p-11 top-1/2 transform -translate-y-1/2 cursor-pointer"
+                                    onClick={togglePasswordVisibility}
+                                >
+                                    {showPassword ? (
+                                        <FaEyeSlash className="text-gray-400" />
+                                    ) : (
+                                        <FaEye className="text-gray-400" />
+                                    )}
+                                </div>
                             </div>
                         </div>
                         <div className="mt-7">
-                            <span className="text-[#2563eb] font-bold text-sm cursor-pointer hover:text-blue-400">
+                            <span className="text-[#2563eb] font-bold text-sm cursor-pointer hover:text-blue-400" onClick={goresetpass}>
                                 Forgot your password?
                             </span>
                         </div>
