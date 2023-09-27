@@ -1,27 +1,49 @@
-import React, { useState } from 'react'
-import "../../styles/Home.module.css";
-import { FaEnvelope } from "react-icons/fa";
-import { router } from 'next/router';
-import { auth } from "../../firebase/firebase";
-import { sendPasswordResetEmail } from "firebase/auth";
+import React, { useState } from 'react';
+import { FaEnvelope } from 'react-icons/fa';
+import { useRouter } from 'next/router';
+import { auth } from '../../firebase/firebase';
+import { sendPasswordResetEmail } from 'firebase/auth';
+import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify';
 
 function reset_password() {
-    const gologin = () => {
-        router.push('../Authentication/login');
+  const router = useRouter();
+  const [resetEmail, setResetEmail] = useState('');
+
+  const gologin = () => {
+    router.push('../Authentication/login');
+  }
+  const sendResetEmail = async () => {
+    try {
+      await sendPasswordResetEmail(auth, resetEmail);
+      toast.success('Reset link sent successfully', {
+        position: 'top-center',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'dark',
+      });
+
+      // Redirect to the login page
+      router.push('/Authentication/login');
+    } catch (error) {
+      console.log('Error sending email reset link:', error);
+      toast.error('Error sending reset link', {
+        position: 'top-center',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'dark',
+      });
     }
-    const [resetEmail, setResetEmail] = useState('');
-    const sendResetEmail = async () => {
-        try {
-          await sendPasswordResetEmail(auth, resetEmail);
-          // Show a success toast message
-          toast.success("Reset link sent successfully!");
-        } catch (error) {
-          console.error("Error sending password reset email: ", error);
-          // Show an error toast message
-          toast.error("Error sending reset link.");
-        }
-      };
-      
+  };
+
     return (
         <main className="flex lg:h-[100vh]">
             <div className="w-full lg:w-[60%] p-8 md:p-14 flex items-center justify-center lg:justify-start">
@@ -49,10 +71,10 @@ function reset_password() {
                                 <input
                                     type="email"
                                     placeholder="Email address"
-                                    className="font-medium border bg-transparent border-[#374151] pl-10 pr-2 w-3/4 py-4 rounded-md outline-0 hover:border-[#52525b]"
+                                    className="font-medium border bg-transparent border-[#374151] pl-10 pr-2 w-3/4 py-4 rounded-md outline-0 hover:border-[#52525b] cursor-pointer"
                                     required
                                     onChange={(e) => setResetEmail(e.target.value)}
-                                    />
+                                />
                             </div>
                         </div>
                         <button
@@ -62,7 +84,7 @@ function reset_password() {
                             Get the reset link
                         </button>
                         <button
-                            type="submit"
+                            type="button" // Change type to "button"
                             className="w-3/4 py-4 mt-7 rounded-md bg-transparent text-white p-2 hover:bg-[#374151]"
                             onClick={gologin}>
                             Back
@@ -81,4 +103,4 @@ function reset_password() {
     );
 }
 
-export default reset_password
+export default reset_password;

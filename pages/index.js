@@ -1,23 +1,32 @@
 import styles from "../styles/Home.module.css";
 import { GoSignOut } from "react-icons/go";
-import { useEffect } from "react";
-import { useAuth } from "../firebase/auth";
+import { useState, useEffect } from "react";
+import { useAuth  } from "../firebase/auth";
 import { useRouter } from "next/router";
 import Loader from "../components/loader";
+import SideNavbar from "components/Sidebar";
 
 export default function Home() {
     const { authUser, isLoading, signOut } = useAuth();
+    const [showSideNavbar, setShowSideNavbar] = useState(false); 
     const router = useRouter();
+
     useEffect(() => {
         if (!isLoading && !authUser) {
             router.push("Authentication/login");
+        } else if (!isLoading && authUser) {
+            setShowSideNavbar(true);
         }
-    }, [authUser, isLoading]);
+    }, [authUser, isLoading, router]);
+
+    
 
     return !authUser ? (
         <Loader />
     ) : (
+
         <div className={styles.container}>
+            {showSideNavbar && <SideNavbar/>}
             <div className="flex items-center justify-between gap-2 font-medium shadow-md fixed top-7 right-60">
                 <h1>
                     Welcome,{" "}
