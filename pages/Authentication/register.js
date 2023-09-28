@@ -9,9 +9,13 @@ import { useAuth } from "../../firebase/auth";
 import { useRouter } from "next/router";
 import Loader from "../../components/loader";
 import { FaEnvelope, FaEye, FaEyeSlash, FaLock, FaUserAlt } from "react-icons/fa";
+import 'react-toastify/dist/ReactToastify.css'; // CSS import
 import { toast } from "react-toastify";
+import { getDoc, doc, setDoc, getFirestore } from "firebase/firestore";
 
 const provider = new GoogleAuthProvider();
+const db = getFirestore();
+
 const RegisterForm = () => {
     const [username, setUsername] = useState(null);
     const [email, setEmail] = useState(null);
@@ -24,25 +28,71 @@ const RegisterForm = () => {
             router.push("/");
         }
     }, [authUser, isLoading]);
+    // Initialize Firestore
 
     const signupHandler = async () => {
         if (!email || !username || !password) return;
+
         try {
-            const user = await createUserWithEmailAndPassword(auth, email, password);
-            await updateProfile(auth.currentUser, {
-                displayName: username,
+            // Check if the username already exists in Firestore
+            const usernameDocRef = doc(db, "users", username);
+            const usernameDoc = await getDoc(usernameDocRef);
+
+            if (usernameDoc.exists()) {
+                // Username is already taken
+                toast.error('The username is already in use by another account', {
+                    position: "top-center",
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "dark",
+                });
+                return;
+            }
+
+            // If the username does not exist, proceed to create a user
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+
+            // Update the user's display name with the username
+            await updateProfile(userCredential.user, { displayName: username });
+
+            // Store the username and email in Firestore
+            await setDoc(doc(db, "users", username), {
+                email,
             });
+
+            // Update the auth user in the context
             setAuthUser({
-                uid: user.uid,
-                email: user.email,
+                uid: userCredential.user.uid,
+                email: userCredential.user.email,
                 username,
             });
-            console.log(user);
-        } catch (error) {
-            console.error("An error occurred", error);
 
-            // Display a toast error message for the error
-            toast.error('An error occured while signup', {
+            // Show success toast
+            toast.success('Successfully Signed Up', {
+                position: "top-center",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "dark",
+            });
+
+            // Redirect or perform some other actions
+
+        } catch (error) {
+            console.error("Error during signup:", error);
+
+            let errorMessage = 'An error occurred during signup';
+            if (error.code === 'auth/email-already-in-use') {
+                errorMessage = 'The email address is already in use by another account';
+            }
+            toast.error(errorMessage, {
                 position: "top-center",
                 autoClose: 5000,
                 hideProgressBar: false,
@@ -54,6 +104,8 @@ const RegisterForm = () => {
             });
         }
     };
+
+
     const signInWithGoogle = async () => {
         try {
             const user = await signInWithPopup(auth, provider);
@@ -96,7 +148,7 @@ const RegisterForm = () => {
                                 <input
                                     type="text"
                                     placeholder="Username"
-                                    className="font-medium border bg-transparent border-[#374151] pl-10 pr-2 w-3/4 py-4 rounded-md outline-0 hover:border-[#52525b]"
+                                    className="font-medium border bg-transparent border-[#374151] pl-10 pr-2 w-3/4 py-4 rounded-md outline-0 hover:border-[#52525b] cursor-pointer"
                                     required
                                     onChange={(e) =>
                                         setUsername(e.target.value)
@@ -112,7 +164,7 @@ const RegisterForm = () => {
                                 <input
                                     type="email"
                                     placeholder="Email address"
-                                    className="font-medium border bg-transparent border-[#374151] pl-10 pr-2 w-3/4 py-4 rounded-md outline-0 hover:border-[#52525b]"
+                                    className="font-medium border bg-transparent border-[#374151] pl-10 pr-2 w-3/4 py-4 rounded-md outline-0 hover:border-[#52525b] cursor-pointer"
                                     required
                                     onChange={(e) => setEmail(e.target.value)}
                                 />
@@ -124,9 +176,9 @@ const RegisterForm = () => {
                                     <FaLock className="text-gray-400" />
                                 </div>
                                 <input
-                                    type={showPassword ? "text" : "password"} 
+                                    type={showPassword ? "text" : "password"}
                                     placeholder="Password"
-                                    className="font-medium border bg-transparent border-[#374151] pl-10 pr-2 w-3/4 py-4 rounded-md outline-0 hover:border-[#52525b]"
+                                    className="font-medium border bg-transparent border-[#374151] pl-10 pr-2 w-3/4 py-4 rounded-md outline-0 hover:border-[#52525b] cursor-pointer"
                                     required
                                     onChange={(e) => setPassword(e.target.value)}
                                 />

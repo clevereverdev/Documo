@@ -8,10 +8,14 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Loader from "../../components/loader";
 import { FaEnvelope, FaEye, FaEyeSlash, FaLock } from "react-icons/fa";
-import { toast } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
+import 'react-toastify/dist/ReactToastify.css'; // CSS import
+import { toast } from 'react-toastify'; // Toast import
+import { getFirestore, doc, getDoc } from "firebase/firestore";
+
 
 const provider = new GoogleAuthProvider();
+const db = getFirestore();
+
 const LoginForm = () => {
     const [email, setEmail] = useState(null);
     const [password, setPassword] = useState(null);
@@ -26,13 +30,50 @@ const LoginForm = () => {
 
     const loginHandler = async () => {
         if (!email || !password) return;
+        
+        let loginEmail = email; // Assume the input is an email by default
+    
+        // Check if the input is not an email (i.e., it’s a username)
+        if (!email.includes("@")) {
+            try {
+                const userDoc = await getDoc(doc(db, "users", email)); // Look up the username in Firestore
+                if (userDoc.exists()) {
+                    loginEmail = userDoc.data().email; // Get the corresponding email
+                } else {
+                    throw new Error("Username not found");
+                }
+            } catch (error) {
+                toast.error('Invalid username or email', {
+                    position: "top-center",
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "dark",
+                });
+                return;
+            }
+        }
+    
         try {
             const user = await signInWithEmailAndPassword(
                 auth,
-                email,
+                loginEmail,
                 password
             );
             console.log(user);
+            toast.success('Successfully Logged In', {
+                position: "top-center",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "dark",
+            });
         } catch (error) {
             console.error("An error occurred", error);
             toast.error('Invalid email or password', {
@@ -45,17 +86,27 @@ const LoginForm = () => {
                 progress: undefined,
                 theme: "dark",
             });
-
         }
     };
+    
     const signInWithGoogle = async () => {
         try {
             const user = await signInWithPopup(auth, provider);
             console.log(user);
         } catch (error) {
             console.error("An error occurred", error);
+            toast.error('Invalid Google Account', {
+                position: "top-center",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "dark",
+            });
         }
-        toast.error('Invalid Google Account', {
+        toast.success('Successfully Logged In', {
             position: "top-center",
             autoClose: 5000,
             hideProgressBar: false,
@@ -116,9 +167,9 @@ const LoginForm = () => {
                                 </div>
 
                                 <input
-                                    type="email"
-                                    placeholder="Email address"
-                                    className="font-medium border bg-transparent border-[#374151] pl-10 pr-2 w-3/4 py-4 rounded-md outline-0 hover:border-[#52525b]"
+                                    type="text"
+                                    placeholder="Email address or Username"
+                                    className="font-medium border bg-transparent border-[#374151] pl-10 pr-2 w-3/4 py-4 rounded-md outline-0 hover:border-[#52525b] cursor-pointer"
                                     required
                                     onChange={(e) => setEmail(e.target.value)} />
                             </div>
@@ -131,7 +182,7 @@ const LoginForm = () => {
                                 <input
                                     type={showPassword ? "text" : "password"} 
                                     placeholder="Password"
-                                    className="font-medium border bg-transparent border-[#374151] pl-10 pr-2 w-3/4 py-4 rounded-md outline-0 hover:border-[#52525b]"
+                                    className="font-medium border bg-transparent border-[#374151] pl-10 pr-2 w-3/4 py-4 rounded-md outline-0 hover:border-[#52525b] cursor-pointer"
                                     required
                                     onChange={(e) =>
                                         setPassword(e.target.value)
