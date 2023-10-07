@@ -7,6 +7,9 @@
 // }
 {
   "compilerOptions": {
-    "baseUrl": "."
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["components/*"]
+    }
   }
 }

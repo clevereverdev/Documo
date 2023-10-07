@@ -1,139 +1,259 @@
-import React from 'react'
-import { RxDashboard } from 'react-icons/rx';
-import { BsFillFileEarmarkRuledFill } from 'react-icons/bs';
-import { FaFileAlt,FaUserCircle  } from 'react-icons/fa';
-import { AiTwotoneFolderOpen } from 'react-icons/ai';
-import { VscGraph } from 'react-icons/vsc';
+// import Image from "next/image";
+// import { AiOutlineHome } from "react-icons/ai";
+// import { BsPeople } from "react-icons/bs";
+// import { TiContacts } from "react-icons/ti";
+// import { FiMail } from "react-icons/fi";
+// import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
+// import Link from "next/link";
+// import { useContext } from "react";
+// import { useRouter } from "next/router";
+// import { SidebarContext } from "context/SidebarContext";
 
-function Sidebar() {
-    return (
-        <div className="h-screen w-64 flex flex-col bg-pink-900 text-white p-4 sticky">
-            <div className="flex items-center mb-8">
-                <img src="/logo.png" alt="Logo" className="w-12 h-12 mr-2" />
-                <span className="text-2xl font-bold">Docomo</span>
-            </div>
-            <div className="mb-4">
-                <div className="flex items-center">
-                    <RxDashboard className="mr-2" />
-                    <span>Dashboard</span>
-                </div>
-            </div>
-            <div className="mb-4">
-                <div className="flex items-center mb-2">
-                    <span>Upload</span>
-                </div>
-                <div className="ml-6">
-                    <button className="flex items-center mb-2 text-gray-300 hover:text-white">
-                        <BsFillFileEarmarkRuledFill className="mr-2" />
-                        <span>Upload File</span>
-                    </button>
-                    <button className="flex items-center text-gray-300 hover:text-white">
-                        <AiTwotoneFolderOpen className="mr-2" />
-                        <span>Upload Folder</span>
-                    </button>
-                </div>
-            </div>
-            <div className="mb-4">
-                <div className="flex items-center mb-2">
-                    <span>Manage</span>
-                </div>
-                <div className="ml-6">
-                    <div className="flex items-center mb-2 text-gray-300 hover:text-white">
-                        <FaFileAlt className="mr-2" />
-                        <span>File Manager</span>
-                    </div>
-                    <div className="flex items-center mb-2 text-gray-300 hover:text-white">
-                        <VscGraph className="mr-2" />
-                        <span>View Statistics</span>
-                    </div>
-                </div>
-            </div>
-            <div className="mb-4">
-                <div className="flex items-center mb-2">
-                    <span>Account</span>
-                </div>
-                <div className="ml-6">
-                    <div className="flex items-center mb-2 text-gray-300 hover:text-white">
-                        <FaUserCircle className="mr-2" />
-                        <span>Profile Manager</span>
-                    </div>
-                    {/* You can add more items based on your requirements */}
-                </div>
-            </div>
-        </div>
+// const sidebarItems = [
+//   {
+//     name: "Home",
+//     href: "/",
+//     icon: AiOutlineHome,
+//   },
+//   {
+//     name: "About",
+//     href: "/about",
+//     icon: BsPeople,
+//   },
+//   {
+//     name: "Mails",
+//     href: "/mails",
+//     icon: FiMail,
+//   },
+//   {
+//     name: "Contact",
+//     href: "/contact",
+//     icon: TiContacts,
+//   },
+// ];
 
-    )
-}
+// const Sidebar = () => {
+//   const router = useRouter();
+//   const { isCollapsed, toggleSidebarcollapse } = useContext(SidebarContext);
 
-export default Sidebar
-
-
-
-// import { FaDashboard, FaUpload, FaCog, FaUserCircle, FaFileAlt} from 'react-icons/fa'; // Corrected Icons
-// import { AiOutlineFolderAdd, AiOutlineFileAdd } from 'react-icons/ai';
-// import { BiStats, BiFolder } from 'react-icons/bi'; // Corrected Icons
-// import { VscGraph } from 'react-icons/vsc'; // Corrected Icons
-// function Sidebar() {
 //   return (
-// <div className="h-screen w-64 flex flex-col bg-gray-800 text-white p-4">
-//   <div className="flex items-center mb-8">
-//     <img src="/logo.png" alt="Logo" className="w-12 h-12 mr-2" />
-//     <span className="text-2xl font-bold">Brand Name</span>
-//   </div>
-//   <div className="mb-4">
-//     <div className="flex items-center">
-//       <FaDashboard className="mr-2" />
-//       <span>Dashboard</span>
-//     </div>
-//   </div>
-//   <div className="mb-4">
-//     <div className="flex items-center mb-2">
-//       <FaUpload className="mr-2" />
-//       <span>Upload</span>
-//     </div>
-//     <div className="ml-6">
-//       <button className="flex items-center mb-2 text-gray-300 hover:text-white">
-//         <AiOutlineFileAdd className="mr-2" />
-//         <span>Upload File</span>
+//     <div className="sidebar__wrapper">
+//       <button className="btn" onClick={toggleSidebarcollapse}>
+//         {isCollapsed ? <MdKeyboardArrowRight /> : <MdKeyboardArrowLeft />}
 //       </button>
-//       <button className="flex items-center text-gray-300 hover:text-white">
-//         <AiOutlineFolderAdd className="mr-2" />
-//         <span>Upload Folder</span>
-//       </button>
+//       <aside className="sidebar" data-collapse={isCollapsed}>
+//         <div className="sidebar__top">
+//           <Image
+//             width={80}
+//             height={80}
+//             className="sidebar__logo"
+//             src="/logo.png"
+//             alt="logo"
+//           />
+//           <p className="sidebar__logo-name">Docomo</p>
+//         </div>
+//         <ul className="sidebar__list">
+//           {sidebarItems.map(({ name, href, icon: Icon }) => {
+//             return (
+//               <li className="sidebar__item" key={name}>
+//                 <Link
+//                   className={`sidebar__link ${
+//                     router.pathname === href ? "sidebar__link--active" : ""
+//                   }`}
+//                   href={href}
+//                 >
+//                   <span className="sidebar__icon">
+//                     <Icon />
+//                   </span>
+//                   <span className="sidebar__name">{name}</span>
+//                 </Link>
+//               </li>
+//             );
+//           })}
+//         </ul>
+//       </aside>
 //     </div>
-//   </div>
-//   <div className="mb-4">
-//     <div className="flex items-center mb-2">
-//       <FaCog className="mr-2" />
-//       <span>Manage</span>
-//     </div>
-//     <div className="ml-6">
-//       <div className="flex items-center mb-2 text-gray-300 hover:text-white">
-//         <FaFileAlt className="mr-2" />
-//         <span>File Manager</span>
-//       </div>
-//       <div className="flex items-center mb-2 text-gray-300 hover:text-white">
-//         <VscGraph className="mr-2" />
-//         <span>View Statistics</span>
-//       </div>
-//       {/* You can add more items based on your requirements */}
-//     </div>
-//   </div>
-//   <div className="mb-4">
-//     <div className="flex items-center mb-2">
-//       <FaUserCircle className="mr-2" />
-//       <span>Account</span>
-//     </div>
-//     <div className="ml-6">
-//       <div className="flex items-center mb-2 text-gray-300 hover:text-white">
-//         {/* Your Icon here */}
-//         <span>Profile Manager</span>
-//       </div>
-//       {/* You can add more items based on your requirements */}
-//     </div>
-//   </div>
-// </div>
 //   );
-// }
+// };
 
 // export default Sidebar;
+
+// import React from "react";
+// import { useAuth } from "../firebase/auth";
+// import { RxDashboard, RxStar } from "react-icons/Rx";
+// import { LuUsers2, LuTrash2, LuHelpCircle, LuSettings } from "react-icons/Lu";
+// import { TbBrandGoogleAnalytics, TbLogout2 } from "react-icons/Tb";
+
+// function Sidebar() {
+//     const { signOut } = useAuth();
+
+//     return (
+//         <div className="p-6 w-[280px] h-screen bg-black z-20 fixed top-0 -left-96 lg:left-0 lg:w-65  peer-focus:left-0 peer:transition ease-out delay-150 duration-200 rounded-r-3xl flex justify-center">
+// <div className="flex flex-col justify-start item-center">
+//     <div className="flex items-center justify-center">
+//         <img
+//             src="/logo.png"
+//             alt="Your Alt Text"
+//             className="h-11 w-11"
+//         />
+//         <h1 className="text-[#a3e635] font-extrabold relative p-2">
+//             <span className="relative z-10 text-5xl">D</span>
+//             <span className="relative z-10 text-2xl">ocomo</span>
+//         </h1>
+//     </div>
+
+//                 <div className=" my-4 pb-4">
+//                     {/* Dashboard */}
+//                     <div className={`flex mb-2 justify-start items-center gap-4 pl-5 p-2 rounded-md group cursor-pointer hover:shadow-lg hover:scale-105 hover:bg-[#a3e635] hover:text-white transition-transform duration-300 m-auto`}>
+//                         <RxDashboard className="text-2xl text-gray-600 group-hover:text-black transform scale-100 group-hover:scale-125 transition-transform duration-300 " />
+//                         <h3 className="text-base text-gray-300 font-semi-bold group-hover:text-black group-hover:font-bold transition-colors duration-300">
+//                             Dashboard
+//                         </h3>
+//                     </div>
+
+//                     <div className={`flex mb-2 justify-start items-center gap-4 pl-5 p-2 rounded-md group cursor-pointer hover:shadow-lg hover:scale-105 hover:bg-[#a3e635] hover:text-white transition-transform duration-300 m-auto`}>
+//                         <LuUsers2 className="text-2xl text-gray-600 group-hover:text-black transform scale-100 group-hover:scale-125 transition-transform duration-300" />
+//                         <h3 className="text-base text-gray-300 font-semi-bold group-hover:text-black group-hover:font-bold transition-colors duration-300">
+//                             Shared
+//                         </h3>
+//                     </div>
+//                     {/* Starred Files */}
+//                     <div className={`flex mb-2 justify-start items-center gap-4 pl-5 p-2 rounded-md group cursor-pointer hover:shadow-lg hover:scale-105 hover:bg-[#a3e635] hover:text-white transition-transform duration-300 m-auto`}>
+//                         <RxStar className="text-2xl text-gray-600 group-hover:text-black transform scale-100 group-hover:scale-125 transition-transform duration-300" />
+//                         <h3 className="text-base text-gray-300 font-semi-bold group-hover:text-black group-hover:font-bold transition-colors duration-300">
+//                             Stared Files
+//                         </h3>
+//                     </div>
+//                     {/* Statistic  */}
+//                     <div className="flex mb-2 justify-start items-center gap-4 pl-5 p-2 rounded-md group cursor-pointer hover:shadow-lg hover:scale-105 hover:bg-[#a3e635] hover:text-white transition-transform duration-300 m-auto">
+//                         <TbBrandGoogleAnalytics className="text-2xl text-gray-600 group-hover:text-black transform scale-100 group-hover:scale-125 transition-transform duration-300" />
+//                         <h3 className="text-base text-gray-300 font-semi-bold group-hover:text-black group-hover:font-bold transition-colors duration-300">
+//                             Statistic
+//                         </h3>
+//                     </div>
+//                     {/* Settings */}
+//                     <div className="flex mb-2 justify-start items-center gap-4 pl-5 p-2 rounded-md group cursor-pointer hover:shadow-lg hover:scale-105 hover:bg-[#a3e635] hover:text-white transition-transform duration-300 m-auto">
+//                         <LuSettings className="text-2xl text-gray-600 group-hover:text-black transform scale-100 group-hover:scale-125 transition-transform duration-300" />
+//                         <h3 className="text-base text-gray-300 font-semi-bold group-hover:text-black group-hover:font-bold transition-colors duration-300">
+//                             Settings
+//                         </h3>
+//                     </div>
+
+//                     {/* Trash  */}
+//                     <div className="flex mb-2 justify-start items-center gap-4 pl-5 p-2 rounded-md group cursor-pointer hover:shadow-lg hover:scale-105 hover:bg-[#a3e635] hover:text-white transition-transform duration-300 m-auto">
+//                         <LuTrash2 className="text-2xl text-gray-600 group-hover:text-black transform scale-100 group-hover:scale-125 transition-transform duration-300" />
+//                         <h3 className="text-base text-gray-300 font-semi-bold group-hover:text-black group-hover:font-bold transition-colors duration-300">
+//                             Trash
+//                         </h3>
+//                     </div>
+//                     {/* Help  */}
+//                     <div className="flex mb-2 justify-start items-center gap-4 pl-5 p-2 rounded-md group cursor-pointer hover:shadow-lg hover:scale-105 hover:bg-[#a3e635] hover:text-white transition-transform duration-300 m-auto">
+//                         <LuHelpCircle className="text-2xl text-gray-600 group-hover:text-black transform scale-100 group-hover:scale-125 transition-transform duration-300" />
+//                         <h3 className="text-base text-gray-300 font-semi-bold group-hover:text-black group-hover:font-bold transition-colors duration-300">
+//                             Help
+//                         </h3>
+//                     </div>
+//                 </div>
+//                 {/* Setting */}
+//                 <div className="mt-60">
+//                     {/* Logout */}
+//                     <div className="my-2">
+//                         <div className="flex mb-2 justify-start items-center gap-4 pl-5 p-2 rounded-md group cursor-pointer hover:shadow-lg hover:scale-105 hover:bg-[#a3e635] hover:text-white transition-transform duration-300 m-auto">
+//                             <TbLogout2 className="text-2xl text-gray-600 group-hover:text-black transform scale-100 group-hover:scale-125 transition-transform duration-300" />
+//                             <h3 className="text-base text-gray-300 font-semi-bold group-hover:text-black group-hover:font-bold transition-colors duration-300" onClick={signOut}>
+//                                 Logout
+//                             </h3>
+//                         </div>
+//                     </div>
+//                 </div>
+//             </div>
+//         </div>
+//     );
+// }
+// export default Sidebar
+
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import { RxDashboard, RxStar } from "react-icons/Rx";
+import { LuUsers2, LuTrash2, LuHelpCircle, LuSettings } from "react-icons/Lu";
+import { TbBrandGoogleAnalytics, TbLogout2 } from "react-icons/Tb";
+import { useAuth } from "../firebase/auth";
+
+export default function Layout({ children }) {
+  const router = useRouter();
+  const { signOut } = useAuth();
+  const { authUser } = useAuth(); // Assuming `useAuth` provides an `authUser` that is null when not authenticated
+
+
+  const iconMapping = {
+    'Dashboard': <RxDashboard className="icon-class" />,
+    //'Shared': <LuUsers2 className="icon-class" />,
+    'Stared Files': <RxStar className="icon-class" />,
+    //'Statistic': <TbBrandGoogleAnalytics className="icon-class" />,
+    //'Settings': <LuSettings className="icon-class" />,
+    'Trash': <LuTrash2 className="icon-class" />,
+    //'Help': <LuHelpCircle className="icon-class" />,
+  }
+
+  const menuItems = [
+    { href: '/', title: 'Dashboard' },
+    //{ href: '/shared', title: 'Shared' },
+    { href: '/stared_files', title: 'Stared Files' },
+    //{ href: '/statistic', title: 'Statistic' },
+    //{ href: '/settings', title: 'Settings' },
+    { href: '/trash', title: 'Trash' },
+    //{ href: '/help', title: 'Help' },
+  ];
+
+  return (
+    authUser && 
+    <div className='min-h-screen flex flex-col'>
+      <div className='flex flex-col md:flex-row flex-1'>
+        <div className="p-6 w-[280px] h-screen bg-black z-20 fixed top-0 -left-96 lg:left-0 lg:w-65  peer-focus:left-0 peer:transition ease-out delay-150 duration-200 rounded-r-3xl flex justify-center">
+          <div className="flex flex-col justify-start item-center">
+            <div className="flex items-center justify-center">
+              <img
+                src="/logo.png"
+                alt="Your Alt Text"
+                className="h-11 w-11"
+              />
+              <h1 className="text-[#a3e635] font-extrabold relative p-2">
+                <span className="relative z-10 text-5xl">D</span>
+                <span className="relative z-10 text-2xl">ocomo</span>
+              </h1>
+            </div>
+            <nav>
+              <ul>
+                {menuItems.map(({ href, title }) => (
+                  <li className='m-2' key={title}>
+                    <Link href={href}>
+                      <div
+                        className={`flex items-center gap-4 pl-5 p-2 rounded-md group cursor-pointer hover:shadow-lg hover:scale-105 hover:bg-[#a3e635] hover:text-white transition-transform duration-300 m-auto ${router.asPath === href && 'bg-fuchsia-600 text-white'
+                          }`}
+                      >
+                        {iconMapping[title]}
+                        <span>{title}</span>
+                      </div>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-[85]">
+                {/* Logout */}
+                <div className="my-2">
+                  <div className="flex mb-2 justify-start items-center gap-4 pl-5 p-2 rounded-md group cursor-pointer hover:shadow-lg hover:scale-105 hover:bg-[#a3e635] hover:text-white transition-transform duration-300 m-auto">
+                    <TbLogout2 className="text-2xl text-gray-600 group-hover:text-black transform scale-100 group-hover:scale-125 transition-transform duration-300" />
+                    <h3 className="text-base text-gray-300 font-semi-bold group-hover:text-black group-hover:font-bold transition-colors duration-300" onClick={signOut}>
+                      Logout
+                    </h3>
+                  </div>
+                </div>
+              </div>
+            </nav>
+          </div>
+        </div>
+        <main className='flex-1'>{children}</main>
+      </div>
+    </div>
+  );
+}
