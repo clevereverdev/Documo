@@ -43,21 +43,80 @@ body {
 }
 
 .layout__main-content {
+  margin-left: 17rem; /* Margin equals the width of the sidebar */
   flex-grow: 1;
+  transition: margin-left 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+}
+
+@media (max-width: 640px) {
+  .main-content {
+    margin-left: 0;
+    padding-left: 280px;
+  }
 }
 
 .sidebar__wrapper {
   position: relative;
 }
 
+.gridContainer {
+  display: grid;
+  grid-template-columns: 2fr 1fr; /* Home takes up 2 parts, Storage takes up 1 part */
+  gap: 20px; /* Adjust as needed */
+}
+
+.home {
+  grid-column: span 2; /* Home spans 2 columns */
+}
+
+.storage {
+  grid-column: span 1; /* Storage spans 1 column */
+}
+
+/* Adjust for smaller screens */
+@media (max-width: 640px) {
+  .gridContainer {
+      grid-template-columns: 1fr;
+      grid-template-rows: 1fr 1fr;
+  }
+
+  .home {
+      grid-row: 1;
+  }
+
+  .storage {
+      grid-row: 2;
+  }
+}
+
+.modal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-box {
+  width: 90%;            /* Adjust this value as per your preference */
+  max-width: 400px;      /* Maximum width of the modal box */
+  overflow-x: hidden;    /* Prevent horizontal scrolling */
+  padding: 20px;         /* Add some padding for aesthetics */
+  box-sizing: border-box; /* Ensure padding is included in the width */
+}
+.btn {
+  font-size: 1rem;       /* Adjust font size if needed */
+  padding: 10px 20px;    /* Adjust padding if needed */
+}
+
+
 .sidebar {
   width: 17rem;
   height: 100%;
+  z-index: 10; /* Ensure the sidebar remains on top */
   background-color: var(--color-bg);
   padding: 1rem;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
   overflow: hidden;
 }
+
 
 .sidebar__top {
   width: max-content;

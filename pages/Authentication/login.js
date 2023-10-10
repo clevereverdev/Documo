@@ -119,11 +119,11 @@ const LoginForm = () => {
     };
 
     const goSignUp = () => {
-        router.push("../Authentication/register");
+        router.push("../Authentication/Register");
     };
 
     const goresetpass = () => {
-        router.push("../Authentication/reset_password");
+        router.push("../Authentication/Reset_password");
     }
 
     const togglePasswordVisibility = () => {
