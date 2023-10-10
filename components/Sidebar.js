@@ -5,6 +5,7 @@ import { BsFileEarmarkPdf } from "react-icons/Bs";
 import { LuTrash2 } from "react-icons/Lu";
 import { TbLogout2, TbFolder } from "react-icons/Tb";
 import { useAuth } from "../firebase/auth";
+import CreateFolderModel from './Folder/CreateFolderModel';
 
 export default function Layout({ children }) {
   const router = useRouter();
@@ -63,10 +64,11 @@ export default function Layout({ children }) {
                   <BsFileEarmarkPdf className="text-2xl text-gray-600 group-hover:text-black transform scale-100 group-hover:scale-125 transition-transform duration-300" />
                   <span className='text-white'>Add File</span>
                 </div>
-                <div className="flex mb-2 justify-start items-center gap-4 pl-5 p-2 rounded-md bg-red-500 hover:bg-red-600 transition-colors duration-300 m-auto" onClick={() => document.getElementById('my_modal_3').showModal()}>
+                <div className="flex mb-2 justify-start items-center gap-4 pl-5 p-2 rounded-md bg-red-500 hover:bg-red-600 transition-colors duration-300 m-auto" onClick={()=>document.getElementById('my_modal_3').showModal()}>
                   <TbFolder className="text-2xl text-gray-600 group-hover:text-black transform scale-100 group-hover:scale-125 transition-transform duration-300" />
                   <span className='text-white'>Add Folder</span>
                 </div>
+                 {/* <button className="mt-4 bg-blue-500 hover:bg-blue-600 p-2 rounded-md" onClick={()=>document.getElementById('my_modal_3').showModal()}>Open Modal</button> */}
               </div>
               {/* Logout */}
               <div className="mb-2">
@@ -83,11 +85,13 @@ export default function Layout({ children }) {
         <main className='main-content flex-1 ml-[280px]'>
           {children}
         </main>
-      </div>
-      <dialog id="my_modal_3" className="modal">
+        {/* <button className="btn" onClick={() => document.getElementById('my_modal_1').showModal()}>open modal</button> */}
+        <dialog id="my_modal_3" className="modal">
         <div className="modal-box">
+          <CreateFolderModel/>
         </div>
       </dialog>
+      </div>
     </div>
   );
 }
