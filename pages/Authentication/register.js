@@ -116,7 +116,7 @@ const RegisterForm = () => {
     };
 
     const goLogin = () => {
-        router.push("../Authentication/login");
+        router.push("../Authentication/Login");
     };
 
     const togglePasswordVisibility = () => {

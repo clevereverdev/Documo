@@ -4,6 +4,7 @@ import { useAuth } from "../firebase/auth";
 import { useRouter } from "next/router";
 import Loader from "../components/loader";
 import Layout from "@/Sidebar";
+import SearchBar from "@/Search";
 
 export default function Home() {
     const { authUser, isLoading } = useAuth();
@@ -12,22 +13,27 @@ export default function Home() {
 
     useEffect(() => {
         if (!isLoading && !authUser) {
-            router.push("Authentication/login");
+            router.push("Authentication/Login");
         } else if (!isLoading && authUser) {
             setShowSideNavbar(true);
         }
     }, [authUser, isLoading, router]);
-
+    
     return !authUser ? (
         <Loader />
     ) : (
         <Layout>
             <div className={styles.container}>
-                <div className="flex items-center justify-between gap-2 font-medium shadow-md fixed top-7 right-60">
-                    <h1>
-                        Welcome,{" "}
-                        <strong className="text-green-600">{authUser.username}</strong>!
-                    </h1>
+                <div className={styles.home}>
+                    <SearchBar/>
+                </div>
+                <div className={styles.storage}
+                style={{ 
+                    backgroundColor: '#c026d3', 
+                    padding: '10px', 
+                    borderRadius: '5px' 
+                }}>
+                    <h1 className='text-md mb-5 font-bold'>Storage</h1>
                 </div>
             </div>
         </Layout>
