@@ -3,10 +3,12 @@ import React, { useContext, useState } from 'react'
 import { getFirestore, setDoc, doc } from "firebase/firestore";
 import { useAuth } from "../../firebase/auth";
 import { ShowToastContext } from 'context/ShowToastContext';
+import { ParentFolderIdContext } from 'context/ParentFolderIdContext';
 
 function CreateFolderModel() {
     const [folderName, setfolderName] = useState();
-    const {showToastMsg,setShowToastMsg}=useContext(ShowToastContext)
+    const {showToastMsg,setShowToastMsg}=useContext(ShowToastContext);
+    const {parentFolderId, setParentFolderId} = useContext(ParentFolderIdContext);
     const docId = Date.now().toString();
     const { authUser } = useAuth();
     const db = getFirestore(app)
@@ -17,7 +19,8 @@ function CreateFolderModel() {
             Name: folderName,
             ID: docId,
             CreatedBy: authUser.email,
-            Username: authUser.username
+            Username: authUser.username,
+            parentFolderId: parentFolderId
           });
           setShowToastMsg('Folder Created successfully!')
     }
