@@ -6,7 +6,7 @@ import { LuTrash2 } from "react-icons/Lu";
 import { TbLogout2, TbFolder } from "react-icons/Tb";
 import { useAuth } from "../firebase/auth";
 import CreateFolderModel from './Folder/CreateFolderModel';
-
+import UploadFileModal from './File/UploadFileModel';
 export default function Layout({ children }) {
   const router = useRouter();
   const { signOut } = useAuth();
@@ -60,7 +60,7 @@ export default function Layout({ children }) {
               </ul>
               {/* Add File & Add Folder buttons */}
               <div className="mt-4">
-                <div className="flex mb-2 justify-start items-center gap-4 pl-5 p-2 rounded-md bg-green-500 hover:bg-green-600 transition-colors duration-300 m-auto">
+                <div className="flex mb-2 justify-start items-center gap-4 pl-5 p-2 rounded-md bg-green-500 hover:bg-green-600 transition-colors duration-300 m-auto" onClick={()=>window.upload_file.showModal()}>
                   <BsFileEarmarkPdf className="text-2xl text-gray-600 group-hover:text-black transform scale-100 group-hover:scale-125 transition-transform duration-300" />
                   <span className='text-white'>Add File</span>
                 </div>
@@ -87,10 +87,14 @@ export default function Layout({ children }) {
         </main>
         {/* <button className="btn" onClick={() => document.getElementById('my_modal_1').showModal()}>open modal</button> */}
         <dialog id="my_modal_3" className="modal">
-        <div className="modal-box">
-          <CreateFolderModel/>
-        </div>
-      </dialog>
+          <div className="modal-box">
+            <CreateFolderModel/>
+          </div>
+        </dialog>
+        <dialog id="upload_file" className="modal">
+            <UploadFileModal 
+            closeModal={()=>window.upload_file.close()}/>
+        </dialog>
       </div>
     </div>
   );
