@@ -51,10 +51,12 @@ function reset_password() {
                     <div className="mb-6 text-center">
                         <img
                             src="/logo.png"
-                            alt="Your Alt Text"
-                            className="h-20 w-20 mx-auto" />
-                        <h1 className="text-5xl font-semibold text-[#2563eb]">
-                            Documo
+                            alt="Your Alt Text"         
+                            className="h-20 w-20 mx-auto"/>
+                        <h1 className="text-7xl font-extrabold relative">
+                            <span className="text-7xl bg-gradient-to-r from-[#20bcc4] to-[#0c6064] inline-block text-transparent bg-clip-text font-Ultra">D</span>
+                            <span className="text-4xl bg-gradient-to-r from-[#20bcc4] to-[#0c6064] inline-block text-transparent bg-clip-text font-Ultra ">ocomo</span>
+                            <span className="absolute top-5 text-xl">©</span>
                         </h1>
                     </div>
                     <div>
@@ -79,7 +81,7 @@ function reset_password() {
                         </div>
                         <button
                             type="submit"
-                            className="w-3/4 py-4 mt-7 rounded-md bg-[#60a5fa] text-white p-2 hover:bg-[#3b82f6]"
+                            className="w-3/4 py-4 mt-7 rounded-md bg-gradient-to-r from-[#20bcc4] to-[#2ebac1] text-white p-2 transform transition-transform hover:from-[#4fdee6] hover:to-[#198f95]"
                             onClick={sendResetEmail}>
                             Get the reset link
                         </button>

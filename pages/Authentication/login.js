@@ -30,9 +30,9 @@ const LoginForm = () => {
 
     const loginHandler = async () => {
         if (!email || !password) return;
-        
+
         let loginEmail = email; // Assume the input is an email by default
-    
+
         // Check if the input is not an email (i.e., it’s a username)
         if (!email.includes("@")) {
             try {
@@ -56,7 +56,7 @@ const LoginForm = () => {
                 return;
             }
         }
-    
+
         try {
             const user = await signInWithEmailAndPassword(
                 auth,
@@ -88,7 +88,7 @@ const LoginForm = () => {
             });
         }
     };
-    
+
     const signInWithGoogle = async () => {
         try {
             const user = await signInWithPopup(auth, provider);
@@ -140,8 +140,15 @@ const LoginForm = () => {
                             src="/logo.png"
                             alt="Your Alt Text"
                             className="h-20 w-20 mx-auto" />
-                        <h1 className="text-5xl font-semibold text-[#2563eb]">
-                            Documo
+                        {/* <h1 className="text-7xl font-extrabold bg-gradient-to-r from-[#20bcc4] to-[#0c6064] inline-block text-transparent bg-clip-text font-Ultra">
+                            D<span className="text-4xl">ocomo</span>
+                        <span className="top-3 text-2xl text-white font-thin mt-2">©</span>
+                        </h1> */}
+
+                        <h1 className="text-7xl font-extrabold relative">
+                            <span className="text-7xl bg-gradient-to-r from-[#20bcc4] to-[#0c6064] inline-block text-transparent bg-clip-text font-Ultra">D</span>
+                            <span className="text-4xl bg-gradient-to-r from-[#20bcc4] to-[#0c6064] inline-block text-transparent bg-clip-text font-Ultra ">ocomo</span>
+                            <span className="absolute top-5 text-xl">©</span>
                         </h1>
                     </div>
 
@@ -180,7 +187,7 @@ const LoginForm = () => {
                                     <FaLock className="text-gray-400" />
                                 </div>
                                 <input
-                                    type={showPassword ? "text" : "password"} 
+                                    type={showPassword ? "text" : "password"}
                                     placeholder="Password"
                                     className="font-medium border bg-transparent border-[#374151] pl-10 pr-2 w-3/4 py-4 rounded-md outline-0 hover:border-[#52525b] cursor-pointer"
                                     required
@@ -200,13 +207,13 @@ const LoginForm = () => {
                             </div>
                         </div>
                         <div className="mt-7">
-                            <span className="text-[#2563eb] font-bold text-sm cursor-pointer hover:text-blue-400" onClick={goresetpass}>
+                            <span className="text-[#20bcc4] font-bold text-sm cursor-pointer hover:text-[#198f95]" onClick={goresetpass}>
                                 Forgot your password?
                             </span>
                         </div>
                         <button
                             type="submit"
-                            className="w-3/4 py-4 mt-7 rounded-md bg-[#60a5fa] text-white p-2 hover:bg-[#3b82f6]"
+                            className="w-3/4 py-4 mt-7 rounded-md bg-gradient-to-r from-[#20bcc4] to-[#2ebac1] text-white p-2 transform transition-transform hover:from-[#4fdee6] hover:to-[#198f95]"
                             onClick={loginHandler}>
                             Log in
                         </button>
@@ -229,7 +236,7 @@ const LoginForm = () => {
                     <p className="mt-7 ml-1 text-sm">
                         Don't have an account?{" "}
                         <span
-                            className="font-bold text-[#2563eb] hover:text-blue-400 cursor-pointer"
+                            className="font-bold text-[#20bcc4] hover:text-[#198f95] cursor-pointer"
                             onClick={goSignUp}>
                             Get Started
                         </span>

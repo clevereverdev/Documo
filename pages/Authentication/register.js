@@ -129,16 +129,29 @@ const RegisterForm = () => {
         <main className="flex lg:h-[100vh]">
             <div className="w-full lg:w-[60%] p-8 md:p-14 flex items-center justify-center lg:justify-start">
                 <div className="p-8 w-[600px] text-center">
-                    <div className="mb-6 text-center">
+                    <div className="mb-5 text-center">
                         <img
                             src="/logo.png"
                             alt="Your Alt Text"
                             className="h-20 w-20 mx-auto"
                         />
-                        <h1 className="text-5xl font-semibold text-[#2563eb]">
-                            Documo
+                       <h1 className="text-7xl font-extrabold relative">
+                            <span className="text-7xl bg-gradient-to-r from-[#20bcc4] to-[#0c6064] inline-block text-transparent bg-clip-text font-Ultra">D</span>
+                            <span className="text-4xl bg-gradient-to-r from-[#20bcc4] to-[#0c6064] inline-block text-transparent bg-clip-text font-Ultra">ocomo</span>
+                            <span className="absolute top-5 text-xl">©</span>
                         </h1>
                     </div>
+                    <p className="text-center mt-4 text-gray-600">
+                        <div className="text-white font-bold text-xl">
+                            Take Control of your  Digital Life
+                        </div>{" "}
+                        <div className="text-gray-400 text-sm">
+                            Access your files
+                        </div>
+                        <div className="text-gray-400 text-sm">
+                            Anywhere, Anytime
+                        </div>
+                    </p>
                     <form onSubmit={(e) => e.preventDefault()}>
                         <div className="mt-5 pl-1 flex flex-col relative">
                             <div className="relative">
@@ -196,7 +209,7 @@ const RegisterForm = () => {
                         </div>
                         <div className="flex justify-center">
                             <button
-                                className="w-3/4 py-4 mt-7 rounded-md bg-[#60a5fa] text-white p-2 hover:bg-[#3b82f6] mx-auto"
+                                className="w-3/4 py-4 mt-7 rounded-md bg-gradient-to-r from-[#20bcc4] to-[#2ebac1] text-white p-2 transform transition-transform hover:from-[#4fdee6] hover:to-[#198f95]"
                                 onClick={signupHandler}
                             >
                                 Sign up
@@ -223,7 +236,7 @@ const RegisterForm = () => {
                     <p className="mt-7 ml-1 text-sm text-center">
                         Already have an account?{" "}
                         <span
-                            className="font-bold text-[#2563eb] hover:text-blue-400 cursor-pointer"
+                            className="font-bold text-[#20bcc4] hover:text-[#198f95] cursor-pointer"
                             onClick={goLogin}
                         >
                             Login
