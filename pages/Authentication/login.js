@@ -135,20 +135,15 @@ const LoginForm = () => {
         <main className="flex lg:h-[100vh]">
             <div className="w-full lg:w-[60%] p-8 md:p-14 flex items-center justify-center lg:justify-start">
                 <div className="p-8 w-[600px] text-center">
-                    <div className="mb-6 text-center">
+                    <div className="flex items-center justify-center">
                         <img
                             src="/logo.png"
                             alt="Your Alt Text"
-                            className="h-20 w-20 mx-auto" />
-                        {/* <h1 className="text-7xl font-extrabold bg-gradient-to-r from-[#20bcc4] to-[#0c6064] inline-block text-transparent bg-clip-text font-Ultra">
-                            D<span className="text-4xl">ocomo</span>
-                        <span className="top-3 text-2xl text-white font-thin mt-2">©</span>
-                        </h1> */}
-
-                        <h1 className="text-7xl font-extrabold relative">
-                            <span className="text-7xl bg-gradient-to-r from-[#20bcc4] to-[#0c6064] inline-block text-transparent bg-clip-text font-Ultra">D</span>
-                            <span className="text-4xl bg-gradient-to-r from-[#20bcc4] to-[#0c6064] inline-block text-transparent bg-clip-text font-Ultra ">ocomo</span>
-                            <span className="absolute top-5 text-xl">©</span>
+                            className="h-20 w-20" />
+                        <h1 className="text-7xl font-extrabold relative m-3">
+                            <span className="text-7xl bg-gray-300 inline-block text-transparent bg-clip-text font-Payton">D</span>
+                            <span className="text-3xl bg-gray-300 inline-block text-transparent bg-clip-text font-Payton">ocomo</span>
+                            <span className="absolute top-10 text-xs">©</span>
                         </h1>
                     </div>
 
@@ -207,13 +202,13 @@ const LoginForm = () => {
                             </div>
                         </div>
                         <div className="mt-7">
-                            <span className="text-[#20bcc4] font-bold text-sm cursor-pointer hover:text-[#198f95]" onClick={goresetpass}>
+                            <span className="text-[#1ED760] font-bold text-sm cursor-pointer hover:text-[#16a34a]" onClick={goresetpass}>
                                 Forgot your password?
                             </span>
                         </div>
                         <button
                             type="submit"
-                            className="w-3/4 py-4 mt-7 rounded-md bg-gradient-to-r from-[#20bcc4] to-[#2ebac1] text-white p-2 transform transition-transform hover:from-[#4fdee6] hover:to-[#198f95]"
+                            className="w-3/4 py-4 mt-7 rounded-md bg-[#1ED760] text-black font-bold p-2 transform transition-transform hover:bg-[#16a34a]"
                             onClick={loginHandler}>
                             Log in
                         </button>
@@ -236,7 +231,7 @@ const LoginForm = () => {
                     <p className="mt-7 ml-1 text-sm">
                         Don't have an account?{" "}
                         <span
-                            className="font-bold text-[#20bcc4] hover:text-[#198f95] cursor-pointer"
+                            className="font-bold text-[#1ED760] hover:text-[#16a34a] cursor-pointer"
                             onClick={goSignUp}>
                             Get Started
                         </span>

@@ -1,4 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Ultra&display=swap');@tailwind base;
+@import url('https://fonts.googleapis.com/css2?family=Pacifico&family=Paytone+One&family=Ultra&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Pacifico&family=Ultra&display=swap');
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -31,6 +33,7 @@
 
 body {
   font-family: "Roboto", sans-serif;
+  overflow: hidden;
 }
 
 .layout {
@@ -39,6 +42,9 @@ body {
   position: relative;
   gap: 2rem;
 }
+
+
+
 
 .layout__main-content {
   margin-left: 17rem; /* Margin equals the width of the sidebar */
@@ -194,4 +200,15 @@ body {
   transform: translateX(50%);
   font-size: 1.1rem;
 }
+
+.hover-effect:hover {
+  transform: scale(1.05); /* Enlarge the item */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); /* Add a shadow for depth effect */
+  transition: all 0.3s ease; /* Smooth the hover effect */
+}
+
+.hover-effect {
+  transition: all 0.3s ease; /* Smooth out the hover effect when hovering out */
+}
+
 

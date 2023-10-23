@@ -11,7 +11,7 @@ function FolderItemSmall({folder}) {
         width={20}
         height={20}
         />
-        <h1>{folder.Name}</h1>
+        <h1>{folder.name}</h1>
     </div>
   )
 }

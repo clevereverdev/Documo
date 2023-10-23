@@ -12,17 +12,21 @@
 .container {
   display: flex;
   flex-direction: row;
-  height: 100vh; /* Adjust if you don't want it to take the full viewport height */
+  height: 97vh;
+  overflow-y: hidden;  /* Prevent vertical scrolling */
 }
 
 .home {
   flex: 2;
   padding: 1rem;
+  overflow-y: hidden;
 }
 
 .storage {
   flex: 1;
   padding: 1rem;
+  overflow-y: hidden;  /* Enable vertical scrolling if content overflows */
+  max-height: 100vh; /* Ensure it doesn't exceed the viewport height */
 }
 
 /* For smaller screens */

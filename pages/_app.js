@@ -14,7 +14,7 @@ export default function App({ Component, pageProps }) {
   return (
     <>
       <Head>
-        <title>Docomo</title>
+        <title>Docomo - Web File Manager</title>
       </Head>
       <AuthUserProvider>
         <ParentFolderIdContext.Provider value={{parentFolderId, setParentFolderId}}>
