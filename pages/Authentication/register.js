@@ -22,6 +22,7 @@ const RegisterForm = () => {
     const [password, setPassword] = useState(null);
     const [showPassword, setShowPassword] = useState(false);
     const { authUser, isLoading, setAuthUser } = useAuth();
+    const [isFocused, setIsFocused] = useState(false);
     const router = useRouter();
     useEffect(() => {
         if (!isLoading && authUser) {
@@ -129,16 +130,31 @@ const RegisterForm = () => {
         <main className="flex lg:h-[100vh]">
             <div className="w-full lg:w-[60%] p-8 md:p-14 flex items-center justify-center lg:justify-start">
                 <div className="p-8 w-[600px] text-center">
-                    <div className="mb-6 text-center">
+                    <div className="flex items-center justify-center">
                         <img
                             src="/logo.png"
                             alt="Your Alt Text"
-                            className="h-20 w-20 mx-auto"
-                        />
-                        <h1 className="text-5xl font-semibold text-[#2563eb]">
-                            Documo
+                            className="h-20 w-20" />
+                        <h1 className="text-7xl font-extrabold relative m-3">
+                            <span className="text-7xl bg-gray-300 inline-block text-transparent bg-clip-text font-Payton">D</span>
+                            <span className="text-3xl bg-gray-300 inline-block text-transparent bg-clip-text font-Payton">ocomo</span>
+                            <span className="absolute top-10 text-xs">©</span>
                         </h1>
                     </div>
+                    <p className="text-center mt-4 text-gray-600">
+                        <div className="text-white font-bold text-xl">
+                            Take Control of your
+                        </div>{" "}
+                        <div className="text-white font-bold text-xl">
+                            Digital Life!
+                        </div>
+                        <div className="text-gray-400 text-sm">
+                            Access your files
+                        </div>
+                        <div className="text-gray-400 text-sm">
+                            Anywhere, Anytime on the Go
+                        </div>
+                    </p>
                     <form onSubmit={(e) => e.preventDefault()}>
                         <div className="mt-5 pl-1 flex flex-col relative">
                             <div className="relative">
@@ -196,7 +212,7 @@ const RegisterForm = () => {
                         </div>
                         <div className="flex justify-center">
                             <button
-                                className="w-3/4 py-4 mt-7 rounded-md bg-[#60a5fa] text-white p-2 hover:bg-[#3b82f6] mx-auto"
+                                className="w-3/4 py-4 mt-7 rounded-md bg-[#1ED760] text-black font-bold p-2 transform transition-transform hover:bg-[#16a34a]"
                                 onClick={signupHandler}
                             >
                                 Sign up
@@ -223,7 +239,7 @@ const RegisterForm = () => {
                     <p className="mt-7 ml-1 text-sm text-center">
                         Already have an account?{" "}
                         <span
-                            className="font-bold text-[#2563eb] hover:text-blue-400 cursor-pointer"
+                            className="font-bold text-[#1ED760] hover:text-[#16a34a] cursor-pointer"
                             onClick={goLogin}
                         >
                             Login

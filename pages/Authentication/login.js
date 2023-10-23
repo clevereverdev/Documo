@@ -30,9 +30,9 @@ const LoginForm = () => {
 
     const loginHandler = async () => {
         if (!email || !password) return;
-        
+
         let loginEmail = email; // Assume the input is an email by default
-    
+
         // Check if the input is not an email (i.e., it’s a username)
         if (!email.includes("@")) {
             try {
@@ -56,7 +56,7 @@ const LoginForm = () => {
                 return;
             }
         }
-    
+
         try {
             const user = await signInWithEmailAndPassword(
                 auth,
@@ -88,7 +88,7 @@ const LoginForm = () => {
             });
         }
     };
-    
+
     const signInWithGoogle = async () => {
         try {
             const user = await signInWithPopup(auth, provider);
@@ -135,13 +135,15 @@ const LoginForm = () => {
         <main className="flex lg:h-[100vh]">
             <div className="w-full lg:w-[60%] p-8 md:p-14 flex items-center justify-center lg:justify-start">
                 <div className="p-8 w-[600px] text-center">
-                    <div className="mb-6 text-center">
+                    <div className="flex items-center justify-center">
                         <img
                             src="/logo.png"
                             alt="Your Alt Text"
-                            className="h-20 w-20 mx-auto" />
-                        <h1 className="text-5xl font-semibold text-[#2563eb]">
-                            Documo
+                            className="h-20 w-20" />
+                        <h1 className="text-7xl font-extrabold relative m-3">
+                            <span className="text-7xl bg-gray-300 inline-block text-transparent bg-clip-text font-Payton">D</span>
+                            <span className="text-3xl bg-gray-300 inline-block text-transparent bg-clip-text font-Payton">ocomo</span>
+                            <span className="absolute top-10 text-xs">©</span>
                         </h1>
                     </div>
 
@@ -180,7 +182,7 @@ const LoginForm = () => {
                                     <FaLock className="text-gray-400" />
                                 </div>
                                 <input
-                                    type={showPassword ? "text" : "password"} 
+                                    type={showPassword ? "text" : "password"}
                                     placeholder="Password"
                                     className="font-medium border bg-transparent border-[#374151] pl-10 pr-2 w-3/4 py-4 rounded-md outline-0 hover:border-[#52525b] cursor-pointer"
                                     required
@@ -200,13 +202,13 @@ const LoginForm = () => {
                             </div>
                         </div>
                         <div className="mt-7">
-                            <span className="text-[#2563eb] font-bold text-sm cursor-pointer hover:text-blue-400" onClick={goresetpass}>
+                            <span className="text-[#1ED760] font-bold text-sm cursor-pointer hover:text-[#16a34a]" onClick={goresetpass}>
                                 Forgot your password?
                             </span>
                         </div>
                         <button
                             type="submit"
-                            className="w-3/4 py-4 mt-7 rounded-md bg-[#60a5fa] text-white p-2 hover:bg-[#3b82f6]"
+                            className="w-3/4 py-4 mt-7 rounded-md bg-[#1ED760] text-black font-bold p-2 transform transition-transform hover:bg-[#16a34a]"
                             onClick={loginHandler}>
                             Log in
                         </button>
@@ -229,7 +231,7 @@ const LoginForm = () => {
                     <p className="mt-7 ml-1 text-sm">
                         Don't have an account?{" "}
                         <span
-                            className="font-bold text-[#2563eb] hover:text-blue-400 cursor-pointer"
+                            className="font-bold text-[#1ED760] hover:text-[#16a34a] cursor-pointer"
                             onClick={goSignUp}>
                             Get Started
                         </span>
