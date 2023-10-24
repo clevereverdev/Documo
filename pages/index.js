@@ -22,6 +22,52 @@ export default function Home() {
   const {parentFolderId,setParentFolderId}=useContext(ParentFolderIdContext)
   const {showToastMsg,setShowToastMsg}=useContext(ShowToastContext);
 
+  const [filteredFiles, setFilteredFiles] = useState([]); // Filtered file list
+  const [filteredFolders, setFilteredFolders] = useState([]); // Filtered file list
+
+  // ...
+
+  const handleSearchFile = (searchTerm) => {
+    if (searchTerm.trim() === '') {
+      // If the search bar is empty, show all files
+      setFilteredFiles(fileList);
+    } else {
+      // Filter the fileList based on the search term
+      const file = fileList.filter((file) =>
+        file.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredFiles(file);
+    }
+  };
+
+  const handleSearchFolder = (searchTerm) => {
+    if (searchTerm.trim() === '') {
+      // If the search bar is empty, show all files
+      setFilteredFolders(folderList);
+    } else {
+      // Filter the fileList based on the search term
+      const folder = folderList.filter((folder) =>
+      folder.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredFolders(folder);
+    }
+  };
+
+  useEffect(() => {
+    // Initialize the filteredFiles with the entire fileList
+    setFilteredFiles(fileList);
+  }, [fileList]);
+
+  useEffect(() => {
+    // Initialize the filteredFiles with the entire fileList
+    setFilteredFolders(folderList);
+  }, [folderList]);
+
+  const handleCombinedSearch = (searchTerm) => {
+    handleSearchFile(searchTerm); // Call the first search function
+    handleSearchFolder(searchTerm); // Call the second search function
+  };
+
   useEffect(()=>{
     console.log("User Session",)
     if(!authUser)
@@ -67,15 +113,17 @@ export default function Home() {
 }); 
   }
 
+
+
         return !authUser ? (
             <Loader />
         ) : (
             <Layout>
                 <div className = {styles.container}>
                     <div className = {styles.home}>
-                        <SearchBar />
-                        <FolderList folderList = {folderList} />
-                        <FileList  fileList = {fileList} />
+                        <SearchBar onSearch= {handleCombinedSearch}/>
+                        <FolderList folderList = {filteredFolders} />
+                        <FileList  fileList={filteredFiles} />
                     </div>
                     <div className={styles.storage}
                         style={{

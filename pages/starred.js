@@ -5,8 +5,9 @@ import FileItem from "@/File/FileItem";
 import { app } from "../firebase/firebase";
 import SearchBar from "@/Search";
 
-export default function Contact() {
+export default function Starred() {
   const [starredFiles, setStarredFiles] = useState([]);
+  const [filteredStarredFiles, setFilteredStarredFiles] = useState([]); // Filtered starred files
   const db = getFirestore(app);
 
   useEffect(() => {
@@ -18,15 +19,30 @@ export default function Contact() {
         files.push({ ...doc.data(), id: doc.id });
       });
       setStarredFiles(files);
+      setFilteredStarredFiles(files); // Initialize filtered starred files with all starred files
     });
 
     // Cleanup the listener on unmount
     return () => unsubscribe();
   }, [db]);
+
+  // Define a search function for starred files
+  const searchStarredFiles = (searchTerm) => {
+    if (searchTerm.trim() === '') {
+      // If the search bar is empty, show all starred files
+      setFilteredStarredFiles(starredFiles);
+    } else {
+      // Filter the starredFiles based on the search term
+      const filteredFiles = starredFiles.filter((file) =>
+        file.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredStarredFiles(filteredFiles);
+    }
+  };
   return (
     <Layout>
     <div className="m-5">
-      <SearchBar />
+    <SearchBar onSearch={searchStarredFiles} />
     </div>
     <div className='m-4'>
       <div 
@@ -41,8 +57,8 @@ export default function Contact() {
           <h2>Kind</h2>
           <h2>Action</h2>
         </div>
-        {starredFiles.length ? ( 
-          starredFiles.map((file) => (
+        {filteredStarredFiles.length ? ( 
+          filteredStarredFiles.map((file) => (
             <FileItem key={file.id} file={file} />
           ))
         ) : (

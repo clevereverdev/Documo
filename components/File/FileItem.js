@@ -7,6 +7,8 @@ import { ShowToastContext } from "../../context/ShowToastContext";
 import { BsFillTrashFill, BsFillPencilFill, BsStar, BsStarFill } from "react-icons/bs";
 import { FaDownload } from "react-icons/fa";
 import { Tooltip } from "@nextui-org/react";
+import defaultFileImage from '../../public/zip.png';
+
 
 function FileItem({ file }) {
 
@@ -107,12 +109,31 @@ function FileItem({ file }) {
     setShowToastMsg('File renamed successfully!');
   };
 
+  // Map file extensions to corresponding images
+  const getFileImage = (extension) => {
+    switch (extension.toLowerCase()) {
+      case 'pdf':
+        return '/pdf.png';
+      case 'zip':
+        return '/zip.png';
+      default:
+        return defaultFileImage; // Default image for unknown file types
+    }
+  };
+
+  // Determine the image source based on the file extension
+  const fileExtension = file.name.toLowerCase().split('.').pop();
+  const imageSrc = getFileImage(fileExtension);
+  const displayImageSrc = ['pdf', 'zip'].includes(fileExtension)
+  ? imageSrc
+  : file.imageUrl;
+  
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-[2fr,1fr,1fr,1fr,1fr] gap-4 text-gray-400 items-center hover:bg-inherit rounded-xl bg-[#262626] m-2 p-2 py-3">
       <div className="flex items-center gap-2">
         <Image
-          src={file.imageUrl}  // Directly use the imageUrl or fall back to the default image
+          src={displayImageSrc}          
           alt={file.name}
           width={35}
           height={35}
@@ -124,12 +145,12 @@ function FileItem({ file }) {
               value={newName}
               onChange={handleNameChange}
               onKeyDown={handleKeyDown}
-              onBlur={handleRenameSubmit} 
+              onBlur={handleRenameSubmit}
               autoFocus
-            style={{
-              padding: "0.2rem", // Adjust padding as needed
-              paddingLeft: "0.4rem", // Adjust left padding to hide the first letter
-            }}
+              style={{
+                padding: "0.2rem", // Adjust padding as needed
+                paddingLeft: "0.4rem", // Adjust left padding to hide the first letter
+              }}
             />
           ) : (
             <span onDoubleClick={handleRenameClick}>
@@ -142,16 +163,38 @@ function FileItem({ file }) {
       <div>{formatFileSize(file.size)}</div>
       <div className="ml-1">{file.type || "Unknown"}</div>
       <div className="flex gap-2 cursor-pointer">
-        <BsFillTrashFill onClick={() => deleteFile(file)} />
 
-        <BsFillPencilFill onClick={handleRenameClick} />
-        {starred ? (
-          <BsStarFill onClick={() => toggleStar(file)} style={{ color: '#808080' }} />
-        ) : (
-          <BsStar onClick={() => toggleStar(file)} style={{ color: 'inherit' }} />
-        )}
-        <FaDownload onClick={downloadFile} />  
+        {/* Delete Files */}
+        <Tooltip showArrow={false} content="Delete" placement="bottom" className="tooltip-container bg-gray-300 text-gray-700 font-bold text-xs py-1 px-2 rounded-lg" arrowSize={0}> 
+          <div>
+            <BsFillTrashFill className='hover:text-blue-600' onClick={() => deleteFile(file)} />
+          </div>
+        </Tooltip>
 
+        {/* Rename Files */}
+        <Tooltip showArrow={false} content="Rename" placement="bottom" className="tooltip-container bg-gray-300 text-gray-700 font-bold text-xs py-1 px-2 rounded-lg" arrowSize={0}> 
+          <div>
+            <BsFillPencilFill className='hover:text-blue-600' onClick={handleRenameClick} />
+          </div>
+        </Tooltip>
+
+        {/* Starred Files */}
+        <Tooltip showArrow={false} content="Starred" placement="bottom" className="tooltip-container bg-gray-300 text-gray-700 font-bold text-xs py-1 px-2 rounded-lg" arrowSize={0}> 
+          <div className="icon-wrapper">
+            {starred ? (
+              <BsStarFill className="icon-fill" onClick={() => toggleStar(file)} />
+            ) : (
+              <BsStar className="icon-outline" onClick={() => toggleStar(file)} />
+            )}
+          </div>
+        </Tooltip>
+
+        {/* Download Files */}
+        <Tooltip showArrow={false} content="Download" placement="bottom" className="tooltip-container bg-gray-300 text-gray-700 font-bold text-xs py-1 px-2 rounded-lg" arrowSize={0}> 
+          <div>
+            <FaDownload className='hover:text-blue-600' onClick={downloadFile} /> 
+          </div>
+        </Tooltip>
       </div>
     </div>
   );
