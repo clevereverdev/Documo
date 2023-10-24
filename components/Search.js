@@ -8,23 +8,28 @@ import { LuScanFace } from "react-icons/Lu";
 import "../styles/Home.module.css";
 import { Tooltip } from "@nextui-org/react";
 
-const Search = () => {
+const Search = ({onSearch}) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const { authUser } = useAuth();
   const [inputValue, setInputValue] = useState('');
   const { signOut } = useAuth();
-  // State to indicate if there's a new feature/edit
   const [isNewFeature, setIsNewFeature] = useState(true); // This can be derived based on your actual data or API response
 
+  const [searchTerm, setSearchTerm] = useState('');
 
   const handleInputChange = (e) => {
-    setInputValue(e.target.value);
+    const newSearchTerm = e.target.value;
+    setSearchTerm(newSearchTerm);
+    onSearch(newSearchTerm); // Call the search callback with the new search term
   };
 
+
   const clearInput = () => {
-    setInputValue('');
+    setSearchTerm(''); // Clear the input field
+    onSearch(''); // Trigger a search with an empty string to reset the results
   };
+
   // List of avatar options
   const avatarOptions = [
     '/Default_avatar.png',
@@ -94,41 +99,33 @@ const Search = () => {
     setIsDropdownOpen(false);
   };
 
-  // const getTimeOfDay = () => {
-  //   const currentTime = new Date().getHours();
-  //   if (currentTime >= 5 && currentTime < 12) {
-  //     return 'Good Morning';
-  //   } else if (currentTime >= 12 && currentTime < 17) {
-  //     return 'Good Afternoon';
-  //   } else {
-  //     return 'Good Evening';
-  //   }
-  // };
-
-  const [searchTerm, setSearchTerm] = useState('');
-
   return (
     <div className="flex items-center">
       {/* Search */}
       <div className="relative">
         <BsSearch className="absolute text-white left-3 top-1/2 transform -translate-y-1/2" />
         <input
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
           className="pl-10 pr-10 py-2 w-[400px] h-[45px] rounded-3xl outline-none transition-colors bg-[#171717]"
           type="text"
           placeholder="What do you want to search?"
           style={{ fontSize: '14px' }}
+          value={searchTerm}
+          onChange={handleInputChange}
         />
-        {searchTerm && (
+         {searchTerm && (
           <BsX
             onClick={clearInput}
             className="absolute text-white right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-xl"
           />
         )}
+        
       </div>
 
-      
+      </div>
+  );
+};
+
+export default Search;
       {/* Notification */}
       
       {/* <Tooltip
@@ -263,10 +260,5 @@ const Search = () => {
         {/* )} */}
       {/* </div>
         </Tooltip> */}
-    </div>
-  );
-};
-
-export default Search;
 
 

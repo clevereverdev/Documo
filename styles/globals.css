@@ -212,3 +212,18 @@ body {
 }
 
 
+/* in your CSS file */
+.icon-wrapper {
+  display: inline-block;
+  color: silver; /* default color of your icon */
+}
+
+.icon-wrapper:hover .icon-outline {
+  color: #1E88E5; /* color of your icon on hover */
+}
+
+.icon-fill {
+  color: silver; /* fill color of your icon */
+}
+
+

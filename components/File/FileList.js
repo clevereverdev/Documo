@@ -5,27 +5,6 @@ import { app } from '../../firebase/firebase'
 import { ShowToastContext } from '../../context/ShowToastContext'
 
 function FileList({fileList}) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
-  const debounceTimeoutRef = useRef(null);
-
-  useEffect(() => {
-    // Clear the previous timeout if there is one
-    if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current);
-    }
-
-    // Set a new timeout
-    debounceTimeoutRef.current = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 300); // 300ms delay
-
-    return () => {
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
-      }
-    };
-  }, [searchTerm]);
 
   return (
     <div className='bg-[#171717] mx--1 my-5 p-5 rounded-2xl' style={{ height: '55vh', display: 'flex', flexDirection: 'column' }}> {/* Main container with a fixed height */}

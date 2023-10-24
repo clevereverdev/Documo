@@ -19,7 +19,7 @@ function UploadFileModal({ closeModal }) {
   const onFileUpload = async (file) => {
     if(file)
     {
-    if(file?.size>1000000)
+    if(file?.size>10000000)
     {
       setShowToastMsg("File is too large")
       return ;
