@@ -59,16 +59,14 @@ function FolderDetails() {
   const getFileList = async () => {
     setFileList([]);
     const q = query(collection(db, "files"),
-      where("parentFolderId", '==', 0),
+      where("parentFolderId", '==', id),
       where("createdBy", '==', authUser.email));
-
+  
     const querySnapshot = await getDocs(q);
     querySnapshot.forEach((doc) => {
-      // doc.data() is never undefined for query doc snapshots
-      // console.log(doc.id, " => ", doc.data());
       setFileList(fileList => ([...fileList, doc.data()]))
     });
-  }
+  };
   return (
     <Layout>
       <div className={styles.container}>
@@ -90,7 +88,8 @@ function FolderDetails() {
           isBig={false} /> :
           <h2 className='text-gray-400
         text-[16px] mt-5'>No Folder Found</h2>}
-        {/* <FileList fileList={fileList} /> */}
+         <FileList fileList={fileList} />
+        
         </div>
       <div className={styles.storage}
         style={{

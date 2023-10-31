@@ -1,7 +1,8 @@
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { RxDashboard, RxStar } from "react-icons/Rx";
-import { BsFileEarmarkPdf } from "react-icons/Bs";
+import { BsFileEarmarkPdf } from "react-icons/bs";
 import { LuTrash2 } from "react-icons/Lu";
 import { FiUsers, FiSettings } from "react-icons/Fi";
 import { TbLogout2, TbFolder } from "react-icons/Tb";
@@ -13,6 +14,8 @@ export default function Layout({ children }) {
   const router = useRouter();
   const { signOut } = useAuth();
   const { authUser } = useAuth(); // Assuming `useAuth` provides an `authUser` that is null when not authenticated
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
 
   const iconMapping = {
     'Dashboard': <RxDashboard className="icon-class text-xl" />,
@@ -41,7 +44,7 @@ export default function Layout({ children }) {
               <Link href="/">
                 <div className="flex items-center"> { /* Added 'a' tag for accessibility */}
                   <img src="/logo.png" alt="Your Alt Text" className="h-12 w-12" />
-                  <div className="ml-1 relative"> { /* Added a container for the text */}
+                  <div className="ml-1 relative mb-1"> { /* Added a container for the text */}
                     <span className="text-5xl bg-gray-300 inline-block text-transparent bg-clip-text font-Payton">D</span>
                     <span className="text-2xl bg-gray-300 inline-block text-transparent bg-clip-text font-Payton">ocomo</span>
                     <span className="absolute top-5 left-34 text-xs">©</span> { /* Adjusted positioning */}
@@ -75,7 +78,10 @@ export default function Layout({ children }) {
                   <BsFileEarmarkPdf className="text-2xl text-gray-600 group-hover:text-black transform scale-100 group-hover:scale-125 transition-transform duration-300" />
                   <span className='text-white'>Add File</span>
                 </div>
-                <div className="flex mb-2 justify-start items-center gap-4 pl-5 p-2 rounded-md bg-red-500 hover:bg-red-600 transition-colors duration-300 m-auto" onClick={() => document.getElementById('my_modal_3').showModal()}>
+                <div className="flex mb-2 justify-start items-center gap-4 pl-5 p-2 rounded-md bg-red-500 hover:bg-red-600 transition-colors duration-300 m-auto" onClick={() => {
+      console.log("Button clicked!");
+      setIsModalOpen(true);
+   }}>
                   <TbFolder className="text-2xl text-gray-600 group-hover:text-black transform scale-100 group-hover:scale-125 transition-transform duration-300" />
                   <span className='text-white'>Add Folder</span>
                 </div>
@@ -92,11 +98,8 @@ export default function Layout({ children }) {
         <main className='main-content flex-1 ml-[250px] bg-[#090909] rounded-l-2xl rounded-r-2xl border-5 m-3 overflow-y-hidden'>
           {children}
         </main>
-        <dialog id="my_modal_3" className="modal">
-          <div className="modal-box">
-            <CreateFolderModel />
-          </div>
-        </dialog>
+        
+        <CreateFolderModel isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
         <dialog id="upload_file" className="modal">
           <UploadFileModal
             closeModal={() => window.upload_file.close()} />
