@@ -5,12 +5,13 @@ import { deleteDoc, doc, getFirestore, updateDoc } from "firebase/firestore";
 import { app } from "../../firebase/firebase";
 import { ShowToastContext } from "../../context/ShowToastContext";
 import { BsFillTrashFill, BsFillPencilFill, BsStar, BsStarFill } from "react-icons/bs";
-import { FaDownload } from "react-icons/fa";
 import { Tooltip } from "@nextui-org/react";
 import defaultFileImage from '../../public/zip.png';
+import { FaDownload, FaLock } from "react-icons/fa";
 
 
-function FileItem({ file }) {
+
+function FileItem({ file, onFileImageClick }) {
 
   const db = getFirestore(app);
   const { showToastMsg, setShowToastMsg } = useContext(ShowToastContext);
@@ -31,12 +32,13 @@ function FileItem({ file }) {
   };
 
   // File name length
-  const truncateFileName = (name, length = 20) => {
+  const truncateFileName = (name, length = 18) => {
     if (name.length > length) {
       return `${name.substring(0, length)}...`;
     }
     return name;
   };
+  
 
   // New state for managing star status
   const [starred, setStarred] = useState(file.starred);
@@ -131,15 +133,19 @@ function FileItem({ file }) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-[2fr,1fr,1fr,1fr,1fr] gap-4 text-gray-400 items-center hover:bg-inherit rounded-xl bg-[#262626] m-2 p-2 py-3">
-      <div className="flex items-center gap-2">
-        <Image
-          src={displayImageSrc}          
-          alt={file.name}
-          width={35}
-          height={35}
-        />
-        <div>
-          {isRenaming ? (
+    <div className="flex items-center gap-2">
+    <div onClick={() => onFileImageClick(file)}>
+  <Image
+      src={displayImageSrc}          
+      alt={file.name}
+      width={35}
+      height={35}
+  />
+</div>
+      {/* Show lock icon if file is sensitive */}
+      {file.sensitive && <FaLock className="text-red-500 ml-2" />}
+      <div>
+        {isRenaming ?  (
             <input
               type="text"
               value={newName}
