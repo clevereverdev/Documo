@@ -34,6 +34,8 @@
 body {
   font-family: "Roboto", sans-serif;
   overflow: hidden;
+  background-color: #000000; /* Black */
+  
 }
 
 .layout {
@@ -219,11 +221,23 @@ body {
 }
 
 .icon-wrapper:hover .icon-outline {
-  color: #1E88E5; /* color of your icon on hover */
+  color: silver; /* color of your icon on hover */
 }
 
 .icon-fill {
-  color: silver; /* fill color of your icon */
+  color: #1ED760; /* fill color of your icon */
 }
 
+/* In your global.css or similar file */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+  20%, 40%, 60%, 80% { transform: translateX(10px); }
+}
+
+@layer utilities {
+  .shake {
+    animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+  }
+}
 

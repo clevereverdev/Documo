@@ -8,6 +8,19 @@ import { app } from "../../firebase/firebase";
 import { ShowToastContext } from '../../context/ShowToastContext';
 import { Tooltip } from "@nextui-org/react";
 import ImageModal from './ImageModal';
+import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, DropdownSection, cn } from "@nextui-org/react";
+import Starred from '../../pages/starred';
+import { useFileActions, useFileRename } from "../File/UseFileActions";
+import { BsStar, BsStarFill } from "react-icons/bs";
+
+// ICONS
+import FormatListNumberedOutlinedIcon from '@mui/icons-material/FormatListNumberedOutlined';
+import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
+import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined';
+import ArrowDropUpOutlinedIcon from '@mui/icons-material/ArrowDropUpOutlined';
+import ArrowDropDownOutlinedIcon from '@mui/icons-material/ArrowDropDownOutlined';
+
+
 
 
 function FileList({ fileList, file }) {
@@ -18,7 +31,23 @@ function FileList({ fileList, file }) {
   const [gridView, setGridView] = useState(false); // Add grid view state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentFile, setCurrentFile] = useState(null);
+  const { deleteFile, toggleStar, downloadFile, renameFile } = useFileActions();
+  const { isRenaming, newName, handleRenameClick, handleNameChange, handleKeyDown, handleRenameSubmit } = useFileRename(currentFile, renameFile);
+  const [starredFiles, setStarredFiles] = useState(new Set());
 
+  const handleToggleStar = async (file) => {
+    const currentStarredStatus = file.starred;
+    await toggleStar(file, currentStarredStatus);
+
+    // Update the sortedFiles state
+    const updatedFiles = sortedFiles.map(f => {
+      if (f.id === file.id) {
+        return { ...f, starred: !currentStarredStatus };
+      }
+      return f;
+    });
+    setSortedFiles(updatedFiles);
+  };
 
 
   const [isNewDropdownOpen, setIsNewDropdownOpen] = useState(false);
@@ -26,6 +55,15 @@ function FileList({ fileList, file }) {
   const { showToastMsg, setShowToastMsg } = useContext(ShowToastContext);
   const [isDropdownOpen, setIsDropdownOpen] = useState(Array(fileList.length).fill(false)); // Initialize with `false` values
   const [openDropdownIndex, setOpenDropdownIndex] = useState(null);
+
+  const iconClasses = "text-2xl text-default-500 pointer-events-none flex-shrink-0";
+
+  const handleFileActionClick = (selectedFile) => {
+    setCurrentFile(selectedFile);
+    handleRenameClick();  // Move the handleRenameClick here after setting currentFile
+  };
+
+
 
   const handleClose = () => {
     setIsDropdownOpen(false);
@@ -47,21 +85,6 @@ function FileList({ fileList, file }) {
     console.log("isDropdownOpen:", isDropdownOpen); // Add this line
     // Rest of your code
   }, [isDropdownOpen]);
-
-  // Delete File
-  const deleteFile = async (file) => {
-    try {
-      const fileRef = doc(db, "files", file.id.toString());
-      await deleteDoc(fileRef);
-
-      // Show a success message or perform any additional actions
-      setShowToastMsg('File Deleted!!!');
-    } catch (error) {
-      console.error("Error deleting file:", error);
-      // Handle any errors that may occur during the deletion process
-      // You can show an error message or perform other error handling actions here
-    }
-  };
 
   // Function to handle file image click
   const handleFileImageClick = (file) => {
@@ -153,7 +176,7 @@ function FileList({ fileList, file }) {
     setGridView(!gridView);
   };
   // File name length
-  const truncateFileName = (name, length = 15) => {
+  const truncateFileName = (name, length = 25) => {
     if (name.length > length) {
       return `${name.substring(0, length)}...`;
     }
@@ -168,42 +191,46 @@ function FileList({ fileList, file }) {
     }
   };
 
-
   function getFileTypeIcon(fileType) {
     // Define a dictionary of file types and their corresponding icon URLs
     const fileIcons = {
       'pdf': '/pdf.png',
-      // 'doc': '/path_to_icons/doc_icon.png',
-      // 'docx': '/path_to_icons/docx_icon.png',
-      // 'xls': '/path_to_icons/xls_icon.png',
-      // 'xlsx': '/path_to_icons/xlsx_icon.png',
       'png': '/png.png',
-      // 'jpg': '/path_to_icons/jpg_icon.png',
-      // 'jpeg': '/path_to_icons/jpeg_icon.png',
-      // 'txt': '/path_to_icons/txt_icon.png',
-      // ... Add more file types and their icons as needed
     };
 
     // Return the appropriate icon's URL or a default one if the file type is not recognized
     return fileIcons[fileType.toLowerCase()] || '/zip.png';
   }
 
+
   return (
-    <div className='bg-[#171717] mx--1 my-5 p-5 rounded-2xl h-[435px]'>
+    <div className='mx--1 my-5 p-5 rounded-2xl h-[435px]'>
       <div className='flex items-center justify-between'>
         <h2 className='text-[18px] font-Payton mb-4'>Recent Files</h2>
         <div className="flex items-center space-x-2">
           <Tooltip showArrow={false} content={gridView ? 'List View' : 'Grid View'} placement="bottom" className="tooltip-container bg-gray-300 text-gray-700 font-bold text-xs py-1 px-2 rounded-lg" arrowSize={0}>
             <button onClick={toggleGridView} style={{ outline: 'none' }}>
-              {gridView ? <AiOutlineBars className='text-2xl outline-none' /> : <AiOutlineAppstoreAdd className='text-2xl' />}
+              {gridView ? <FormatListNumberedOutlinedIcon className='text-2xl outline-none' /> : <GridViewOutlinedIcon className='text-2xl' />}
             </button>
           </Tooltip>
         </div>
       </div>
+      {isRenaming && currentFile && (
+        <div className="rename-input-container">
+          <input
+            type="text"
+            value={newName}
+            onChange={handleNameChange}
+            onKeyDown={handleKeyDown}
+            autoFocus
+          />
+        </div>
+      )}
+
       {gridView ? (
         <div className='grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4' style={{ maxHeight: 'calc(55vh - 60px)', overflowY: 'auto' }}>
-          {sortedFiles.map((item, index) => (
-            <div key={index} className='text-center relative bg-[#343434] rounded-lg w-[167px] h-[170px] hover:bg-gray-500'>
+          {sortedFiles && sortedFiles.map((item, index) => (
+            <div key={index} className='text-center relative bg-[#343434] rounded-lg w-[165px] h-[170px] hover:bg-gray-500'>
               <div className="file-container flex flex-col items-center justify-center p-3">
                 {/* File header section */}
                 <div className="file-header flex justify-between items-center w-full mb-2">
@@ -215,109 +242,121 @@ function FileList({ fileList, file }) {
                   <div className="file-name text-[10px] font-bold text-gray-300 text-center">
                     {truncateFileName(item.name)}
                   </div>
-                  {/* Info icon */}
+
+                  {/* Info Icon */}
                   <div className="relative ml-2">
-                    <Tooltip
-                      showArrow={false}
-                      content="Info"
-                      placement="top"
-                      className="tooltip-container bg-gray-300 text-gray-700 font-bold text-xs py-2 rounded-lg"
-                      arrowSize={0}
-                    >
-                      <button
-                        onClick={() => toggleDropdown(index)} // Pass the index of the file to toggle its dropdown
-                        className="flex items-center space-x-2 p-2 rounded-full focus:outline-none hover:bg-opacity-50 hover:bg-gray-600"
+                    <Dropdown>
+                      <DropdownTrigger>
+                        <button className="flex items-center space-x-2 p-2 rounded-full focus:outline-none hover:bg-opacity-50 hover:bg-gray-600">
+                          <AiOutlineInfoCircle className="text-gray-300 text-2xl" />
+                        </button>
+                      </DropdownTrigger>
+                      <DropdownMenu className='bg-black w-[180px] h-[225px] rounded-xl'>
+                        <DropdownSection title="Actions" className='text-lg font-semibold border-b border-gray-700 pb-2 font-Payton'> {/* Added border */}
+                          <DropdownItem
+                            className='hover:bg-slate-800 rounded-xl text-sm my-2 p-1'
+                            onClick={() => handleFileActionClick(item)}
 
-                      >
-                        <AiOutlineInfoCircle className="text-gray-300 text-2xl" />
-                      </button>
-                    </Tooltip>
-                    {isDropdownOpen[index] && (
-                      <div className="absolute mt-2 w-72 bg-gray-600 text-white rounded-lg shadow-lg" style={{
-                        zIndex: 9999,
-                        top: '100%',
-                        left: '10%',
-                        maxHeight: 'auto', // Allow the dropdown to expand to fit its content
+                            startContent={<BsFillPencilFill className={iconClasses} />}
+                          >
+                            Rename
+                          </DropdownItem>
 
-                      }}>
-                        <div className="flex justify-between items-center px-4 py-3 border-b border-gray-700">
-                          <span className="text-lg font-bold text-[#1ED760] font-Payton">Info</span>
-                          <button className="text-sm text-blue-400 font-semibold font-Payton" onClick={handleClose}>Close</button>
-                        </div>
-                        <div className="px-4 py-3 flex items-start">
-                          <BsFillTrashFill className="text-xl text-[#e2e8f0] mr-2 cursor-pointer" onClick={() => deleteFile(item)} />
-                          <div>
-                            <h3 className="text-[#e2e8f0] mb-2 text-md">Delete</h3>
-                          </div>
-                        </div>
-          
-                        <div className="px-4 py-3 flex items-start">
-                          <FaDownload className="text-xl text-[#e2e8f0] mr-2 cursor-pointer" onClick={() => downloadFile(item)} />
-                          <div>
-                            <h3 className="text-[#e2e8f0] mb-2 text-md">Download</h3>
-                          </div>
-                        </div>
-                      </div>
-                    )}
+
+                          <DropdownItem
+                            className='hover:bg-slate-800 rounded-xl text-sm my-2 p-1'
+                            onClick={() => handleToggleStar(item)}
+                            startContent={item.starred ? <BsStarFill className={iconClasses} /> : <BsStar className={iconClasses} />}
+                          >
+                            Starred
+                          </DropdownItem>
+
+
+                          <DropdownItem
+                            className='hover:bg-slate-800 rounded-xl text-sm my-2 p-1'
+                            onClick={() => downloadFile(item)}
+                            startContent={<FaDownload className={iconClasses} />}
+                          >
+                            Download
+                          </DropdownItem>
+                        </DropdownSection>
+                        <DropdownItem
+                          className="text-red-500 hover:bg-red-300 rounded-xl text-sm my-4 p-1 mt-1"
+                          onClick={() => deleteFile(item)}
+                          startContent={<DeleteOutlinedIcon className={cn(iconClasses, "text-red-500")} />}
+                        >
+                          Delete file
+                        </DropdownItem>
+                      </DropdownMenu>
+                    </Dropdown>
+
                   </div>
                 </div>
                 {/* Main file image */}
-                <img src={getFileImage(item.type, item.imageUrl)} alt={item.name} width={70} height={70} />
+                <img src={getFileImage(item.type, item.imageUrl)} alt={item.name} width={30} height={30} />
               </div>
             </div>
           ))}
         </div>
 
+
       ) : (
         <>
-          <div className='grid grid-cols-1 md:grid-cols-[2fr,1fr,1fr,1fr,1fr] gap-4 text-[13px] font-semibold border-b-[1px] pb-2 mt-3 border-gray-600 text-gray-400'>
+          <div className='grid grid-cols-1 md:grid-cols-[min-content,3fr,2fr,1fr,1fr,1fr,auto] gap-4 text-[13px] font-semibold border-b-[1px] pb-2 mt-3 border-gray-600 text-gray-400'>
+            <h2 className='ml-5 text-[15px]'>#</h2>
             <h2 className='ml-5' onClick={handleSortByName}>
               Name
               {sortColumn === 'name' && (
-                <span className={`ml-2 ${sortOrder === 'asc' ? 'animate-bounce-up' : 'animate-bounce-down'}`}>
-                  {sortOrder === 'asc' ? '↑' : '↓'}
+                <span className={`ml-2 ${sortOrder === 'asc' ? 'animate-bounce-up' : 'animate-bounce-down'} text-[#1ED760]`}>
+                  {sortOrder === 'asc' ? <ArrowDropUpOutlinedIcon /> : <ArrowDropDownOutlinedIcon />}
                 </span>
               )}
             </h2>
-            {/* Add similar click handlers for other columns */}
-            <h2 className='ml-1' onClick={handleSortByDateModified}>
+            <h2 className='ml-8' onClick={handleSortByDateModified}>
               Date Modified
               {sortColumn === 'dateModified' && (
-                <span className={`ml-2 ${sortOrder === 'asc' ? 'animate-bounce-up' : 'animate-bounce-down'}`}>
-                  {sortOrder === 'asc' ? '↑' : '↓'}
+                <span className={`ml-2 ${sortOrder === 'asc' ? 'animate-bounce-up' : 'animate-bounce-down'} text-[#1ED760]`}>
+                  {sortOrder === 'asc' ? <ArrowDropUpOutlinedIcon /> : <ArrowDropDownOutlinedIcon />}
                 </span>
               )}
             </h2>
             <h2 onClick={handleSortBySize}>
               Size
               {sortColumn === 'size' && (
-                <span className={`ml-2 ${sortOrder === 'asc' ? 'animate-bounce-up' : 'animate-bounce-down'}`}>
-                  {sortOrder === 'asc' ? '↑' : '↓'}
+                <span className={`ml-2 ${sortOrder === 'asc' ? 'animate-bounce-up' : 'animate-bounce-down'} text-[#1ED760]`}>
+                  {sortOrder === 'asc' ? <ArrowDropUpOutlinedIcon /> : <ArrowDropDownOutlinedIcon />}
                 </span>
               )}
             </h2>
             <h2 onClick={handleSortByKind}>
               Kind
               {sortColumn === 'kind' && (
-                <span className={`ml-2 ${sortOrder === 'asc' ? 'animate-bounce-up' : 'animate-bounce-down'}`}>
-                  {sortOrder === 'asc' ? '↑' : '↓'}
+                <span className={`ml-2 ${sortOrder === 'asc' ? 'animate-bounce-up' : 'animate-bounce-down'} text-[#1ED760]`}>
+                  {sortOrder === 'asc' ? <ArrowDropUpOutlinedIcon /> : <ArrowDropDownOutlinedIcon />}
                 </span>
               )}
             </h2>
-            <h2>Action</h2>
+            <h2>Actions</h2>
           </div>
           <div className='overflow-auto' style={{ flex: 1, maxHeight: 'calc(55vh - 100px)' }}>
-  {sortedFiles && sortedFiles.map((item, index) => (
-    <FileItem file={item} key={index} onFileImageClick={handleFileImageClick} />
-  ))}
-</div>
+            {sortedFiles && sortedFiles.map((item, index) => (
+              <FileItem
+                file={item}
+                index={index + 1} // Add 1 since index starts at 0
+                key={index}
+                onFileImageClick={handleFileImageClick}
+                onToggleStar={handleToggleStar}
+              />
+            ))}
+          </div>
+
           {isModalOpen && currentFile && (
-      <ImageModal
-        imageUrl={currentFile.imageUrl}
-        isSensitive={currentFile.sensitive}
-        onClose={handleCloseModal}
-      />
-    )}
+            <ImageModal
+              imageUrl={currentFile.imageUrl}
+              isSensitive={currentFile.sensitive}
+              onClose={handleCloseModal}
+            />
+          )}
         </>
       )}
     </div>

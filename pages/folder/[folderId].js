@@ -10,6 +10,8 @@ import { useAuth } from "../../firebase/auth";
 import FolderList from '../../components/Folder/FolderList';
 import { ShowToastContext } from '../../context/ShowToastContext';
 import FileList from '@/File/FileList';
+import { useNotifications } from '../../context/NotificationContext';
+
 
 
 function FolderDetails() {
@@ -23,6 +25,8 @@ function FolderDetails() {
 
   const [folderList, setFolderList] = useState([]);
   const [fileList, setFileList] = useState([]);
+  const { addNotification } = useNotifications();
+
   const db = getFirestore(app)
   useEffect(() => {
     setParentFolderId(id);
@@ -35,12 +39,18 @@ function FolderDetails() {
   }, [id, authUser, showToastMsg])
 
   const deleteFolder = async () => {
-    await deleteDoc(doc(db, "Folders", id)).then(resp => {
-      setShowToastMsg('Folder Deleted !')
-      router.back();
-    })
+    try {
+        await deleteDoc(doc(db, "Folders", id));
+        setShowToastMsg('Folder Deleted!');
+        addNotification('image', { src: './folder.png',message: 'Folder deleted successfully.' });
+        router.back();
+    } catch (error) {
+        console.error("Error deleting folder: ", error);
+        setShowToastMsg('Error deleting folder.');
+        addNotification('error', { message: 'Error deleting folder.' });
+    }
+};
 
-  }
 
   const getFolderList = async () => {
     setFolderList([]);
