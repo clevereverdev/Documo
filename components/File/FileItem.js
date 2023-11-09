@@ -1,27 +1,70 @@
 import moment from "moment";
-import Image from "next/image";
-import React, { useContext, useState } from "react";
-import { deleteDoc, doc, getFirestore, updateDoc } from "firebase/firestore";
+import React, { useContext, useState, useEffect, useRef } from "react";
+import { BsFillTrashFill, BsFillPencilFill, BsStarFill, BsStar } from 'react-icons/bs';
+import { FaDownload } from 'react-icons/fa';
+import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, DropdownSection, cn, Tooltip } from "@nextui-org/react";
+import { getFirestore } from "firebase/firestore";
 import { app } from "../../firebase/firebase";
 import { ShowToastContext } from "../../context/ShowToastContext";
-import { BsFillTrashFill, BsFillPencilFill, BsStar, BsStarFill } from "react-icons/bs";
-import { Tooltip } from "@nextui-org/react";
 import defaultFileImage from '../../public/zip.png';
-import { FaDownload, FaLock } from "react-icons/fa";
+import { useNotifications } from '../../context/NotificationContext';
+import { UserAvatarContext } from '../../context/UserAvatarContext';
+import Image from 'next/image';
+import { useFileActions, useFileRename } from "../File/UseFileActions";
+
+import LockIcon from '@mui/icons-material/Lock';
+import LockOpenIcon from '@mui/icons-material/LockOpen';
+
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import { useAuth } from "../../firebase/auth";
 
 
 
-function FileItem({ file, onFileImageClick }) {
+function FileItem({ file, onFileImageClick, onToggleStar, index, isTrashItem, onRestore, onDeleteForever }) {
 
   const db = getFirestore(app);
+  const { authUser } = useAuth(); // Get the authenticated user
   const { showToastMsg, setShowToastMsg } = useContext(ShowToastContext);
+  const { addNotification } = useNotifications();
+  const { deleteFile, toggleStar, downloadFile, renameFile, lockFile, unlockFile } = useFileActions();
+  const { isRenaming, newName, handleRenameClick, handleNameChange, handleKeyDown, handleRenameSubmit } = useFileRename(file, renameFile);
+  const [starred, setStarred] = useState(file.starred);
 
-  // Delete File
-  const deleteFile = async (file) => {
-    await deleteDoc(doc(db, "files", file.id.toString())).then(resp => {
-      setShowToastMsg('File Deleted!!!');
-    });
+  const { userAvatar } = useContext(UserAvatarContext);
+  const changeAvatar = (newAvatar) => {
+    localStorage.setItem('userAvatar', newAvatar); // Save to localStorage
+    setUserAvatar(newAvatar); // Update state
   };
+  console.log('Image:', userAvatar);
+
+  const [key, setKey] = useState(0); // Added state to force re-render
+
+  const [currentFile, setCurrentFile] = useState(null);
+
+
+  // Whenever the userAvatar changes, we change the key to force re-render
+  useEffect(() => {
+    setKey(prevKey => prevKey + 1);
+  }, [userAvatar]);
+
+
+
+  const handleToggleStar = async () => {
+    if (onToggleStar) {
+      await onToggleStar(file);
+      setStarred(!starred);
+    }
+  };
+
+  const handleFileActionClick = (selectedFile) => {
+    setCurrentFile(selectedFile);
+    handleRenameClick();  // Move the handleRenameClick here after setting currentFile
+  };
+
+
+
+
+
 
   // Format File Size
   const formatFileSize = (size) => {
@@ -32,83 +75,11 @@ function FileItem({ file, onFileImageClick }) {
   };
 
   // File name length
-  const truncateFileName = (name, length = 18) => {
+  const truncateFileName = (name, length = 25) => {
     if (name.length > length) {
       return `${name.substring(0, length)}...`;
     }
     return name;
-  };
-  
-
-  // New state for managing star status
-  const [starred, setStarred] = useState(file.starred);
-
-  // Toggle Star status
-  const toggleStar = async (file) => {
-    const newStarStatus = !starred;
-    setStarred(newStarStatus);
-
-    // Update the 'starred' field in Firestore
-    const fileRef = doc(db, "files", file.id.toString());
-    await updateDoc(fileRef, {
-      starred: newStarStatus,
-    });
-  };
-
-  // Function to handle file download
-  const downloadFile = () => {
-    // Create a temporary virtual link
-    const link = document.createElement("a");
-    link.href = file.imageUrl;  // Set the download URL
-
-    // Set the file name. You might want to retrieve this from your file object
-    link.download = file.name || "download";
-
-    // Simulate clicking the link. This will initiate the download
-    document.body.appendChild(link);
-    link.click();
-
-    // Clean up after the download
-    document.body.removeChild(link);
-  };
-
-  // State to handle renaming
-  const [isRenaming, setIsRenaming] = useState(false);
-  const [newName, setNewName] = useState(file.name);
-
-  // Function to start the renaming process
-  const handleRenameClick = () => {
-    setIsRenaming(true); // Show the input field for renaming
-  };
-
-  // Function to handle name change
-  const handleNameChange = (event) => {
-    setNewName(event.target.value);
-  };
-
-  // Function to handle the "Enter" key in the input field
-  const handleKeyDown = (event) => {
-    if (event.key === 'Enter') {
-      handleRenameSubmit();
-    }
-  };
-
-  // Function to handle the renaming submission
-  const handleRenameSubmit = async () => {
-    if (newName.trim() === '') {
-      // Prevent blank names
-      setShowToastMsg('Name cannot be blank!');
-      return;
-    }
-
-    // Update the 'name' field in Firestore
-    const fileRef = doc(db, "files", file.id.toString());
-    await updateDoc(fileRef, {
-      name: newName
-    });
-
-    setIsRenaming(false); // Exit renaming mode after submission
-    setShowToastMsg('File renamed successfully!');
   };
 
   // Map file extensions to corresponding images
@@ -127,80 +98,176 @@ function FileItem({ file, onFileImageClick }) {
   const fileExtension = file.name.toLowerCase().split('.').pop();
   const imageSrc = getFileImage(fileExtension);
   const displayImageSrc = ['pdf', 'zip'].includes(fileExtension)
-  ? imageSrc
-  : file.imageUrl;
-  
+    ? imageSrc
+    : file.imageUrl;
+
+
+  function getTimeLeft(deletedAt) {
+    const deletedAtDate = new Date(deletedAt.seconds * 1000);
+    // Add 30 days to deletedAtDate
+    deletedAtDate.setDate(deletedAtDate.getDate() + 30);
+
+    // Current date and time
+    const now = new Date();
+
+    // Check if the current date and time have passed the deletedAtDate
+    if (now > deletedAtDate) {
+      return "File deleted";
+    } else {
+      // Calculate the difference in milliseconds
+      const timeDiff = deletedAtDate - now;
+
+      // Convert milliseconds to days
+      const daysLeft = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+      const hoursLeft = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutesLeft = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+
+
+
+      if (daysLeft > 1) {
+        return `${daysLeft} days left`;
+      } else if (hoursLeft > 0) {
+        return `${hoursLeft} hours left`;
+      } else if (minutesLeft > 0) {
+        return `${minutesLeft} minutes left`;
+      } else {
+        return `Less than a minute left`;
+      }
+    }
+  }
+
+  // Conditional rendering logic
+  let actionButtons;
+  if (isTrashItem) {
+    actionButtons = (
+      <div className="file-actions">
+        <button className='bg-green-500 p-2 text-white rounded-lg mx-2 ' onClick={() => onRestore(file)}>Restore</button>
+        <button className='bg-red-500 p-2 text-white rounded-lg' onClick={() => onDeleteForever(file)}>Delete Forever</button>
+        <span className='text-blue-400 font-bold mx-2'>{getTimeLeft(file.deletedAt)}</span>
+      </div>
+    );
+  } else {
+    actionButtons = (
+      <div className="file-actions group flex items-center justify-between">
+        <div className="flex gap-2 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <Tooltip
+            showArrow={false}
+            content="Starred"
+            placement="bottom"
+            className="tooltip-container bg-gray-300 text-gray-700 font-bold text-xs py-1 px-2 rounded-lg"
+            arrowSize={0}
+          >
+            <div className="icon-wrapper p-3">
+              {starred ? (
+                <BsStarFill className="icon-fill" onClick={handleToggleStar} />
+              ) : (
+                <BsStar className="icon-outline" onClick={handleToggleStar} />
+              )}
+            </div>
+          </Tooltip>
+        </div>
+        <Image src={userAvatar} width={30} height={30} alt="User Avatar" className="self-center ml-auto" />
+        <div className="flex gap-2 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <Dropdown>
+            <DropdownTrigger>
+              <button className="flex items-center space-x-2 p-2 rounded-full focus:outline-none hover:bg-opacity-50 hover:bg-gray-600">
+                <MoreHorizIcon className="text-gray-300 text-2xl" />
+              </button>
+            </DropdownTrigger>
+            <DropdownMenu className='bg-black w-[180px] h-[225px] rounded-xl'>
+              <DropdownSection title="Actions" className='text-lg font-semibold border-b border-gray-700 pb-2 font-Payton'>
+                <DropdownItem
+                  className='hover:bg-slate-800 rounded-xl text-sm my-2 p-1'
+                  onClick={() => handleFileActionClick(file)} // Only set isRenaming to true here
+                >
+                  Rename
+                </DropdownItem>
+                <DropdownItem
+                  className='hover:bg-slate-800 rounded-xl text-sm my-2 p-1'
+                  onClick={() => downloadFile(file)} // Ensure this is a function reference
+                >
+                  Download
+                </DropdownItem>
+                {file.sensitive ? (
+                  <DropdownItem
+                    className='hover:bg-slate-800 rounded-xl text-sm my-2 p-1'
+                    onClick={() => unlockFile(file)}
+                  >
+                    <LockOpenIcon className="mr-2" /> Unlock
+                  </DropdownItem>
+                ) : (
+                  <DropdownItem
+                    className='hover:bg-slate-800 rounded-xl text-sm my-2 p-1'
+                    onClick={() => lockFile(file)}
+                  >
+                    <LockIcon className="mr-2" /> Lock
+                  </DropdownItem>
+                )}
+              </DropdownSection>
+              <DropdownItem
+                className="text-red-500 hover:bg-red-300 rounded-xl text-sm my-4 p-1 mt-1"
+                onClick={() => deleteFile(file)}
+              >
+                Delete file
+              </DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
+        </div>
+      </div>
+    );
+  }
+
+
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[2fr,1fr,1fr,1fr,1fr] gap-4 text-gray-400 items-center hover:bg-inherit rounded-xl bg-[#262626] m-2 p-2 py-3">
-    <div className="flex items-center gap-2">
-    <div onClick={() => onFileImageClick(file)}>
-  <Image
-      src={displayImageSrc}          
-      alt={file.name}
-      width={35}
-      height={35}
-  />
-</div>
-      {/* Show lock icon if file is sensitive */}
-      {file.sensitive && <FaLock className="text-red-500 ml-2" />}
-      <div>
-        {isRenaming ?  (
+    <div className="grid grid-cols-1 md:grid-cols-[min-content,3fr,1.5fr,1fr,1fr,auto] gap-4 text-gray-400 items-center m-2 p-3 py-3 hover:bg-[#2a2929] rounded-md group">
+      <div>{index}</div> {/* Display the index here */}
+      <div className="flex items-center gap-2">
+        <div className="flex justify-center items-center bg-inherit w-8 h-8" onClick={() => onFileImageClick(file)}>
+          <Image
+            src={displayImageSrc}
+            alt={file.name}
+            width={35}
+            height={35}
+          />
+        </div>
+        <div>
+          {isRenaming ? (
             <input
               type="text"
               value={newName}
               onChange={handleNameChange}
               onKeyDown={handleKeyDown}
-              onBlur={handleRenameSubmit}
               autoFocus
               style={{
-                padding: "0.2rem", // Adjust padding as needed
-                paddingLeft: "0.4rem", // Adjust left padding to hide the first letter
+                padding: "0.2rem",
+                paddingLeft: "0.4rem",
               }}
             />
           ) : (
-            <span onDoubleClick={handleRenameClick}>
-              {truncateFileName(file.name)}
+            <span onDoubleClick={handleRenameClick} className="flex flex-col">
+              <span className="truncate text-sm text-gray-300">{file.name}</span>
+              <div className='flex'>
+                {file.sensitive && (
+                  <>
+                    <LockIcon style={{ fontSize: '12', paddingTop: '1px', color: '#1ED760' }} />
+                    <button className="flex justify-center items-center text-white text-[7.5px] cursor-default bg-gray-600 p-1 w-3 h-3 rounded-sm">S</button>
+                    <span className='text-xs ml-1'>locked</span>
+                  </>
+                )}
+              </div>
             </span>
           )}
         </div>
       </div>
-      <div>{moment(file.modifiedAt).format("MMM DD, YYYY")}</div>
-      <div>{formatFileSize(file.size)}</div>
-      <div className="ml-1">{file.type || "Unknown"}</div>
+      <div className="ml-5 text-sm">{moment(file.modifiedAt).format("MMM DD, YYYY")}</div>
+      <div className="text-sm">{formatFileSize(file.size)}</div>
+      <div className="ml-4 text-sm">{file.type || "Unknown"}</div>
       <div className="flex gap-2 cursor-pointer">
 
-        {/* Delete Files */}
-        <Tooltip showArrow={false} content="Delete" placement="bottom" className="tooltip-container bg-gray-300 text-gray-700 font-bold text-xs py-1 px-2 rounded-lg" arrowSize={0}> 
-          <div>
-            <BsFillTrashFill className='hover:text-blue-600' onClick={() => deleteFile(file)} />
-          </div>
-        </Tooltip>
-
-        {/* Rename Files */}
-        <Tooltip showArrow={false} content="Rename" placement="bottom" className="tooltip-container bg-gray-300 text-gray-700 font-bold text-xs py-1 px-2 rounded-lg" arrowSize={0}> 
-          <div>
-            <BsFillPencilFill className='hover:text-blue-600' onClick={handleRenameClick} />
-          </div>
-        </Tooltip>
-
-        {/* Starred Files */}
-        <Tooltip showArrow={false} content="Starred" placement="bottom" className="tooltip-container bg-gray-300 text-gray-700 font-bold text-xs py-1 px-2 rounded-lg" arrowSize={0}> 
-          <div className="icon-wrapper">
-            {starred ? (
-              <BsStarFill className="icon-fill" onClick={() => toggleStar(file)} />
-            ) : (
-              <BsStar className="icon-outline" onClick={() => toggleStar(file)} />
-            )}
-          </div>
-        </Tooltip>
-
-        {/* Download Files */}
-        <Tooltip showArrow={false} content="Download" placement="bottom" className="tooltip-container bg-gray-300 text-gray-700 font-bold text-xs py-1 px-2 rounded-lg" arrowSize={0}> 
-          <div>
-            <FaDownload className='hover:text-blue-600' onClick={downloadFile} /> 
-          </div>
-        </Tooltip>
+        {/* <div className="flex gap-2 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-200"> */}
+        {actionButtons}
+        {/* </div> */}
       </div>
     </div>
   );

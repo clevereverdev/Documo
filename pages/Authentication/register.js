@@ -31,6 +31,22 @@ const RegisterForm = () => {
     }, [authUser, isLoading]);
     // Initialize Firestore
 
+    const sendEmailNotification = async (emailDetails) => {
+        try {
+          const response = await fetch('/api/send-email', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(emailDetails),
+          });
+          const data = await response.json();
+          console.log(data.message);
+        } catch (error) {
+          console.error('Error:', error);
+        }
+      };
+    
     const signupHandler = async () => {
         if (!email || !username || !password) return;
 
@@ -85,6 +101,15 @@ const RegisterForm = () => {
             });
 
             // Redirect or perform some other actions
+
+            // Send welcome email
+            const welcomeEmailDetails = {
+            to: email,
+            subject: 'Welcome to Docomo!',
+            text: `Welcome "${username}", Thank you for registering with us. We are excited to have you on board and look forward to helping you manage your digital life effectively`
+            };
+
+        await sendEmailNotification(welcomeEmailDetails);
 
         } catch (error) {
             console.error("Error during signup:", error);

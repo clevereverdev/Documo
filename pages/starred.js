@@ -8,6 +8,16 @@ import SearchBar from "@/Search";
 export default function Starred() {
   const [starredFiles, setStarredFiles] = useState([]);
   const [filteredStarredFiles, setFilteredStarredFiles] = useState([]); // Filtered starred files
+  const [searchHistory, setSearchHistory] = useState([]);
+
+  useEffect(() => {
+    // Since useEffect runs on the client-side, localStorage will be defined here
+    const savedHistory = localStorage.getItem('starredSearchHistory');
+    const parsedHistory = savedHistory ? JSON.parse(savedHistory) : [];
+    setSearchHistory(parsedHistory);
+  }, []);
+
+
   const db = getFirestore(app);
 
   useEffect(() => {
@@ -38,7 +48,18 @@ export default function Starred() {
       );
       setFilteredStarredFiles(filteredFiles);
     }
+    // Update search history if the term is not already in the history
+    if (searchTerm && !searchHistory.includes(searchTerm)) {
+      const newHistory = [searchTerm, ...searchHistory].slice(0, 5);
+      updateSearchHistory(newHistory);
+    }
   };
+
+  const updateSearchHistory = (newHistory) => {
+    setSearchHistory(newHistory);
+    localStorage.setItem('starredSearchHistory', JSON.stringify(newHistory));
+  };
+  
   return (
     <Layout>
     <div className="m-5">
@@ -50,7 +71,8 @@ export default function Starred() {
         style={{ minHeight: '500px' }} // Set a minimum height here
       >
         <h2 className='text-[18px] font-Payton mb-4'>Starred Files</h2>
-        <div className='grid grid-cols-1 md:grid-cols-[2fr,1fr,1fr,1fr,1fr] gap-4 text-[13px] font-semibold border-b-[1px] pb-2 mt-3 border-gray-600 text-gray-400'>
+        <div className='grid grid-cols-1 md:grid-cols-[min-content,3fr,2fr,1fr,1fr,1fr,auto] gap-4 text-[13px] font-semibold border-b-[1px] pb-2 mt-3 border-gray-600 text-gray-400'>
+          <h2>#</h2>
           <h2 className='ml-5'>Name</h2>
           <h2>Date Modified</h2>
           <h2>Size</h2>
@@ -58,8 +80,8 @@ export default function Starred() {
           <h2>Action</h2>
         </div>
         {filteredStarredFiles.length ? ( 
-          filteredStarredFiles.map((file) => (
-            <FileItem key={file.id} file={file} />
+          filteredStarredFiles.map((file, index) => (
+            <FileItem key={file.id} file={file} index={index + 1} />
           ))
         ) : (
           <div className='flex flex-col items-center justify-center text-gray-400 mt-10' style={{ height: '100%' }}>

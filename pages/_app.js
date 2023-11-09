@@ -6,25 +6,32 @@ import { ToastContainer } from 'react-toastify';
 import Toast from '../components/Toast';
 import { ShowToastContext } from 'context/ShowToastContext';
 import { ParentFolderIdContext } from "context/ParentFolderIdContext";
+import { NotificationProvider } from '../context/NotificationContext';
+import { UserAvatarProvider } from '../context/UserAvatarContext';
+
 
 export default function App({ Component, pageProps }) {
   const [showToastMsg, setShowToastMsg] = useState();
   const [parentFolderId, setParentFolderId] = useState();
 
   return (
-    <>
-      <Head>
-        <title>Docomo - Web File Manager</title>
-      </Head>
-      <AuthUserProvider>
-        <ParentFolderIdContext.Provider value={{parentFolderId, setParentFolderId}}>
-          <ShowToastContext.Provider value={{ showToastMsg, setShowToastMsg }}>
-            <ToastContainer />
-            <Component {...pageProps} />
-            {showToastMsg ? <Toast msg={showToastMsg} /> : null}
-          </ShowToastContext.Provider>
-        </ParentFolderIdContext.Provider>
-      </AuthUserProvider>
-    </>
+      <>
+          <Head>
+              <title>Docomo - Web File Manager</title>
+          </Head>
+          <AuthUserProvider>
+              <ParentFolderIdContext.Provider value={{parentFolderId, setParentFolderId}}>
+                  <ShowToastContext.Provider value={{ showToastMsg, setShowToastMsg }}>
+                      <NotificationProvider>
+                        <UserAvatarProvider>
+                          <ToastContainer />
+                          <Component {...pageProps} />
+                          {showToastMsg ? <Toast msg={showToastMsg} /> : null}
+                        </UserAvatarProvider>
+                      </NotificationProvider>
+                  </ShowToastContext.Provider>
+              </ParentFolderIdContext.Provider>
+          </AuthUserProvider>
+      </>
   );
 }
