@@ -1,20 +1,18 @@
 import React, { useState } from "react";
 
-function ImageModal({ imageUrl, isSensitive, onClose }) {
-    const [password, setPassword] = useState("");
-    const [isVerified, setIsVerified] = useState(false);
-  
-    const handlePasswordSubmit = () => {
-      // Here, you would check the entered password against the password stored for the file
-      // If they match, set isVerified to true
-      // For this example, I'm just checking if the password is '1234'
-      if (password === "1234") {
-        setIsVerified(true);
-      } else {
-        alert("Wrong password!");
-      }
-    };
-  
+function ImageModal({ imageUrl, isSensitive, onClose, filePassword }) {
+  const [password, setPassword] = useState("");
+  const [isVerified, setIsVerified] = useState(false);
+
+  const handlePasswordSubmit = () => {
+    if (isSensitive && password === filePassword) { // Now filePassword is defined and should work
+      setIsVerified(true);
+    } else {
+      alert("Incorrect password!");
+      setPassword(""); // Clear the password input for security
+    }
+  };
+    
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
         <div className="relative bg-white p-4">
@@ -41,3 +39,29 @@ function ImageModal({ imageUrl, isSensitive, onClose }) {
     );
   }
   export default ImageModal;
+
+
+  // const handleUnlock = async () => {
+  //   const enteredPassword = prompt("Enter password to unlock:");
+  //   if (enteredPassword === file.password) {
+  //     try {
+  //       // Make sure file.id is a string, as Firestore expects a string path
+  //       const fileRef = doc(db, "files", file.id.toString());
+  //       await updateDoc(fileRef, {
+  //         password: null,
+  //         sensitive: false
+  //       });
+  //       setShowToastMsg("File unlocked successfully.");
+  
+  //       // Update the local state to reflect the unlocked status
+  //       // Assuming `setSortedFiles` or similar function is available to update the file list
+  //       setSortedFiles(prevFiles => prevFiles.map(f => f.id === file.id ? { ...f, password: null, sensitive: false } : f));
+  
+  //     } catch (error) {
+  //       console.error("Error unlocking file:", error);
+  //       setShowToastMsg("Failed to unlock file.");
+  //     }
+  //   } else {
+  //     alert("Incorrect password!");
+  //   }
+  // };

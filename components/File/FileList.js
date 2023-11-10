@@ -35,6 +35,7 @@ function FileList({ fileList, file }) {
   const { isRenaming, newName, handleRenameClick, handleNameChange, handleKeyDown, handleRenameSubmit } = useFileRename(currentFile, renameFile);
   const [starredFiles, setStarredFiles] = useState(new Set());
 
+
   const handleToggleStar = async (file) => {
     const currentStarredStatus = file.starred;
     await toggleStar(file, currentStarredStatus);
@@ -86,9 +87,8 @@ function FileList({ fileList, file }) {
     // Rest of your code
   }, [isDropdownOpen]);
 
-  // Function to handle file image click
   const handleFileImageClick = (file) => {
-    setCurrentFile(file);
+    setCurrentFile(file); // Here, ensure the currentFile includes the password
     setIsModalOpen(true);
   };
 
@@ -351,12 +351,13 @@ function FileList({ fileList, file }) {
           </div>
 
           {isModalOpen && currentFile && (
-            <ImageModal
-              imageUrl={currentFile.imageUrl}
-              isSensitive={currentFile.sensitive}
-              onClose={handleCloseModal}
-            />
-          )}
+  <ImageModal
+    imageUrl={currentFile.imageUrl}
+    isSensitive={currentFile.sensitive}
+    filePassword={currentFile.password} // This should match the name of the prop expected by ImageModal
+    onClose={handleCloseModal}
+  />
+)}
         </>
       )}
     </div>

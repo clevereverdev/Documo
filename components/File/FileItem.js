@@ -3,7 +3,7 @@ import React, { useContext, useState, useEffect, useRef } from "react";
 import { BsFillTrashFill, BsFillPencilFill, BsStarFill, BsStar } from 'react-icons/bs';
 import { FaDownload } from 'react-icons/fa';
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, DropdownSection, cn, Tooltip } from "@nextui-org/react";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, doc, updateDoc } from "firebase/firestore";
 import { app } from "../../firebase/firebase";
 import { ShowToastContext } from "../../context/ShowToastContext";
 import defaultFileImage from '../../public/zip.png';
@@ -12,11 +12,46 @@ import { UserAvatarContext } from '../../context/UserAvatarContext';
 import Image from 'next/image';
 import { useFileActions, useFileRename } from "../File/UseFileActions";
 
+
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { useAuth } from "../../firebase/auth";
+
+
+function ResetModal({ show, onClose, onResetSubmit }) {
+  const [enteredCode, setEnteredCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+
+  if (!show) return null;
+
+  return (
+    <div className="modal-backdrop">
+      <div className="modal-content">
+        <h2>Reset Password</h2>
+        <input
+          type="text"
+          placeholder="Enter the 6-digit code"
+          value={enteredCode}
+          onChange={(e) => setEnteredCode(e.target.value)}
+          className='text-white'
+        />
+        <input
+          type="password"
+          placeholder="Enter your new password"
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
+          className='text-white'
+        />
+        <button className='bg-white text-black' onClick={() => onResetSubmit(enteredCode, newPassword)}>Submit</button>
+        <button className='bg-white text-black' onClick={onClose}>Cancel</button>
+      </div>
+    </div>
+  );
+}
+
+
 
 
 
@@ -30,15 +65,18 @@ function FileItem({ file, onFileImageClick, onToggleStar, index, isTrashItem, on
   const { isRenaming, newName, handleRenameClick, handleNameChange, handleKeyDown, handleRenameSubmit } = useFileRename(file, renameFile);
   const [starred, setStarred] = useState(file.starred);
 
+
   const { userAvatar } = useContext(UserAvatarContext);
   const changeAvatar = (newAvatar) => {
-    localStorage.setItem('userAvatar', newAvatar); // Save to localStorage
+    localStorage.setItem('userAvatar', newAvatar);
     setUserAvatar(newAvatar); // Update state
   };
-  console.log('Image:', userAvatar);
+
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [resetCode, setResetCode] = useState(null);
+
 
   const [key, setKey] = useState(0); // Added state to force re-render
-
   const [currentFile, setCurrentFile] = useState(null);
 
 
@@ -62,6 +100,120 @@ function FileItem({ file, onFileImageClick, onToggleStar, index, isTrashItem, on
   };
 
 
+  // Function to handle the lock action
+  const handleLock = async () => {
+    // Prompt the user to set a password if it doesn't exist
+    if (!file.password) {
+      const password = prompt("Set a password for this file:");
+      if (password) {
+        try {
+          // Save the password to the database
+          const fileRef = doc(db, "files", file.id.toString());
+          await updateDoc(fileRef, {
+            password: password,
+            sensitive: true // Mark the file as sensitive
+          });
+          setShowToastMsg("File locked successfully.");
+          // Here you can update the local state to reflect the locked status
+        } catch (error) {
+          console.error("Error locking file:", error);
+          setShowToastMsg("Failed to lock file.");
+        }
+      }
+    } else {
+      setShowToastMsg("File is already locked.");
+    }
+  };
+
+  const sendEmailNotification = async (emailDetails) => {
+    try {
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(emailDetails),
+      });
+      const data = await response.json();
+      console.log(data.message);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  const sendResetCodeByEmail = async (email, resetCode) => {
+    const emailDetails = {
+      to: email,
+      subject: 'Your Password Reset Code',
+      text: `Your password reset code is: ${resetCode}. This code will expire in 10 minutes.`
+    };
+
+    try {
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(emailDetails),
+      });
+      const data = await response.json();
+      console.log(data.message);
+      return data.success; // Assuming your API returns a success status
+    } catch (error) {
+      console.error('Error:', error);
+      return false; // Indicate failure
+    }
+  };
+
+  const handleUnlock = async () => {
+    const enteredPassword = prompt("Enter password to unlock or type 'reset' to reset your password:");
+
+    if (enteredPassword === 'reset') {
+      // Generate and send reset code via email
+      const generatedResetCode = Math.floor(100000 + Math.random() * 900000).toString();
+      setResetCode(generatedResetCode); // Save the generated code in the state
+      const emailSent = await sendResetCodeByEmail(authUser.email, generatedResetCode);
+      if (emailSent) {
+        setShowResetModal(true); // Show the reset modal
+      } else {
+        setShowToastMsg("Failed to send reset code. Please try again later.");
+      }
+    } else if (enteredPassword === file.password) {
+      try {
+        // Make sure file.id is a string, as Firestore expects a string path
+        const fileRef = doc(db, "files", file.id.toString());
+        await updateDoc(fileRef, {
+          password: null,
+          sensitive: false
+        });
+        console.log("File password is:", file.password);
+
+        // Provide feedback to the user
+        setShowToastMsg("File unlocked successfully.");
+
+        // Refresh the file list or update state/context to reflect the change
+      } catch (error) {
+        console.error("Error unlocking file:", error);
+        setShowToastMsg("Failed to unlock file.");
+      }
+    } else {
+      alert("Incorrect password!");
+    }
+  };
+  const handleResetSubmit = async (enteredCode, newPassword) => {
+    if (enteredCode === resetCode) {
+      // Update the password in Firestore
+      const fileRef = doc(db, "files", file.id.toString());
+      await updateDoc(fileRef, {
+        password: newPassword,
+      });
+      setShowToastMsg("Password has been reset successfully.");
+      setShowResetModal(false); // Close the modal
+      setResetCode(null); // Clear the stored reset code
+    } else {
+      setShowToastMsg("Incorrect code entered.");
+    }
+  };
 
 
 
@@ -184,21 +336,21 @@ function FileItem({ file, onFileImageClick, onToggleStar, index, isTrashItem, on
                 </DropdownItem>
                 <DropdownItem
                   className='hover:bg-slate-800 rounded-xl text-sm my-2 p-1'
-                  onClick={() => downloadFile(file)} // Ensure this is a function reference
+                  onClick={() => downloadFile(file)}
                 >
                   Download
                 </DropdownItem>
                 {file.sensitive ? (
                   <DropdownItem
                     className='hover:bg-slate-800 rounded-xl text-sm my-2 p-1'
-                    onClick={() => unlockFile(file)}
+                    onClick={handleUnlock}
                   >
                     <LockOpenIcon className="mr-2" /> Unlock
                   </DropdownItem>
                 ) : (
                   <DropdownItem
                     className='hover:bg-slate-800 rounded-xl text-sm my-2 p-1'
-                    onClick={() => lockFile(file)}
+                    onClick={handleLock}
                   >
                     <LockIcon className="mr-2" /> Lock
                   </DropdownItem>
@@ -220,57 +372,65 @@ function FileItem({ file, onFileImageClick, onToggleStar, index, isTrashItem, on
 
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[min-content,3fr,1.5fr,1fr,1fr,auto] gap-4 text-gray-400 items-center m-2 p-3 py-3 hover:bg-[#2a2929] rounded-md group">
-      <div>{index}</div> {/* Display the index here */}
-      <div className="flex items-center gap-2">
-        <div className="flex justify-center items-center bg-inherit w-8 h-8" onClick={() => onFileImageClick(file)}>
-          <Image
-            src={displayImageSrc}
-            alt={file.name}
-            width={35}
-            height={35}
-          />
-        </div>
-        <div>
-          {isRenaming ? (
-            <input
-              type="text"
-              value={newName}
-              onChange={handleNameChange}
-              onKeyDown={handleKeyDown}
-              autoFocus
-              style={{
-                padding: "0.2rem",
-                paddingLeft: "0.4rem",
-              }}
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-[min-content,3fr,1.5fr,1fr,1fr,auto] gap-4 text-gray-400 items-center m-2 p-3 py-3 hover:bg-[#2a2929] rounded-md group">
+        <div>{index}</div> {/* Display the index here */}
+        <div className="flex items-center gap-2">
+          <div className="flex justify-center items-center bg-inherit w-8 h-8" onClick={() => onFileImageClick(file)}>
+            <Image
+              src={displayImageSrc}
+              alt={file.name}
+              width={35}
+              height={35}
             />
-          ) : (
-            <span onDoubleClick={handleRenameClick} className="flex flex-col">
-              <span className="truncate text-sm text-gray-300">{file.name}</span>
-              <div className='flex'>
-                {file.sensitive && (
-                  <>
-                    <LockIcon style={{ fontSize: '12', paddingTop: '1px', color: '#1ED760' }} />
-                    <button className="flex justify-center items-center text-white text-[7.5px] cursor-default bg-gray-600 p-1 w-3 h-3 rounded-sm">S</button>
-                    <span className='text-xs ml-1'>locked</span>
-                  </>
-                )}
-              </div>
-            </span>
-          )}
+          </div>
+          <div>
+            {isRenaming ? (
+              <input
+                type="text"
+                value={newName}
+                onChange={handleNameChange}
+                onKeyDown={handleKeyDown}
+                autoFocus
+                style={{
+                  padding: "0.2rem",
+                  paddingLeft: "0.4rem",
+                }}
+              />
+            ) : (
+              <span onDoubleClick={handleRenameClick} className="flex flex-col">
+                <span className="truncate text-sm text-gray-300">{file.name}</span>
+                <div className='flex'>
+                  {file.sensitive && (
+                    <>
+                      <LockIcon style={{ fontSize: '12', paddingTop: '1px', color: '#1ED760' }} />
+                      <button className="flex justify-center items-center text-white text-[7.5px] cursor-default bg-gray-600 p-1 w-3 h-3 rounded-sm">S</button>
+                      <span className='text-xs ml-1'>locked</span>
+                    </>
+                  )}
+                </div>
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="ml-5 text-sm">{moment(file.modifiedAt).format("MMM DD, YYYY")}</div>
+        <div className="text-sm">{formatFileSize(file.size)}</div>
+        <div className="ml-4 text-sm">{file.type || "Unknown"}</div>
+        <div className="flex gap-2 cursor-pointer">
+          {actionButtons}
         </div>
       </div>
-      <div className="ml-5 text-sm">{moment(file.modifiedAt).format("MMM DD, YYYY")}</div>
-      <div className="text-sm">{formatFileSize(file.size)}</div>
-      <div className="ml-4 text-sm">{file.type || "Unknown"}</div>
-      <div className="flex gap-2 cursor-pointer">
 
-        {/* <div className="flex gap-2 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-200"> */}
-        {actionButtons}
-        {/* </div> */}
-      </div>
-    </div>
+      {showResetModal && (
+        <ResetModal
+          show={showResetModal}
+          onClose={() => setShowResetModal(false)}
+          onResetSubmit={handleResetSubmit}
+        />
+      )}
+    </>
   );
+
 }
 
 export default FileItem;
