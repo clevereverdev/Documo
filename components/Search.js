@@ -366,7 +366,7 @@ const Search = ({ onSearch }) => {
       </div> */}
 
       {/* Profile */}
-      {/* <div className="relative ml-5" ref={dropdownRef}>
+      <div className="relative ml-5" ref={dropdownRef}>
       <Tooltip
         showArrow={false}
         content="Profile"
@@ -418,8 +418,8 @@ const Search = ({ onSearch }) => {
                 <BsBoxArrowRight className="text-2xl text-[#e2e8f0] mr-2" /> Sign Out
               </a>
             </div>
-          )} */}
-      {/* </div> */}
+          )}
+      </div>
     </div>
   );
 }

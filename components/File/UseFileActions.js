@@ -160,7 +160,6 @@ export const useFileActions = () => {
         });
         setShowToastMsg('File unlocked successfully!');
     };
-      
 
     return { deleteFile, toggleStar, downloadFile, renameFile, lockFile, unlockFile };
 };

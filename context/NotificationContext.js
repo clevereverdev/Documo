@@ -2,19 +2,22 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 
 const NotificationContext = createContext();
 
-const NotificationProvider = ({ children }) => {
+const NotificationProvider = ({ children, userId }) => {
     const [notifications, setNotifications] = useState([]);
     const [notificationSound, setNotificationSound] = useState(null);
+
 
     useEffect(() => {
       const sound = new Audio('/Notifications.mp3');
       setNotificationSound(sound);
   }, []);
 
-    useEffect(() => {
-        const storedNotifications = JSON.parse(window.localStorage.getItem('notifications')) || [];
-        setNotifications(storedNotifications);
-      }, []);
+  useEffect(() => {
+    // Load notifications specific to the logged-in user
+    const storedNotifications = JSON.parse(window.localStorage.getItem(`notifications_${userId}`)) || [];
+    setNotifications(storedNotifications);
+}, [userId]);
+
 
       const addNotification = (type, data) => {
         console.log('Adding notification:', type, data); // Debug log
@@ -25,7 +28,8 @@ const NotificationProvider = ({ children }) => {
         if (!existingNotification) {
             const updatedNotifications = [...notifications, newNotification];
             setNotifications(updatedNotifications);
-            localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
+            localStorage.setItem(`notifications_${userId}`, JSON.stringify(updatedNotifications));
+
     
             if (notificationSound) {
               notificationSound.play();
@@ -38,7 +42,7 @@ const NotificationProvider = ({ children }) => {
   const removeNotification = (id) => {
     const updatedNotifications = notifications.filter(n => n.id !== id);
     setNotifications(updatedNotifications);
-    localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
+    localStorage.setItem(`notifications_${userId}`, JSON.stringify(updatedNotifications));
   };
 
   const clearAllNotifications = () => {
