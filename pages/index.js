@@ -11,6 +11,8 @@ import { collection, getDocs, getFirestore, query, where } from 'firebase/firest
 import { app } from '../firebase/firebase';
 import { ParentFolderIdContext } from '../context/ParentFolderIdContext';
 import { ShowToastContext } from '../context/ShowToastContext';
+import StorageView from '../components/Storage/StorageView';
+
 
 
 export default function Home() {
@@ -70,20 +72,15 @@ export default function Home() {
   };
 
   useEffect(() => {
-    console.log("User Session",)
     if (!authUser) {
       router.push("Authentication/Login")
-    }
-    else {
+    } else {
       setFolderList([]);
       getFolderList();
       getFileList();
-
-      //console.log("User Session",session.user)
     }
     setParentFolderId(0);
-
-  }, [authUser, showToastMsg])
+  }, [authUser])
 
   const getFolderList = async () => {
     setFolderList([]);
@@ -112,18 +109,45 @@ export default function Home() {
       setFileList(fileList => ([...fileList, doc.data()]))
     });
   }
-  
+
+const onNewFolderAdded = (newFolder) => {
+  console.log("Adding new folder:", newFolder);
+  setFolderList(currentFolders => [...currentFolders, newFolder]);
+};
+
+const onNewFileCreated = (newFile) => {
+  setFileList(currentFiles => [...currentFiles, newFile]);
+};
+
+const onFolderDeleted = (deletedFolderId) => {
+  setFolderList(currentFolders => currentFolders.filter(folder => folder.id !== deletedFolderId));
+};
+
+const onFileDeleted = (deletedFileId) => {
+  setFileList(currentFiles => currentFiles.filter(file => file.id !== deletedFileId));
+};
+
+
   return !authUser ? (
     <Loader />
   ) : (
-    <Layout>
+    <Layout 
+     onNewFolderAdded={onNewFolderAdded}
+     onNewFileAdded={onNewFileCreated} 
+     setFolderList={setFolderList} 
+     setFileList={setFileList}
+
+    >
       <div className={styles.container}>
         <div className={styles.home}>
           <SearchBar onSearch={handleCombinedSearch} />
-          <FolderList folderList={filteredFolders} />
-          <FileList fileList={filteredFiles} />
+          <FolderList folderList={filteredFolders} onFolderDeleted={onFolderDeleted}/>
+          <FileList fileList={filteredFiles} onFileDeleted={onFolderDeleted} />
         </div>
 
+        {/* <div className="w-1/4">
+          <StorageView />
+        </div> */}
         <div className={styles.storage}
           style={{
             backgroundColor: '#e2e8f0',
@@ -132,7 +156,7 @@ export default function Home() {
             borderTopLeftRadius: '20px',
             borderBottomLeftRadius: '20px'
           }}>
-          <h1 className='text-md mb-5 font-bold text-center'>Storage</h1>
+             <StorageView />
         </div>
       </div>
     </Layout>

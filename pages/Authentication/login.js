@@ -132,14 +132,14 @@ const LoginForm = () => {
     return isLoading || (!isLoading && authUser) ? (
         <Loader />
     ) : (
-        <main className="flex lg:h-[100vh]">
+        <main className="flex lg:h-[100vh] bg-gray-800">
             <div className="w-full lg:w-[60%] p-8 md:p-14 flex items-center justify-center lg:justify-start">
                 <div className="p-8 w-[600px] text-center">
                     <div className="flex items-center justify-center">
                         <img
                             src="/logo.png"
                             alt="Your Alt Text"
-                            className="h-20 w-20" />
+                            className="h-[65px] w-[65px]" />
                         <h1 className="text-7xl font-extrabold relative m-3">
                             <span className="text-7xl bg-gray-300 inline-block text-transparent bg-clip-text font-Payton">D</span>
                             <span className="text-3xl bg-gray-300 inline-block text-transparent bg-clip-text font-Payton">ocomo</span>
@@ -171,7 +171,7 @@ const LoginForm = () => {
                                 <input
                                     type="text"
                                     placeholder="Email address or Username"
-                                    className="font-medium border bg-transparent border-[#374151] pl-10 pr-2 w-3/4 py-4 rounded-md outline-0 hover:border-[#52525b] cursor-pointer"
+                                    className="font-medium border bg-transparent border-[#374151] pl-10 pr-2 w-3/4 py-4 rounded-md outline-0 hover:border-[#53B499] cursor-pointer"
                                     required
                                     onChange={(e) => setEmail(e.target.value)} />
                             </div>
@@ -184,7 +184,7 @@ const LoginForm = () => {
                                 <input
                                     type={showPassword ? "text" : "password"}
                                     placeholder="Password"
-                                    className="font-medium border bg-transparent border-[#374151] pl-10 pr-2 w-3/4 py-4 rounded-md outline-0 hover:border-[#52525b] cursor-pointer"
+                                    className="font-medium border bg-transparent border-[#374151] pl-10 pr-2 w-3/4 py-4 rounded-md outline-0 hover:border-[#53B499] cursor-pointer"
                                     required
                                     onChange={(e) =>
                                         setPassword(e.target.value)
@@ -202,13 +202,13 @@ const LoginForm = () => {
                             </div>
                         </div>
                         <div className="mt-7">
-                            <span className="text-[#1ED760] font-bold text-sm cursor-pointer hover:text-[#16a34a]" onClick={goresetpass}>
+                            <span className="text-[#3EA88B] font-bold text-sm cursor-pointer hover:text-[#53B499]" onClick={goresetpass}>
                                 Forgot your password?
                             </span>
                         </div>
                         <button
                             type="submit"
-                            className="w-3/4 py-4 mt-7 rounded-md bg-[#1ED760] text-black font-bold p-2 transform transition-transform hover:bg-[#16a34a]"
+                            className="w-3/4 py-4 mt-7 rounded-md bg-[#3EA88B] text-black font-bold p-2 transform transition-transform hover:bg-[#53B499]"
                             onClick={loginHandler}>
                             Log in
                         </button>
@@ -231,7 +231,7 @@ const LoginForm = () => {
                     <p className="mt-7 ml-1 text-sm">
                         Don't have an account?{" "}
                         <span
-                            className="font-bold text-[#1ED760] hover:text-[#16a34a] cursor-pointer"
+                            className="font-bold text-[#3EA88B] hover:text-[#53B499] cursor-pointer"
                             onClick={goSignUp}>
                             Get Started
                         </span>

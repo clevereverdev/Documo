@@ -27,8 +27,12 @@ function reset_password() {
                 theme: 'dark',
             });
 
+            // Wait for the toast to finish before redirecting
+        setTimeout(() => {
             // Redirect to the login page
-            router.push('/Authentication/login');
+            router.push('../Authentication/Login');
+        }, 5000); // This should match the autoClose value in toast.success
+
         } catch (error) {
             console.log('Error sending email reset link:', error);
             toast.error('Error sending reset link', {
@@ -45,7 +49,7 @@ function reset_password() {
     };
 
     return (
-        <main className="flex lg:h-[100vh]">
+        <main className="flex lg:h-[100vh] bg-gray-800">
             <div className="w-full lg:w-[60%] p-8 md:p-14 flex items-center justify-center lg:justify-start">
                 <div className="p-8 w-[600px] text-center">
                     <div className="flex items-center justify-center">
@@ -73,15 +77,15 @@ function reset_password() {
                                 <input
                                     type="email"
                                     placeholder="Email address"
-                                    className="font-medium border bg-transparent border-[#374151] pl-10 pr-2 w-3/4 py-4 rounded-md outline-0 hover:border-[#52525b] cursor-pointer"
+                                    className="font-medium border bg-transparent border-[#374151] pl-10 pr-2 w-3/4 py-4 rounded-md outline-0 hover:border-[#53B499] cursor-pointer"
                                     required
                                     onChange={(e) => setResetEmail(e.target.value)}
                                 />
                             </div>
                         </div>
                         <button
-                            type="submit"
-                            className="w-3/4 py-4 mt-7 rounded-md bg-[#1ED760] text-black font-bold p-2 transform transition-transform hover:bg-[#16a34a]"
+                            type="button"
+                            className="w-3/4 py-4 mt-7 rounded-md bg-[#3EA88B] text-black font-bold p-2 transform transition-transform hover:bg-[#53B499]"
                             onClick={sendResetEmail}>
                             Get the reset link
                         </button>

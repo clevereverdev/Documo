@@ -269,7 +269,7 @@ const Search = ({ onSearch }) => {
 
 
       {/* NOTIFICATIONS */}
-      <Dropdown>
+      {/* <Dropdown>
         <DropdownTrigger>
           <button
             className="flex items-center space-x-2 p-2 bg-[#171717] rounded-full focus:outline-none hover:shadow-lg hover:scale-110 ml-2 relative">
@@ -314,7 +314,7 @@ const Search = ({ onSearch }) => {
             </DropdownSection>
           )}
         </DropdownMenu>
-      </Dropdown>
+      </Dropdown> */}
 
 
       {/* WHAT'S NEW */}
@@ -366,7 +366,7 @@ const Search = ({ onSearch }) => {
       </div> */}
 
       {/* Profile */}
-      <div className="relative ml-5" ref={dropdownRef}>
+      {/* <div className="relative ml-5" ref={dropdownRef}>
       <Tooltip
         showArrow={false}
         content="Profile"
@@ -419,7 +419,7 @@ const Search = ({ onSearch }) => {
               </a>
             </div>
           )}
-      </div>
+      </div> */}
     </div>
   );
 }

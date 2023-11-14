@@ -1,39 +1,44 @@
-import Layout from "@/Sidebar";
 import React, { useEffect, useState } from "react";
 import { collection, getFirestore, query, where, onSnapshot } from "firebase/firestore";
 import FileItem from "@/File/FileItem";
+import FolderItem from "@/Folder/FolderItem"; // Make sure this path is correct
 import { app } from "../firebase/firebase";
+import Layout from "@/Sidebar";
 import SearchBar from "@/Search";
 
 export default function Starred() {
   const [starredFiles, setStarredFiles] = useState([]);
-  const [filteredStarredFiles, setFilteredStarredFiles] = useState([]); // Filtered starred files
+  const [filteredStarredFiles, setFilteredStarredFiles] = useState([]);
+  const [starredFolders, setStarredFolders] = useState([]);
   const [searchHistory, setSearchHistory] = useState([]);
 
   useEffect(() => {
-    // Since useEffect runs on the client-side, localStorage will be defined here
     const savedHistory = localStorage.getItem('starredSearchHistory');
     const parsedHistory = savedHistory ? JSON.parse(savedHistory) : [];
     setSearchHistory(parsedHistory);
   }, []);
 
-
   const db = getFirestore(app);
 
   useEffect(() => {
-    const q = query(collection(db, "files"), where("starred", "==", true));
+    const filesQuery = query(collection(db, "files"), where("starred", "==", true));
+    const foldersQuery = query(collection(db, "Folders"), where("starred", "==", true)); // Adjusted for "Folders" collection
 
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const files = [];
-      querySnapshot.forEach((doc) => {
-        files.push({ ...doc.data(), id: doc.id });
-      });
+    const unsubscribeFiles = onSnapshot(filesQuery, (querySnapshot) => {
+      const files = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
       setStarredFiles(files);
-      setFilteredStarredFiles(files); // Initialize filtered starred files with all starred files
+      setFilteredStarredFiles(files); // Initialize with all starred files
     });
 
-    // Cleanup the listener on unmount
-    return () => unsubscribe();
+    const unsubscribeFolders = onSnapshot(foldersQuery, (querySnapshot) => {
+      const folders = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+      setStarredFolders(folders); // Set starred folders
+    });
+
+    return () => {
+      unsubscribeFiles();
+      unsubscribeFolders();
+    };
   }, [db]);
 
   // Define a search function for starred files
@@ -66,6 +71,15 @@ export default function Starred() {
     <SearchBar onSearch={searchStarredFiles} />
     </div>
     <div className='m-4'>
+        <div className='bg-[#171717] mx--1 my-5 p-5 rounded-2xl' style={{ minHeight: '250px' }}>
+          <h2 className='text-[18px] font-Payton mb-4'>Starred Folders</h2>
+          {/* Render starred folders */}
+          {starredFolders.map((folder, index) => (
+            <FolderItem key={folder.id} folder={folder} index={index + 1} />
+          ))}
+        </div>
+        </div>
+    <div className='m-4'>
       <div 
         className='bg-[#171717] mx--1 my-5 p-5 rounded-2xl' 
         style={{ minHeight: '500px' }} // Set a minimum height here
@@ -95,46 +109,3 @@ export default function Starred() {
   </Layout>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

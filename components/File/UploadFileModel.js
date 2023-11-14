@@ -1,5 +1,5 @@
-import { doc, getFirestore, setDoc } from "firebase/firestore";
-import React, { useContext, useState } from "react";
+import { doc, getFirestore, setDoc, query, collection, where, getDocs, getDoc } from "firebase/firestore";
+import React, { useContext, useState, useEffect } from "react";
 import { app } from "../../firebase/firebase";
 import { useAuth } from "../../firebase/auth";
 import { ParentFolderIdContext } from "../../context/ParentFolderIdContext";
@@ -12,9 +12,11 @@ import { useNotifications } from '../../context/NotificationContext'; // make su
 import { pdfjs } from 'react-pdf';
 import { BiLeftArrowCircle, BiRightArrowCircle } from "react-icons/bi";
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+import useStorageData from '../Storage/StorageData'; // Adjust the path as needed
 
 
-function UploadFileModal({ closeModal }) {
+function UploadFileModal({ closeModal, onFileCreated }) {
+  const { documents, images, videos, music, others } = useStorageData();
   const { authUser } = useAuth();
   const { parentFolderId, setParentFolderId } = useContext(
     ParentFolderIdContext
@@ -41,6 +43,8 @@ function UploadFileModal({ closeModal }) {
   const [passwordVerified, setPasswordVerified] = useState(false);
   const [passwordSet, setPasswordSet] = useState(false); // New state to track if the password has been set
 
+  const [totalStorageUsed, setTotalStorageUsed] = useState(0);
+
 
   const sensitiveKeywords = ["Driver License", "Green Card", "Passport", "Birth Certificate"];
   const dobPattern = /\d{2}\/\d{2}\/\d{4}/;
@@ -57,6 +61,19 @@ function UploadFileModal({ closeModal }) {
   const handleCancelClick = () => {
     closeModal(false);
   };
+
+  // This effect fetches the total storage used whenever the modal is opened.
+useEffect(() => {
+  const fetchTotalStorageUsed = async () => {
+    // Fetch files metadata from Firestore and calculate the sum of file sizes.
+    const filesQuery = query(collection(db, "files"), where("createdBy", "==", authUser.email));
+    const querySnapshot = await getDocs(filesQuery);
+    const total = querySnapshot.docs.reduce((sum, doc) => sum + doc.data().size, 0);
+    setTotalStorageUsed(total);
+  };
+
+  fetchTotalStorageUsed();
+}, []);
 
 
   const onFileUpload = async (file) => {
@@ -75,8 +92,7 @@ function UploadFileModal({ closeModal }) {
         // Log to see the value at the time of upload
         console.log("sensitiveFound at upload time: ", sensitiveFound);
 
-        // Here we ensure that sensitiveFound is used in its current state
-        await setDoc(doc(db, "files", docId.toString()), {
+        const newFileData = {
           name: file.name,
           type: file.name.split(".")[1],
           size: file.size,
@@ -85,13 +101,17 @@ function UploadFileModal({ closeModal }) {
           parentFolderId: parentFolderId,
           imageUrl: downloadURL,
           id: docId,
-          sensitive: sensitiveFound, // Use the sensitiveFound directly
-          password: userSetPassword, // Save the password set by the user
-
-        });
+          sensitive: sensitiveFound,
+          password: userSetPassword,
+        };
+    
+        await setDoc(doc(db, "files", docId.toString()), newFileData);
 
         setShowToastMsg("File Uploaded Successfully!");
         closeModal(true);
+
+        onFileCreated(newFileData); // Directly using the destructured prop
+  
       } catch (error) {
         console.error("Error uploading file: ", error);
         setResultMsg("Failed to upload file. Please try again.");
@@ -267,7 +287,50 @@ function UploadFileModal({ closeModal }) {
     setPassword(''); // Clear the password input
   };
 
-  const handleNextClick = () => {
+  const calculateTotalUsedStorage = () => {
+    const files = [...documents, ...images, ...videos, ...music, ...others];
+    return files.reduce((totalSize, file) => totalSize + file.size, 0);
+  };
+  
+  
+
+  const fetchUserStorageData = async (username) => {
+    const db = getFirestore();
+    const userDocRef = doc(db, 'users', username);
+    const docSnap = await getDoc(userDocRef);
+  
+    if (docSnap.exists()) {
+      const userData = docSnap.data();
+      return userData.storageLimit || (1 * 1024 * 1024); // Default to 1MB if not specified
+    } else {
+      throw new Error('User document does not exist');
+    }
+  };
+
+    const handleNextClick = async () => {
+      try {
+        const storageLimit = await fetchUserStorageData(authUser.username);
+        const totalUsedStorageBytes = calculateTotalUsedStorage();
+
+        console.log(`Storage Limit: ${storageLimit} bytes`);
+        console.log(`Total Used Storage: ${totalUsedStorageBytes} bytes`);
+        console.log(`File Size: ${fileToUpload.size} bytes`);
+    
+        if (fileToUpload && totalUsedStorageBytes + fileToUpload.size > storageLimit) {
+          console.log("Storage limit exceeded, file upload prevented.");
+          closeModal(false);
+          setTimeout(() => setShowToastMsg(`Storage limit exceeded. Cannot upload more files. Your limit is ${storageLimit / (1024 * 1024)} MB.`), 500);
+          return;
+        }
+    
+        console.log("Proceeding with file upload.");
+        // Your file upload logic here
+    
+      } catch (error) {
+        console.error('Error fetching storage data:', error);
+        // Handle the error appropriately
+      }
+  
     if (!sensitiveFound) {
       onFileUpload(fileToUpload);
     } else if (!passwordSet) {
@@ -419,7 +482,7 @@ function UploadFileModal({ closeModal }) {
             </button>
 
             <button
-              className="w-1/2 bg-blue-500 text-white rounded-md p-3 focus:outline-none hover:bg-blue-600" isLoading
+              className="w-1/2 bg-blue-500 text-white rounded-md p-3 focus:outline-none hover:bg-blue-600"
               onClick={handleNextClick}
             >
               Next
