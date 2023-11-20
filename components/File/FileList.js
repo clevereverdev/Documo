@@ -3,7 +3,7 @@ import { AiOutlineAppstoreAdd, AiOutlineBars, AiOutlineInfoCircle } from 'react-
 import { BsFillTrashFill, BsFillPencilFill } from 'react-icons/bs'; // Import icons
 import { FaDownload } from 'react-icons/fa'; // Import icons
 import FileItem from './FileItem';
-import { deleteDoc, doc, getFirestore, updateDoc } from "firebase/firestore";
+import { deleteDoc, doc, getFirestore, getDoc } from "firebase/firestore";
 import { app } from "../../firebase/firebase";
 import { ShowToastContext } from '../../context/ShowToastContext';
 import { Tooltip } from "@nextui-org/react";
@@ -19,8 +19,6 @@ import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined';
 import ArrowDropUpOutlinedIcon from '@mui/icons-material/ArrowDropUpOutlined';
 import ArrowDropDownOutlinedIcon from '@mui/icons-material/ArrowDropDownOutlined';
-
-
 
 
 function FileList({ fileList, file }) {
@@ -64,8 +62,6 @@ function FileList({ fileList, file }) {
     handleRenameClick();  // Move the handleRenameClick here after setting currentFile
   };
 
-
-
   const handleClose = () => {
     setIsDropdownOpen(false);
   };
@@ -88,9 +84,20 @@ function FileList({ fileList, file }) {
   }, [isDropdownOpen]);
 
   const handleFileImageClick = (file) => {
-    setCurrentFile(file); // Here, ensure the currentFile includes the password
-    setIsModalOpen(true);
-  };
+    // Before opening the modal, check if you need to fetch the latest file state
+    // This could involve fetching the latest data from Firestore, for example
+    const fetchLatestFileData = async () => {
+        const fileRef = doc(db, "files", file.id.toString());
+        const docSnapshot = await getDoc(fileRef);
+        if (docSnapshot.exists()) {
+            const updatedFile = docSnapshot.data();
+            setCurrentFile(updatedFile); // Set the most up-to-date file data
+            setIsModalOpen(true); // Now open the modal
+        }
+    };
+
+    fetchLatestFileData();
+};
 
   // Function to close the modal
   const handleCloseModal = () => {
@@ -98,6 +105,11 @@ function FileList({ fileList, file }) {
     setCurrentFile(null);
   };
 
+  const handleFileDeleted = (deletedFileId) => {
+    const updatedFiles = files.filter(file => file.id !== deletedFileId);
+    setFiles(updatedFiles);
+  };
+  
   useEffect(() => {
     // Initially, set sortedFiles to the provided fileList
     setSortedFiles(fileList);
@@ -202,13 +214,14 @@ function FileList({ fileList, file }) {
     return fileIcons[fileType.toLowerCase()] || '/zip.png';
   }
 
-
   return (
     <div className='mx--1 my-5 p-5 rounded-2xl h-[435px]'>
       <div className='flex items-center justify-between'>
         <h2 className='text-[18px] font-Payton mb-4'>Recent Files</h2>
         <div className="flex items-center space-x-2">
-          <Tooltip showArrow={false} content={gridView ? 'List View' : 'Grid View'} placement="bottom" className="tooltip-container bg-gray-300 text-gray-700 font-bold text-xs py-1 px-2 rounded-lg" arrowSize={0}>
+          <Tooltip showArrow={false} content={gridView ? 'List View' : 'Grid View'} placement="bottom" className="tooltip-container bg-gray-300 text-gray-700 font-bold text-xs py-1 px-2 rounded-lg" 
+          // arrowSize={0}
+          >
             <button onClick={toggleGridView} style={{ outline: 'none' }}>
               {gridView ? <FormatListNumberedOutlinedIcon className='text-2xl outline-none' /> : <GridViewOutlinedIcon className='text-2xl' />}
             </button>
@@ -346,18 +359,19 @@ function FileList({ fileList, file }) {
                 key={index}
                 onFileImageClick={handleFileImageClick}
                 onToggleStar={handleToggleStar}
+                onFileDeleted={handleFileDeleted} 
               />
             ))}
           </div>
 
           {isModalOpen && currentFile && (
-  <ImageModal
-    imageUrl={currentFile.imageUrl}
-    isSensitive={currentFile.sensitive}
-    filePassword={currentFile.password} // This should match the name of the prop expected by ImageModal
-    onClose={handleCloseModal}
-  />
-)}
+            <ImageModal
+              imageUrl={currentFile.imageUrl}
+              isSensitive={currentFile.sensitive}
+              filePassword={currentFile.password} // This should match the name of the prop expected by ImageModal
+              onClose={handleCloseModal}
+            />
+          )}
         </>
       )}
     </div>

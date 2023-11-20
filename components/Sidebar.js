@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 // ICONS
@@ -15,7 +15,7 @@ import { useAuth } from "../firebase/auth";
 import CreateFolderModel from './Folder/CreateFolderModel';
 import UploadFileModal from './File/UploadFileModel';
 
-export default function Layout({ children }) {
+export default function Layout({ children, setFolderList, setFileList }) {
   const router = useRouter();
   const { signOut } = useAuth();
   const { authUser } = useAuth(); // Assuming `useAuth` provides an `authUser` that is null when not authenticated
@@ -38,6 +38,17 @@ export default function Layout({ children }) {
     { href: '/trash', title: 'Trash' },
     { href: '/settings', title: 'Settings' },
   ];
+
+  const onNewFolderAdded = (newFolder) => {
+    if (setFolderList) {
+      setFolderList(currentFolders => [...currentFolders, newFolder]);
+    }
+  };
+  const onNewFileAdded = (newFileData) => {
+    if (setFileList) {
+      setFileList(currentFiles => [...currentFiles, newFileData]);
+    }
+  };
 
   return (
     authUser &&
@@ -103,9 +114,14 @@ export default function Layout({ children }) {
           {children}
         </main>
 
-        <CreateFolderModel isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+        <CreateFolderModel
+      onFolderCreated={onNewFolderAdded}
+      isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        />        
         <dialog id="upload_file" className="modal">
           <UploadFileModal
+           onFileCreated={onNewFileAdded}
             closeModal={() => window.upload_file.close()} />
         </dialog>
       </div>

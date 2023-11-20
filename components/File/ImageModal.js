@@ -23,7 +23,7 @@ function ImageModal({ imageUrl, isSensitive, onClose, filePassword }) {
             className={!isSensitive || isVerified ? "" : "blur-md"}
             style={{ maxWidth: "80vw", maxHeight: "80vh" }}
           />
-          {isSensitive && !isVerified && (
+          {isSensitive && (
             <div>
               <input
                 type="password"

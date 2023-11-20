@@ -8,7 +8,7 @@ import { ParentFolderIdContext } from "../../context/ParentFolderIdContext";
 import { useNotifications } from '../../context/NotificationContext';
 
 
-function CreateFolderModal({ isOpen, onClose }) {
+function CreateFolderModal({ isOpen, onClose, onFolderCreated }) {
   const docId = Date.now().toString();
   const [folderName, setFolderName] = useState();
   const { showToastMsg, setShowToastMsg } = useContext(ShowToastContext)
@@ -17,9 +17,6 @@ function CreateFolderModal({ isOpen, onClose }) {
   const [isModalOpen, setIsModalOpen] = useState(true);
   const { addNotification } = useNotifications();
 
-
-
-
   const db = getFirestore(app)
   useEffect(() => {
 
@@ -27,12 +24,23 @@ function CreateFolderModal({ isOpen, onClose }) {
   const onCreate = async () => {
     console.log(folderName);
     try {
-      await setDoc(doc(db, "Folders", docId), {
+      // Create a new folder object
+      const newFolder = {
         name: folderName,
         id: docId,
         createBy: authUser.email,
         parentFolderId: parentFolderId
-      });
+      };
+  
+      // Save the new folder to Firestore
+      await setDoc(doc(db, "Folders", docId), newFolder);
+  
+      // Check if the onFolderCreated callback is provided
+      if (onFolderCreated) {
+          onFolderCreated(newFolder);
+          onClose(); // This should close the modal
+
+      }
 
       // Add a notification once the folder is successfully created
       addNotification('image', { src: './folder.png', message: `Folder "${folderName}" created successfully` });

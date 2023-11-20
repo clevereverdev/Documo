@@ -1,9 +1,11 @@
 import React, { useContext, useState, useEffect } from "react";
-import { deleteDoc, doc, getFirestore, updateDoc, collection, query, where, onSnapshot, setDoc, getDoc} from "firebase/firestore";
+import { deleteDoc, doc, getFirestore, updateDoc, collection, query, where, onSnapshot, setDoc, getDoc } from "firebase/firestore";
 import { app } from "../../firebase/firebase";
 import { ShowToastContext } from "../../context/ShowToastContext";
 import { useNotifications } from '../../context/NotificationContext';
 import defaultFileImage from '../../public/zip.png';
+
+
 
 
 const db = getFirestore(app);
@@ -20,6 +22,8 @@ const getFileImage = (extension) => {
 };
 
 export const useFileActions = () => {
+    const [isDeleting, setIsDeleting] = useState(false);
+
     const { showToastMsg, setShowToastMsg } = useContext(ShowToastContext);
     const { addNotification } = useNotifications();
 
@@ -30,36 +34,40 @@ export const useFileActions = () => {
         const displayImageSrc = ['pdf', 'zip'].includes(fileExtension) ? imageSrc : file.imageUrl;
 
         // Reference to the original file document
-    const fileRef = doc(db, "files", file.id.toString());
+        const fileRef = doc(db, "files", file.id.toString());
 
-    // Reference to the 'deleted_files' collection
-    const deletedFileRef = doc(collection(db, "deleted_files"));
+        // Reference to the 'deleted_files' collection
+        const deletedFileRef = doc(collection(db, "deleted_files"));
 
-    // First, set the file document in the 'deleted_files' collection
-    await setDoc(deletedFileRef, {
-        ...file,
-        deletedAt: new Date(),
-    });
+        // First, set the file document in the 'deleted_files' collection
+        await setDoc(deletedFileRef, {
+            ...file,
+            deletedAt: new Date(),
+        });
 
-    // Then delete the original file document
-    await deleteDoc(fileRef).then(() => {
-        setShowToastMsg('File Deleted!!!');
-        addNotification('image', { src: displayImageSrc, message: `${file.name} was deleted.` });
-    });
-};
+        // Then delete the original file document
+        await deleteDoc(fileRef).then(() => {
+            setShowToastMsg('File Deleted!!!');
+            setTimeout(() => {
+                window.location.reload(); // Consider removing this if you manage state updates properly
+            }, 1500);
+            addNotification('image', { src: displayImageSrc, message: `${file.name} was deleted.` });
+        });
+    };
+
 
     useEffect(() => {
         // Query to exclude deleted files
         const q = query(collection(db, "files"), where("deleted", "!=", true));
-    
+
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
             const files = querySnapshot.docs
                 .map((doc) => ({ ...doc.data(), id: doc.id }))
                 .filter(file => !file.deleted); // Ensure filtering out any files marked as deleted
-    
+
             //setFiles(files); // This should be the state that holds the files for display
         });
-    
+
         return () => unsubscribe();
     }, [db]);
 
@@ -121,11 +129,11 @@ export const useFileActions = () => {
     };
 
     // RENAME FILE
-    const renameFile = async (file, newName) => {
+    const renameFile = async (file, newName, onRenameSuccess) => {
         if (!file || !file.name) {
             console.error("File is not provided or doesn't have a name");
             return;
-          }
+        }
         const fileExtension = file.name.toLowerCase().split('.').pop();
         const imageSrc = getFileImage(fileExtension);
         const displayImageSrc = ['pdf', 'zip'].includes(fileExtension) ? imageSrc : file.imageUrl;
@@ -134,7 +142,11 @@ export const useFileActions = () => {
             return;
         }
         const fileRef = doc(db, "files", file.id.toString());
-        await updateDoc(fileRef, { name: newName });
+    await updateDoc(fileRef, { name: newName }).then(() => {
+        setTimeout(() => {
+            window.location.reload(); // Consider removing this if you manage state updates properly
+        }, 500);
+    });
         setShowToastMsg('File renamed successfully!');
 
         // Add a notification for the renaming action
@@ -143,20 +155,20 @@ export const useFileActions = () => {
             message: `File renamed to: ${newName}.`
         }, file.id);
     };
-
+    
     const lockFile = async (file) => {
         const fileRef = doc(db, "files", file.id.toString());
         await updateDoc(fileRef, {
-        sensitive: true,
+            sensitive: true,
         });
         setShowToastMsg('File locked successfully!');
     };
-    
+
     // UNLOCK FILE
     const unlockFile = async (file) => {
         const fileRef = doc(db, "files", file.id.toString());
         await updateDoc(fileRef, {
-        sensitive: false,
+            sensitive: false,
         });
         setShowToastMsg('File unlocked successfully!');
     };
@@ -173,10 +185,10 @@ export const useFileRename = (file, renameFileCallback) => {
             setNewName(file.name);
         }
     }, [file]);
-    
 
 
-    const handleRenameClick = () => {
+
+    const handleRenameClick = async() => {
         setIsRenaming(true); // Show the input field for renaming
     };
 
@@ -193,7 +205,7 @@ export const useFileRename = (file, renameFileCallback) => {
     };
 
     const handleRenameSubmit = async () => {
-        if (!file) {
+        if (!file || !file.name) {
             console.error("File is not set!");
             return;
         }
@@ -203,16 +215,18 @@ export const useFileRename = (file, renameFileCallback) => {
             return;
         }
     
-        await renameFileCallback(file, newName);
+        await renameFileCallback(file, newName, (fileId, updatedName) => {
+            // Here, you can add any additional logic you might need after the file is renamed
+        });
         setIsRenaming(false);
     };
-    
+
     return {
         isRenaming,
         newName,
         handleRenameClick,
         handleNameChange,
         handleKeyDown,
-        handleRenameSubmit
+        handleRenameSubmit,
     };
 }

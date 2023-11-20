@@ -152,14 +152,14 @@ const RegisterForm = () => {
     return isLoading || (!isLoading && authUser) ? (
         <Loader />
     ) : (
-        <main className="flex lg:h-[100vh]">
+        <main className="flex lg:h-[100vh] bg-gray-800">
             <div className="w-full lg:w-[60%] p-8 md:p-14 flex items-center justify-center lg:justify-start">
                 <div className="p-8 w-[600px] text-center">
                     <div className="flex items-center justify-center">
                         <img
                             src="/logo.png"
                             alt="Your Alt Text"
-                            className="h-20 w-20" />
+                            className="h-[65px] w-[65px]" />
                         <h1 className="text-7xl font-extrabold relative m-3">
                             <span className="text-7xl bg-gray-300 inline-block text-transparent bg-clip-text font-Payton">D</span>
                             <span className="text-3xl bg-gray-300 inline-block text-transparent bg-clip-text font-Payton">ocomo</span>
@@ -189,7 +189,7 @@ const RegisterForm = () => {
                                 <input
                                     type="text"
                                     placeholder="Username"
-                                    className="font-medium border bg-transparent border-[#374151] pl-10 pr-2 w-3/4 py-4 rounded-md outline-0 hover:border-[#52525b] cursor-pointer"
+                                    className="font-medium border bg-transparent border-[#374151] pl-10 pr-2 w-3/4 py-4 rounded-md outline-0 hover:border-[#53B499] cursor-pointer"
                                     required
                                     onChange={(e) =>
                                         setUsername(e.target.value)
@@ -205,7 +205,7 @@ const RegisterForm = () => {
                                 <input
                                     type="email"
                                     placeholder="Email address"
-                                    className="font-medium border bg-transparent border-[#374151] pl-10 pr-2 w-3/4 py-4 rounded-md outline-0 hover:border-[#52525b] cursor-pointer"
+                                    className="font-medium border bg-transparent border-[#374151] pl-10 pr-2 w-3/4 py-4 rounded-md outline-0 hover:border-[#53B499] cursor-pointer"
                                     required
                                     onChange={(e) => setEmail(e.target.value)}
                                 />
@@ -219,7 +219,7 @@ const RegisterForm = () => {
                                 <input
                                     type={showPassword ? "text" : "password"}
                                     placeholder="Password"
-                                    className="font-medium border bg-transparent border-[#374151] pl-10 pr-2 w-3/4 py-4 rounded-md outline-0 hover:border-[#52525b] cursor-pointer"
+                                    className="font-medium border bg-transparent border-[#374151] pl-10 pr-2 w-3/4 py-4 rounded-md outline-0 hover:border-[#53B499] cursor-pointer"
                                     required
                                     onChange={(e) => setPassword(e.target.value)}
                                 />
@@ -237,7 +237,7 @@ const RegisterForm = () => {
                         </div>
                         <div className="flex justify-center">
                             <button
-                                className="w-3/4 py-4 mt-7 rounded-md bg-[#1ED760] text-black font-bold p-2 transform transition-transform hover:bg-[#16a34a]"
+                                className="w-3/4 py-4 mt-7 rounded-md bg-[#3EA88B] text-black font-bold p-2 transform transition-transform hover:bg-[#53B499]"
                                 onClick={signupHandler}
                             >
                                 Sign up
@@ -264,7 +264,7 @@ const RegisterForm = () => {
                     <p className="mt-7 ml-1 text-sm text-center">
                         Already have an account?{" "}
                         <span
-                            className="font-bold text-[#1ED760] hover:text-[#16a34a] cursor-pointer"
+                            className="font-bold text-[#3EA88B] hover:text-[#53B499] cursor-pointer"
                             onClick={goLogin}
                         >
                             Login
