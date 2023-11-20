@@ -7,9 +7,9 @@ const useStorageData = () => {
   const [fileData, setFileData] = useState({
     documents: [],
     images: [],
-    videos: [],
+    archives: [],
     music: [],
-    others: []
+    others: [],
   });
   const { authUser } = useAuth(); // Get the current authenticated user
 
@@ -18,21 +18,30 @@ const useStorageData = () => {
       const db = getFirestore();
       const filesQuery = query(collection(db, "files"), where("createdBy", "==", authUser.email));
 
-      // Use onSnapshot to listen for real-time updates
       const unsubscribe = onSnapshot(filesQuery, (snapshot) => {
-        const updatedFiles = snapshot.docs.map(doc => doc.data());
-        // Categorize files based on their type
+        const updatedFiles = snapshot.docs.map((doc) => doc.data());
+        // Categorize files based on their type and extension
+        // Define the extensions for each category
+        const documentExtensions = ['txt', 'pdf'];
+        const imageExtensions = ['png', 'jpeg'];
+        const archiveExtensions = ['zip'];
+        const musicExtensions = ['mp3'];
+
+        // Categorize files based on their type and extension
         const categorizedFiles = {
-          documents: updatedFiles.filter(file => file.type === 'pdf'),
-          images: updatedFiles.filter(file => ['jpeg', 'webp', 'png'].includes(file.type)),
-          videos: updatedFiles.filter(file => file.type === 'mov'),
-          music: updatedFiles.filter(file => file.type === 'mp3'),
-          others: updatedFiles.filter(file => !['pdf', 'jpeg', 'webp', 'png', 'mov', 'mp3'].includes(file.type))
+          documents: updatedFiles.filter((file) => documentExtensions.includes(file.type)),
+          images: updatedFiles.filter((file) => imageExtensions.includes(file.type)),
+          archives: updatedFiles.filter((file) => archiveExtensions.includes(file.type)),
+          music: updatedFiles.filter((file) => musicExtensions.includes(file.type)),
+          others: updatedFiles.filter((file) => 
+            !documentExtensions.includes(file.type) &&
+            !imageExtensions.includes(file.type) &&
+            !archiveExtensions.includes(file.type) &&
+            !musicExtensions.includes(file.type))
         };
         setFileData(categorizedFiles);
       });
 
-      // Unsubscribe from the listener when the component unmounts
       return () => unsubscribe();
     }
   }, [authUser]);

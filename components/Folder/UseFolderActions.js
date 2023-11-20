@@ -4,50 +4,81 @@ import { app } from "../../firebase/firebase";
 import { ShowToastContext } from "../../context/ShowToastContext";
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
+import { useNotifications } from '../../context/NotificationContext';
+
 
 const db = getFirestore(app);
 
 export const useFolderActions = () => {
-    const { showToastMsg, setShowToastMsg } = useContext(ShowToastContext);
+  const { showToastMsg, setShowToastMsg } = useContext(ShowToastContext);
+  const { addNotification } = useNotifications();
 
     // DELETE FOLDER
-    const deleteFolder = async (folder, onDeleteSuccess) => {
-        if (!folder) {
-            console.error("Invalid folder object passed to deleteFolder:", folder);
-            return;
-        }
-        // Reference to the original folder document
-        const folderRef = doc(db, "Folders", folder.id.toString());
-        // Reference to the 'deleted_folders' collection
-        const deletedFolderRef = doc(collection(db, "deleted_folders"));
-        // First, set the folder document in the 'deleted_folders' collection
-        await setDoc(deletedFolderRef, {
-            ...folder,
-            deletedAt: new Date(),
-        });
-        // Then delete the original folder document
-        await deleteDoc(folderRef).then(() => {
-            setShowToastMsg('Folder Deleted!!!');
-            if (onDeleteSuccess) {
-              onDeleteSuccess(folder.id);
-          }
-            // Add additional notification logic if needed
-        });
-    };
+    const deleteFolder = async (folder) => {
+      if (!folder) {
+          console.error("Invalid folder object passed to deleteFolder:", folder);
+          return;
+      }
+  
+      // Reference to the original folder document
+      const folderRef = doc(db, "Folders", folder.id.toString());
+  
+      // Reference to the 'deleted_folders' collection
+      const deletedFolderRef = doc(collection(db, "deleted_folders"));
+  
+      try {
+          // First, set the folder document in the 'deleted_folders' collection
+          await setDoc(deletedFolderRef, {
+              ...folder,
+              deletedAt: new Date(),
+          });
+  
+          // Then delete the original folder document
+          await deleteDoc(folderRef);
+          setShowToastMsg(`Folder "${folder.name}" deleted successfully!`);
+  
+          // Add a notification for the deletion action
+          addNotification('folder', {
+              src: './folder.png',
+              message: `Folder "${folder.name}" was deleted.`,
+              name: folder.name,
+              isFolder: true,
+              isDeleted: true
+          });
+      } catch (error) {
+          console.error("Error deleting folder:", error);
+          setShowToastMsg('Error deleting folder.');
+      }
+  };
 
     // TOGGLE STARRED STATUS OF FOLDER
-    const toggleStarred = async (folder) => {
-        if (!folder) {
-            console.error("Invalid folder object passed to toggleStarred:", folder);
-            return;
-        }
-        const folderRef = doc(db, "Folders", folder.id.toString());
-        await updateDoc(folderRef, {
-            starred: !folder.starred
-        }).then(() => {
-            setShowToastMsg(`Folder ${folder.starred ? "unstarred" : "starred"} successfully!`);
-        });
-    };
+const toggleStarred = async (folder) => {
+  if (!folder) {
+      console.error("Invalid folder object passed to toggleStarred:", folder);
+      return;
+  }
+
+  const folderRef = doc(db, "Folders", folder.id.toString());
+  const newStarredStatus = !folder.starred;
+
+  try {
+      await updateDoc(folderRef, {
+          starred: newStarredStatus
+      });
+      addNotification('image', {
+          src: './folder.png', // Assuming './folder.png' is a valid path to your folder icon
+          message: `Folder "${folder.name}" ${newStarredStatus ? 'starred' : 'unstarred'} successfully`,
+          name: folder.name,
+          isFolder: true, // Assuming you want to differentiate between folder and file notifications
+          isStarred: newStarredStatus, // This will be true if the folder has been starred, false if unstarred
+          isUnstarred: !newStarredStatus
+      });
+      setShowToastMsg(`Folder "${folder.name}" ${newStarredStatus ? "starred" : "unstarred"} successfully!`);
+  } catch (error) {
+      console.error("Error updating folder star status:", error);
+      setShowToastMsg('Error updating folder star status.');
+  }
+};
 
 
     // DOWNLOAD FOLDER AS ZIP
@@ -82,6 +113,12 @@ export const useFolderActions = () => {
         zip.generateAsync({ type: 'blob' }).then((content) => {
           // Use file-saver to save the file
           saveAs(content, `${folderData.name}.zip`);
+          addNotification('image', { 
+            src: './folder.png', 
+            message: `Folder  downloaded as "${folderData.name}.zip" successfully`,
+            name: folderData.name,
+            isDownloaded: true
+          });
         });
       };
 
@@ -90,6 +127,12 @@ export const useFolderActions = () => {
         const folderRef = doc(db, "Folders", folderId);
         try {
           await updateDoc(folderRef, { name: newName });
+          addNotification('image', { 
+            src: './folder.png', 
+            message: `Folder  renamed to "${newName}" successfully`,
+            name: newName,
+            isRename: true
+          });
           setShowToastMsg(`Folder renamed to ${newName} successfully!`);
         } catch (error) {
           console.error("Error renaming folder:", error);

@@ -150,7 +150,7 @@ const onFileDeleted = (deletedFileId) => {
         </div> */}
         <div className={styles.storage}
           style={{
-            backgroundColor: '#e2e8f0',
+            background: 'linear-gradient(to top, #323232, #191919)',
             padding: '10px',
             borderRadius: '5px',
             borderTopLeftRadius: '20px',

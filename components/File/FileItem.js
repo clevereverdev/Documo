@@ -149,6 +149,13 @@ const [starred, setStarred] = useState(file.starred);
         setIsSensitive(true);
         setFile(previousFile => ({ ...previousFile, password: password })); // Update the password in local state
         setShowToastMsg("File locked successfully.");
+        addNotification('image', {
+          src: displayImageSrc,
+          message: `File ${file.name} is locked successfully.`,
+          name: file.name,
+          isFile: true,
+          isLocked: true
+      }, file.id);
       } catch (error) {
         console.error("Error locking file:", error);
         setShowToastMsg("Failed to lock file.");
@@ -213,6 +220,13 @@ const [starred, setStarred] = useState(file.starred);
         setIsSensitive(false);
         setFile(previousFile => ({ ...previousFile, password: null })); // This updates the local state
         setShowToastMsg("File unlocked successfully.");
+        addNotification('image', {
+          src: displayImageSrc,
+          message: `File ${file.name} is unlocked successfully.`,
+          name: file.name,
+          isFile: true,
+          isUnlocked: true
+      }, file.id);
       } catch (error) {
         console.error("Error unlocking file:", error);
         setShowToastMsg("Failed to unlock file.");

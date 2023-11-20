@@ -115,14 +115,18 @@ body {
 
 .sidebar {
   width: 17rem;
-  height: 100%;
+  height: 100vh; /* Adjust the percentage as needed */
   z-index: 10; /* Ensure the sidebar remains on top */
   background-color: var(--color-bg);
   padding: 1rem;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
   overflow: hidden;
 }
-
+@media (max-width: 1068px) {
+  .sidebar {
+    height: 80vh; /* Adjust the percentage for smaller screens */
+  }
+}
 
 .sidebar__top {
   width: max-content;
@@ -228,15 +232,280 @@ body {
   color: #1ED760; /* fill color of your icon */
 }
 
-/* In your global.css or similar file */
+/* styles.css (or your preferred CSS/SCSS file) */
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
-  20%, 40%, 60%, 80% { transform: translateX(10px); }
+  0% { transform: translateX(0); }
+  10% { transform: translateX(8px); }
+  20% { transform: translateX(-8px); }
+  30% { transform: translateX(8px); }
+  40% { transform: translateX(-4px); }
+  50% { transform: translateX(6px); }
+  60% { transform: translateX(-2px); }
+  70% { transform: translateX(4px); }
+  80% { transform: translateX(-2px); }
+  90% { transform: translateX(2px); }
+  100% { transform: translateX(0); }
 }
 
-@layer utilities {
-  .shake {
-    animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
-  }
+.animate-shake {
+  animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) infinite;
 }
+
+.flex-container {
+  display: flex;
+  justify-content: space-between; /* or space-around */
+  align-items: center;
+  width: 100%; /* Ensures the container takes full width */
+}
+
+.search-input {
+  flex-grow: 1; /* Allows the search input to grow */
+  margin-right: 8px; /* Adjust this value as needed */
+}
+
+.icon {
+  /* Assuming .icon is a class applied to each icon including the profile picture */
+  flex: 0 0 auto; /* Do not grow, do not shrink, auto basis */
+  margin-left: 8px; /* Adjust this value as needed */
+}
+.notification-container {
+  z-index: 0;
+}
+
+.close-btn {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.notification-container:hover .close-btn {
+  opacity: 1;
+}
+
+
+.filter-btn {
+  padding: 8px 16px;
+  height: 50px;
+  width: 100px;
+  background-color: #fff;
+  color: black;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  border-radius: 40px;
+}
+
+.filter-btn.active {
+  background-color: #1ED760;
+  color: black;
+}
+
+.fixed {
+  position: fixed; /* Keeps the button fixed during scroll */
+  /* Further positioning and styling as needed */
+}
+
+
+@keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.blink {
+  animation: blink 1.5s linear infinite;
+}
+
+
+.pricing-plans {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 32px;
+  padding: 64px;
+}
+
+.pricing-card {
+  position: relative;
+  width: 280px; /* Adjust to match your design */
+  padding: 32px;
+  border-radius: 8px; /* Adjust to match your design */
+  background-color: #262626;
+  border: solid #616161;
+  color: #fff;
+  text-align: center;
+  transition: transform 0.3s ease-in-out;
+  overflow: hidden; /* This is important for the ribbon positioning */
+}
+
+
+.pricing-card:hover {
+  transform: translateY(-10px);
+  border-color: #1ED760;
+}
+
+.heading h4 {
+  /* color: #00FF00; Adjust color based on plan */
+  margin-bottom: 16px;
+}
+
+.heading p {
+  font-size: 0.8em;
+  color: #a3a3a3;
+}
+
+.price {
+  font-size: 2.5em;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.price sub {
+  font-size: 0.8em;
+  vertical-align: text-bottom;
+}
+
+.features {
+  text-align: left;
+  margin-bottom: 32px;
+}
+
+.features li {
+  margin-bottom: 8px;
+}
+
+.features li i {
+  margin-right: 8px;
+}
+
+/* .cta-btn {
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
+}
+
+.cta-btn:hover {
+  background-color: #00CC00; /* Darker shade for hover effect */
+
+/* Add these styles to your CSS */
+.pricing-card[data-color]:hover {
+  border: 2px solid transparent; /* Set the default border color to transparent */
+  transition: border-color 0.3s ease; /* Add a smooth transition effect for the border color */
+}
+
+.pricing-card[data-color="#2196f3"]:hover {
+  border-color: #2196f3; /* Change the border color for the specified hex code on hover */
+}
+
+.pricing-card[data-color="#388e3c"]:hover {
+  border-color: #388e3c; /* Change the border color for the specified hex code on hover */
+}
+
+.pricing-card[data-color="#5c6bc0"]:hover {
+  border-color: #5c6bc0; /* Change the border color for the specified hex code on hover */
+}
+
+.pricing-card[data-color="#d32f2f"]:hover {
+  border-color: #d32f2f; /* Change the border color for the specified hex code on hover */
+}
+
+.corner-ribbon {
+  width: 200px;
+  background: #e43;
+  position: absolute;
+  top: 25px;
+  left: -50px;
+  text-align: center;
+  line-height: 50px;
+  letter-spacing: 1px;
+  color: #f0f0f0;
+  transform: rotate(-45deg);
+  -webkit-transform: rotate(-45deg);
+}
+
+.top-left {
+  top: 25px;
+  left: -50px;
+  transform: rotate(-45deg);
+  -webkit-transform: rotate(-45deg);
+}
+
+.top-right {
+  top: 25px;
+  right: -50px;
+  left: auto;
+  transform: rotate(45deg);
+  -webkit-transform: rotate(45deg);
+}
+
+.sticky {
+  position: absolute;
+}
+
+.purple {
+  background: #5c6bc0;
+}
+
+.red {
+  background: #e43;
+}
+
+.shadow {
+  box-shadow: 0 0 3px rgba(0,0,0,.3);
+}
+
+
+
+
+
+
+/* .field {
+  margin-bottom: 25px;
+}
+
+.field.full {
+  width: 100%;
+} */
+
+/* .field.half {
+  width: calc(50% - 12px);
+} */
+
+
+/* input {
+  padding: 12px;
+  border-radius: 6px;
+  border: 2px solid #e8ebed;
+  display: block;
+  font-size: 14px;
+  width: 100%;
+  box-sizing: border-box;
+} */
+
+/* input::placeholder {
+  color: #e8ebed !important;
+} */
+
+
+/* .flex {
+  display: flex;
+  flex-direction: row;
+  /* wrap: wrap; */
+  /* align-items: center; */
+
+
+/* .flex.justify-space-between {
+  justify-content: space-between;
+}  */
+
+/* .card {
+  padding: 50px;
+  margin: 50px auto;
+  /* max-width: 850px; */
+  /* background: #ffffff;
+  border-radius: 6px;
+  box-sizing: border-box;
+  /* box-shadow: 0px 24px 60px -1px rgba(37, 44, 54, 0.14); */
+/* } */ 
+

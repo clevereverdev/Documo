@@ -1,17 +1,23 @@
 import React, { useState } from 'react';
+import { doc, getFirestore, setDoc, updateDoc } from "firebase/firestore";
 import { useRouter } from 'next/router';
+import { app } from "../../firebase/firebase";
 import Image from 'next/image';
 import { AiOutlineInfoCircle } from 'react-icons/ai';
 import { BsFillPencilFill, BsStarFill, BsStar } from 'react-icons/bs';
 import { FaDownload } from 'react-icons/fa';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import { useFolderActions } from "../Folder/UseFolderActions";
+import { useNotifications } from '../../context/NotificationContext';
 
 
 
 function FolderItem({ folder, isTrash, onRestore, onDeleteForever, onToggleDropdown, isDropdownActive, onFolderDeleted, onFolderRenamed, onFolderStarToggled }) {
   const [showDropdown, setShowDropdown] = useState(false);
   const router = useRouter();
+  const { addNotification } = useNotifications();
+  const db = getFirestore(app)
+
 
   const toggleDropdown = (e) => {
     e.stopPropagation();
@@ -85,31 +91,44 @@ function FolderItem({ folder, isTrash, onRestore, onDeleteForever, onToggleDropd
     setNewFolderName(e.target.value);
   };
 
-  const handleLockClick = (e) => {
+  const handleLockClick = async (e) => {
     // Prevent default behavior if necessary
     e?.preventDefault();
   
     onToggleDropdown && onToggleDropdown(null); // Hide the dropdown
     const password = prompt("Set a password for this folder:");
-    if (password) {
-      lockFolder(folder, password); // Update the lock status without redirecting
-      
-    }
+  if (password) {
+    // Assuming lockFolder function updates the folder status in the database
+    await lockFolder(folder, password); // Pass the folder and password to the lock function
+    // setShowToastMsg(`Folder "${folder.name}" locked successfully!`);
+    addNotification('folder', { 
+      src: './folder.png', // Path to your folder icon
+      message: `Folder "${folder.name}" is locked now.`,
+      name: folder.name,
+      isFolder: true,
+      isLocked: true
+    });
+  }
   };
 
   const [isUnlocked, setIsUnlocked] = useState(false);
 
   const handleUnlockClick = async () => {
     const password = prompt("Enter password to unlock:");
-    onToggleDropdown(null); // Hide the dropdown
-    if (password === folder.password) {
-      unlockFolder(folder);
-      setIsUnlocked(true); // Set the folder as unlocked
-      alert('Folder is unlocked.');
-    } else {
-      alert('Incorrect password.');
-    }
-
+  if (password === folder.password) {
+    // Assuming unlockFolder function updates the folder status in the database
+    await unlockFolder(folder); // Pass the folder to the unlock function
+    // setShowToastMsg(`Folder "${folder.name}" unlocked successfully!`);
+    addNotification('folder', { 
+      src: './folder.png', // Path to your folder icon
+      message: `Folder "${folder.name}" is unlocked now.`,
+      name: folder.name,
+      isFolder: true,
+      isUnlocked: true
+    });
+  } else {
+    alert('Incorrect password.');
+  }
   };
   const navigateToFolder = async () => {
     router.push(`./`);

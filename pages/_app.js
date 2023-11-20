@@ -9,6 +9,8 @@ import { UserAvatarProvider } from '../context/UserAvatarContext';
 import { AuthUserProvider } from "../firebase/auth"; // Adjust the path as needed
 import useFirebaseAuth from "../firebase/auth"; // adjust the path as necessary
 import { useAuth } from "../firebase/auth";
+import '../public/styles/Payment.css'; // Reference the CSS file
+
 
 
 // Global CSS import, if you have one
