@@ -24,6 +24,7 @@ function CreateFolderModal({ isOpen, onClose, onFolderCreated }) {
   const onCreate = async () => {
     console.log(folderName);
     try {
+      
       // Create a new folder object
       const newFolder = {
         name: folderName,
@@ -43,7 +44,12 @@ function CreateFolderModal({ isOpen, onClose, onFolderCreated }) {
       }
 
       // Add a notification once the folder is successfully created
-      addNotification('image', { src: './folder.png', message: `Folder "${folderName}" created successfully` });
+      addNotification('image', { 
+        src: './folder.png', 
+        message: `Folder "${folderName}" created successfully`,
+        name: folderName,
+        isCreated: true
+      })
       setShowToastMsg('Folder Created!');
       onClose(); // Close the modal using the provided onClose function
       setFolderName(''); // Clear the input

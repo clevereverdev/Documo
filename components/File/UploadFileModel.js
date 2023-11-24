@@ -16,7 +16,7 @@ import useStorageData from '../Storage/StorageData'; // Adjust the path as neede
 
 
 function UploadFileModal({ closeModal, onFileCreated }) {
-  const { documents, images, videos, music, others } = useStorageData();
+  const { documents, images, archives, music, others } = useStorageData();
   const { authUser } = useAuth();
   const { parentFolderId, setParentFolderId } = useContext(
     ParentFolderIdContext
@@ -92,7 +92,8 @@ useEffect(() => {
         // Log to see the value at the time of upload
         console.log("sensitiveFound at upload time: ", sensitiveFound);
 
-        const newFileData = {
+        // Here we ensure that sensitiveFound is used in its current state
+        await setDoc(doc(db, "files", docId.toString()), {
           name: file.name,
           type: file.name.split(".")[1],
           size: file.size,
@@ -101,15 +102,22 @@ useEffect(() => {
           parentFolderId: parentFolderId,
           imageUrl: downloadURL,
           id: docId,
-          sensitive: sensitiveFound,
-          password: userSetPassword,
-        };
-    
-        await setDoc(doc(db, "files", docId.toString()), newFileData);
+          sensitive: sensitiveFound, // Use the sensitiveFound directly
+          password: userSetPassword, // Save the password set by the user
+
+        });
 
         setShowToastMsg("File Uploaded Successfully!");
+        // Add a notification for the successful upload
+    addNotification('image', {
+      src: downloadURL,
+      message: `File ${file.name} uploaded successfully`,
+      name: file.name,
+      isFile: true,
+      isCreated: true
+    });
         closeModal(true);
-
+        
         onFileCreated(newFileData); // Directly using the destructured prop
   
       } catch (error) {
@@ -154,6 +162,8 @@ useEffect(() => {
   const expiryDatePattern = /(Card Expires|[eE][xX][pP]|[eE][xX][eE]|[eE][xX]|[eE][xX][pP][iI][rR][eE][sS]|valid\s*[tT][iI][lL][lL])\s*[:\-]?\s*(\d{2}[-\/]\d{2}[-\/]\d{2,4})/;
 
   const checkImage = async (file) => {
+    const fileRef = ref(storage, "file/" + file.name); // Define fileRef again if it's needed here
+
 
     if (isImageType(file)) {
       Tesseract.recognize(file, 'eng', { logger: m => console.log(m) })
@@ -204,10 +214,17 @@ useEffect(() => {
             // Add this function inside your UploadFileModal component
 
             if (daysDiff > 0 && daysDiff <= 171) {
+              // Set the download URL first before calling addNotification
+              const downloadURL = await getDownloadURL(fileRef);
+              setDownloadURL(downloadURL); 
+              console.log("Download URL: " + downloadURL);
               addNotification('Expiry', {
                 src: downloadURL,  // Use the download URL as the image source
-                message: `Your document is expiring soon on ${expiryDate.toDateString()}.`
-
+                name: file.name,
+                message: `Your document is expiring soon on ${expiryDate.toDateString()}.`,
+                isLocked: true,
+                isExpiringSoon: true,
+                date: expiryDate.toDateString(),
               });
 
               // Email details object
@@ -288,7 +305,7 @@ useEffect(() => {
   };
 
   const calculateTotalUsedStorage = () => {
-    const files = [...documents, ...images, ...videos, ...music, ...others];
+    const files = [...documents, ...images, ...archives, ...music, ...others];
     return files.reduce((totalSize, file) => totalSize + file.size, 0);
   };
   

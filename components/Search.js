@@ -3,16 +3,21 @@ import { BsFillQuestionCircleFill, BsFolder, BsBoxArrowRight, BsFillPersonFill, 
 import { FaMicrophone, FaBell } from "react-icons/fa";
 import { BiUser } from "react-icons/bi";
 import { RiPaintBrushLine } from "react-icons/ri";
+import { MdHistory } from "react-icons/md";
+import { useAuth } from "../firebase/auth";
+
+
 import { LuScanFace } from "react-icons/lu";
 import { Tooltip, Dropdown, DropdownTrigger, DropdownMenu, DropdownSection, DropdownItem } from "@nextui-org/react";
-import { useAuth } from "../firebase/auth";
 import { useNotifications, Notification } from '../context/NotificationContext';
 import { UserAvatarContext } from '../context/UserAvatarContext';
 // ICONS
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faSearch, faXmark, faClock, faTimes } from '@fortawesome/free-solid-svg-icons';
 import NotificationsTwoToneIcon from '@mui/icons-material/NotificationsTwoTone';
 import RocketOutlinedIcon from '@mui/icons-material/RocketOutlined';
+import Notifications from './Notifications';
+
 
 
 
@@ -24,6 +29,9 @@ const Search = ({ onSearch }) => {
   const { signOut } = useAuth();
   const [isNewFeature, setIsNewFeature] = useState(true);
   const { notifications, removeNotification, clearAllNotifications } = useNotifications();
+  const [isNotificationDropdownOpen, setIsNotificationDropdownOpen] = useState(false);
+  const [isFullScreenNotificationOpen, setIsFullScreenNotificationOpen] = useState(false);
+
 
   // const [searchTerm, setSearchTerm] = useState('');
   // const handleInputChange = (e) => {
@@ -73,7 +81,7 @@ const Search = ({ onSearch }) => {
 
 
 
-  const handleSearch = (term) => {
+  const handleSearch = (term, userId) => {
     // Call the onSearch callback to filter or do something with the term
     onSearch(term);
 
@@ -82,10 +90,15 @@ const Search = ({ onSearch }) => {
       const newSearchHistory = [term, ...searchHistory].slice(0, 5); // Keep only the last 5 entries
       setSearchHistory(newSearchHistory);
       // Save the updated search history to localStorage
-      localStorage.setItem('searchHistory', JSON.stringify(newSearchHistory));
+      localStorage.setItem(authUser.uid + '_searchHistory', JSON.stringify(newSearchHistory));
+
     }
   };
 
+  useEffect(() => {
+    const savedSearchHistory = localStorage.getItem(authUser?.uid + '_searchHistory');
+    setSearchHistory(savedSearchHistory ? JSON.parse(savedSearchHistory) : []);
+}, [authUser?.uid]);
 
   // When the user submits the search (e.g., presses Enter)
   const handleFormSubmit = (e) => {
@@ -109,11 +122,25 @@ const Search = ({ onSearch }) => {
     setTimeout(() => setShowHistory(false), 100);
   };
 
+  // const selectFromHistory = (term) => {
+  //   setSearchTerm(term);
+  //   handleSearch(term);
+  //   setShowHistory(false);
+  // };
+
+
   const selectFromHistory = (term) => {
-    setSearchTerm(term);
+    if (!term) {
+      // Maybe the click was on the clear button; exit early
+      return;
+    }
+    // Proceed with selecting the term
     handleSearch(term);
     setShowHistory(false);
+    setSearchTerm(term);
+    // Trigger the search or whatever needs to happen when a term is selected
   };
+  
 
   const avatarOptions = [
     '/Default_avatar.png',
@@ -198,21 +225,35 @@ const Search = ({ onSearch }) => {
     setIsDropdownOpen(false);
   };
 
-  const timeAgo = (timestamp) => {
-    const diff = Date.now() - timestamp;
-    const seconds = Math.floor(diff / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
-    if (days > 0) return `${days} days ago`;
-    if (hours > 0) return `${hours} hrs ago`;
-    if (minutes > 0) return `${minutes} mins ago`;
-    if (seconds > 0) return `${seconds} secs ago`;
-    return "just now";
-  }
+  // const clearHistoryItem = (index, event) => {
+  //   event.stopPropagation(); // This should prevent any other event from being fired
+  //   event.preventDefault(); // This should prevent any default behavior like form submission
+  
+  //   // Your existing logic for updating history
+  //   const updatedHistory = searchHistory.filter((_, i) => i !== index);
+  //   setSearchHistory(updatedHistory);
+  //   localStorage.setItem('searchHistory', JSON.stringify(updatedHistory));
+  // };
+  
+  const clearHistoryItem = (index, event) => {
+    event.stopPropagation(); // Prevents other events from being fired
+    event.preventDefault(); // Prevents default behavior like form submission
+
+    // Update the history by filtering out the selected item
+    const updatedHistory = searchHistory.filter((_, i) => i !== index);
+    setSearchHistory(updatedHistory);
+
+    // Save the updated history to localStorage using a user-specific key
+    if (authUser && authUser.uid) {
+        localStorage.setItem(authUser.uid + '_searchHistory', JSON.stringify(updatedHistory));
+    }
+};
+
+  
+  
 
   return (
-    <div className="flex flex-col items-center relative"> {/* Adjusted to flex-col and relative */}
+    <div className="flex items-center justify-between w-full px-4 relative"> {/* Adjusted to flex-col and relative */}
       {/* Search input */}
       <form onSubmit={handleFormSubmit} className="relative w-full">
         <FontAwesomeIcon
@@ -220,7 +261,7 @@ const Search = ({ onSearch }) => {
           className="absolute text-white left-3 top-1/2 transform -translate-y-1/2"
         />
         <input
-          className="pl-10 pr-10 py-2 w-[400px] h-[45px] rounded-3xl outline-none transition-colors bg-[#171717]"
+          className="text-sm text-white pl-10 pr-10 py-2 w-[350px] h-[45px] rounded-3xl outline-transparent transition-all duration-300 bg-[#282424] hover:bg-[#343434] hover:outline-white hover:shadow-lg focus:outline-white focus:shadow-lg"
           type="text"
           placeholder="What do you want to search?"
           value={searchTerm}
@@ -228,33 +269,47 @@ const Search = ({ onSearch }) => {
           onFocus={handleFocus}
           onBlur={handleBlur}
         />
+
+      </form>
         {searchTerm && (
           <FontAwesomeIcon
             icon={faXmark}
             onClick={clearInput}
-            className="absolute text-white right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-xl"
+            className="absolute text-white right-[440px] top-1/2 transform -translate-y-1/2 cursor-pointer text-xl"
           />
         )}
-      </form>
 
       {/* Search history dropdown */}
       {showHistory && (
-        <div className="absolute z-10 w-[400px] bg-white border rounded shadow-lg max-h-60 overflow-auto" style={{ top: '100%' }}>
-          {searchHistory.length > 0 ? (
-            searchHistory.map((term, index) => (
-              <div
-                key={index}
-                className="p-2 hover:bg-gray-100 cursor-pointer"
-                onMouseDown={() => selectFromHistory(term)} // Use onMouseDown instead of onClick to fire before onBlur
-              >
-                {term}
-              </div>
-            ))
-          ) : (
-            <div className="p-2 text-gray-500">No recent searches</div>
-          )}
-        </div>
-      )}
+    <div className="absolute z-[1001] w-[350px] h-[200px] bg-[#282424] rounded shadow-lg max-h-60 overflow-auto rounded-t-lg rounded-b-2xl" style={{ top: '100%' }}>
+      {searchHistory.length > 0 ? (
+        searchHistory.map((term, index) => (
+          <div
+            key={index}
+            className="group flex justify-between items-center p-2 hover:bg-[#313030] cursor-pointer text-gray-100"
+            onClick={() => selectFromHistory(term)}
+          >
+            <div className="flex items-center">
+              <MdHistory className="text-gray-400 mx-2 text-md" />
+              {term}
+            </div>
+            <button
+              className="flex justify-center items-center text-gray-400 text-sm opacity-0 group-hover:opacity-100 cursor-pointer rounded-full w-5 h-5 bg-gray-600"
+              onClick={(e) => clearHistoryItem(index, e)}
+            >
+             ✖
+            </button>
+          </div>
+        ))
+      ) : (
+        <div className="p-2 text-center text-gray-200 m-3">
+          <img src="/No_recent_search.png" alt="No recent searches" className="mx-auto mb-4 w-[90px] h-[90px]" />
+          No recent searches
+          <h3 className="text-sm text-gray-500 mt-1">All searches will be appear here</h3>
+        </div>      
+        )}
+    </div>
+  )}
 
       {/* Display the filtered files */}
       {filteredFiles.length > 0 && (
@@ -267,58 +322,47 @@ const Search = ({ onSearch }) => {
         </div>
       )}
 
-
       {/* NOTIFICATIONS */}
-      {/* <Dropdown>
-        <DropdownTrigger>
-          <button
-            className="flex items-center space-x-2 p-2 bg-[#171717] rounded-full focus:outline-none hover:shadow-lg hover:scale-110 ml-2 relative">
-
-            <NotificationsTwoToneIcon className="text-gray-300 text-2xl" />
-            {notifications.length > 0 && notifications.length <= 9 && (
-              <span className="absolute top-0 right-0 -mt--1 -mr--1 bg-[#dc2626] text-white text-xs rounded-full px-1 py--1 w-4.5 h-4.5">
-                {notifications.length}
-              </span>
-            )}
-            {notifications.length > 9 && (
-              <span className="absolute top-0 right-0 -mt--1 -mr--1 bg-[#dc2626] text-white text-xs rounded-full px-1 py--1 w-4.5 h-4.5">
-                9+
-              </span>
-            )}
+      <div className="flex items-center mr-[200px] space-x-4 ml-[10px]">
+      <Tooltip
+        showArrow={false}
+        content="Notifications"
+        placement="top"
+        className="tooltip-container bg-gray-300 text-gray-700 font-bold text-xs py-2 rounded-lg"
+        arrowSize={0}
+      >
+        <div className="relative">
+        <button
+          onClick={() => setIsFullScreenNotificationOpen(true)}
+          className="flex items-center space-x-2 p-2 bg-[#282424] rounded-full focus:outline-none hover:shadow-lg hover:scale-110 relative">
+          <NotificationsTwoToneIcon className="text-gray-300 text-2xl" />
+      {notifications.length > 0 && notifications.length <= 9 && (
+        <span className="absolute top-0 right-0 -mt--1 -mr--1 bg-[#dc2626] text-white text-xs rounded-full px-1 py--1 w-4.5 h-4.5">
+          {notifications.length}
+        </span>
+      )}
+      {notifications.length > 9 && (
+        <span className="absolute top-0 right-0 -mt--1 -mr--1 bg-[#dc2626] text-white text-xs rounded-full px-1 py--1 w-4.5 h-4.5">
+          9+
+        </span>
+      )}
           </button>
-        </DropdownTrigger>
-        <DropdownMenu
-          variant="faded"
-          aria-label="Dropdown menu with description"
-          className="bg-gray-700 rounded-xl w-72 h-80 flex flex-col"
-        >
-          <DropdownSection className="flex-grow overflow-y-auto">
-            {notifications.length === 0 && <DropdownItem>All caught up!</DropdownItem>}
-            {notifications.map(notif => (
-              <DropdownItem key={notif.id} className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <Notification notification={notif} />
-                  <button onClick={() => removeNotification(notif.id)}>x</button>
-                </div>
-                <span className="text-gray-500 text-xs ml-2">
-                  {timeAgo(notif.id)}
-                </span>
-              </DropdownItem>
-            ))}
-          </DropdownSection>
-          {notifications.length > 0 && (
-            <DropdownSection className='border-t border-gray-800'>
-              <DropdownItem onClick={clearAllNotifications}>
-                Clear All
-              </DropdownItem>
-            </DropdownSection>
-          )}
-        </DropdownMenu>
-      </Dropdown> */}
+          {/* Full-Screen Notification */}
+          {isFullScreenNotificationOpen && (
+      <Notifications
+        onClose={() => setIsFullScreenNotificationOpen(false)}
+        notifications={notifications}
+        removeNotification={removeNotification}
+        clearAllNotifications={clearAllNotifications}
+      />
+    )}
+          </div>
+
+      </Tooltip>
 
 
       {/* WHAT'S NEW */}
-      {/* <div className="relative ml-2" ref={newDropdownRef}>
+      <div className="relative ml-10 mr-10" ref={newDropdownRef}>
         <Tooltip
           showArrow={false}
           content="What's New"
@@ -328,7 +372,7 @@ const Search = ({ onSearch }) => {
         >
           <button
             onClick={() => setIsNewDropdownOpen(!isNewDropdownOpen)}
-            className="flex items-center space-x-2 p-2 bg-[#171717] rounded-full focus:outline-none hover:shadow-lg hover:scale-110"
+            className="flex items-center space-x-2 p-2 bg-[#282424] rounded-full focus:outline-none hover:shadow-lg hover:scale-110"
           >
             <RocketOutlinedIcon className="text-gray-300 text-2xl" />
             {isNewFeature && <div className="absolute w-2.5 h-2.5 bg-[#1ED760] rounded-full top-1 right-2 border-2 border-white"></div>}
@@ -363,10 +407,10 @@ const Search = ({ onSearch }) => {
             </div>
           </div>
         )}
-      </div> */}
+      </div>
 
       {/* Profile */}
-      {/* <div className="relative ml-5" ref={dropdownRef}>
+      <div className="relative ml-10 mr-10" ref={dropdownRef}>
       <Tooltip
         showArrow={false}
         content="Profile"
@@ -376,10 +420,10 @@ const Search = ({ onSearch }) => {
       >
           <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="flex items-center space-x-2 p-2 rounded-full focus:outline-none hover:bg-opacity-50 hover:bg-gray-600"
+            className=" w-[160px] flex items-center space-x-2 p-2 rounded-full focus:outline-none bg-[#282424] hover:shadow-lg hover:scale-105 "
           >
-            <span className="text-xs text-gray-300 font-bold font-Payton">Hi, {authUser.username}</span>
-            <img src={selectedAvatar} alt="Profile Avatar" className="w-10 h-10 rounded-full" />
+            <span className=" flex items-center text-[12px] text-white font-Payton"><span class="animate-waving-hand text-lg px-2">👋🏻</span> {authUser.username}</span>
+            <img src={selectedAvatar} alt="Profile Avatar" className="w-8 h-8 rounded-full" />
             <BsCaretDownFill className="text-white" />
           </button>
           </Tooltip>
@@ -419,9 +463,66 @@ const Search = ({ onSearch }) => {
               </a>
             </div>
           )}
-      </div> */}
+      </div>
+      </div>
     </div>
   );
 }
 
 export default Search;
+
+
+{/* NOTIFICATIONS */}
+{/* <div className="flex items-center mr-[200px] space-x-4">
+<Tooltip
+  showArrow={false}
+  content="Notifications"
+  placement="top"
+  className="tooltip-container bg-gray-300 text-gray-700 font-bold text-xs py-2 rounded-lg"
+  arrowSize={0}
+>
+  <div className="relative">
+    <button
+      onClick={() => setIsNotificationDropdownOpen(!isNotificationDropdownOpen)}
+      className="flex items-center space-x-2 p-2 bg-[#282424] rounded-full focus:outline-none hover:shadow-lg hover:scale-110 ml-2 relative"
+    >
+      <NotificationsTwoToneIcon className="text-gray-300 text-2xl" />
+      {notifications.length > 0 && notifications.length <= 9 && (
+        <span className="absolute top-0 right-0 -mt--1 -mr--1 bg-[#dc2626] text-white text-xs rounded-full px-1 py--1 w-4.5 h-4.5">
+          {notifications.length}
+        </span>
+      )}
+      {notifications.length > 9 && (
+        <span className="absolute top-0 right-0 -mt--1 -mr--1 bg-[#dc2626] text-white text-xs rounded-full px-1 py--1 w-4.5 h-4.5">
+          9+
+        </span>
+      )}
+    </button>
+
+    {isNotificationDropdownOpen && (
+      <div className="absolute z-50 top-full right-0 mt-2 bg-gray-700 rounded-xl w-72 h-80 flex flex-col">
+        <div className="flex-grow overflow-y-auto">
+          {notifications.length === 0 && <div className="py-2">All caught up!</div>}
+          {notifications.map(notif => (
+            <div key={notif.id} className="flex items-center justify-between py-2 px-4">
+              <div className="flex items-center">
+                <Notification notification={notif} />
+                <button onClick={() => removeNotification(notif.id)}>x</button>
+              </div>
+              <span className="text-gray-500 text-xs ml-2">
+                {timeAgo(notif.id)}
+              </span>
+            </div>
+          ))}
+        </div>
+        {notifications.length > 0 && (
+          <div className='border-t border-gray-800 py-2 px-4'>
+            <button onClick={clearAllNotifications}>
+              Clear All
+            </button>
+          </div>
+        )}
+      </div>
+    )}
+  </div>
+</Tooltip> */}

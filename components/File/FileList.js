@@ -1,7 +1,6 @@
 import React, { useContext, useState, useEffect, useRef } from 'react';
 import { AiOutlineAppstoreAdd, AiOutlineBars, AiOutlineInfoCircle } from 'react-icons/ai'; // Import icons
 import { BsFillTrashFill, BsFillPencilFill } from 'react-icons/bs'; // Import icons
-import { FaDownload } from 'react-icons/fa'; // Import icons
 import FileItem from './FileItem';
 import { deleteDoc, doc, getFirestore, getDoc } from "firebase/firestore";
 import { app } from "../../firebase/firebase";
@@ -12,7 +11,8 @@ import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, DropdownSection,
 import Starred from '../../pages/starred';
 import { useFileActions, useFileRename } from "../File/UseFileActions";
 import { BsStar, BsStarFill } from "react-icons/bs";
-
+import { MdOutlineDriveFileRenameOutline } from "react-icons/md";
+import { FaDownload, FaTrash } from "react-icons/fa6";
 // ICONS
 import FormatListNumberedOutlinedIcon from '@mui/icons-material/FormatListNumberedOutlined';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
@@ -87,17 +87,17 @@ function FileList({ fileList, file }) {
     // Before opening the modal, check if you need to fetch the latest file state
     // This could involve fetching the latest data from Firestore, for example
     const fetchLatestFileData = async () => {
-        const fileRef = doc(db, "files", file.id.toString());
-        const docSnapshot = await getDoc(fileRef);
-        if (docSnapshot.exists()) {
-            const updatedFile = docSnapshot.data();
-            setCurrentFile(updatedFile); // Set the most up-to-date file data
-            setIsModalOpen(true); // Now open the modal
-        }
+      const fileRef = doc(db, "files", file.id.toString());
+      const docSnapshot = await getDoc(fileRef);
+      if (docSnapshot.exists()) {
+        const updatedFile = docSnapshot.data();
+        setCurrentFile(updatedFile); // Set the most up-to-date file data
+        setIsModalOpen(true); // Now open the modal
+      }
     };
 
     fetchLatestFileData();
-};
+  };
 
   // Function to close the modal
   const handleCloseModal = () => {
@@ -109,7 +109,7 @@ function FileList({ fileList, file }) {
     const updatedFiles = files.filter(file => file.id !== deletedFileId);
     setFiles(updatedFiles);
   };
-  
+
   useEffect(() => {
     // Initially, set sortedFiles to the provided fileList
     setSortedFiles(fileList);
@@ -215,11 +215,11 @@ function FileList({ fileList, file }) {
   }
 
   return (
-    <div className='mx--1 my-5 p-5 rounded-2xl h-[435px]'>
+    <div className='mx--1 my-5 p-5 rounded-2xl h-screen' style={{ marginTop: '-20px' }}>
       <div className='flex items-center justify-between'>
         <h2 className='text-[18px] font-Payton mb-4'>Recent Files</h2>
         <div className="flex items-center space-x-2">
-          <Tooltip showArrow={false} content={gridView ? 'List View' : 'Grid View'} placement="bottom" className="tooltip-container bg-gray-300 text-gray-700 font-bold text-xs py-1 px-2 rounded-lg" 
+          <Tooltip showArrow={false} content={gridView ? 'List View' : 'Grid View'} placement="bottom" className="tooltip-container bg-gray-300 text-gray-700 font-bold text-xs py-1 px-2 rounded-lg"
           // arrowSize={0}
           >
             <button onClick={toggleGridView} style={{ outline: 'none' }}>
@@ -243,7 +243,7 @@ function FileList({ fileList, file }) {
       {gridView ? (
         <div className='grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4' style={{ maxHeight: 'calc(55vh - 60px)', overflowY: 'auto' }}>
           {sortedFiles && sortedFiles.map((item, index) => (
-            <div key={index} className='text-center relative bg-[#343434] rounded-lg w-[165px] h-[170px] hover:bg-gray-500'>
+            <div key={index} className='text-center relative bg-[#343434] rounded-lg w-[165px] h-[170px] hover:bg-gray-600'>
               <div className="file-container flex flex-col items-center justify-center p-3">
                 {/* File header section */}
                 <div className="file-header flex justify-between items-center w-full mb-2">
@@ -260,46 +260,65 @@ function FileList({ fileList, file }) {
                   <div className="relative ml-2">
                     <Dropdown>
                       <DropdownTrigger>
-                        <button className="flex items-center space-x-2 p-2 rounded-full focus:outline-none hover:bg-opacity-50 hover:bg-gray-600">
+                        <button className="flex items-center space-x-2 p-2 rounded-full focus:outline-none hover:bg-opacity-50 hover:bg-gray-600 z-[1001]">
                           <AiOutlineInfoCircle className="text-gray-300 text-2xl" />
                         </button>
                       </DropdownTrigger>
-                      <DropdownMenu className='bg-black w-[180px] h-[225px] rounded-xl'>
-                        <DropdownSection title="Actions" className='text-lg font-semibold border-b border-gray-700 pb-2 font-Payton'> {/* Added border */}
+                      <DropdownMenu variant="faded" aria-label="Dropdown menu with description" className='bg-[#18181b] rounded-xl py-2'>
+                        <DropdownSection title="Actions" showDivider>
                           <DropdownItem
-                            className='hover:bg-slate-800 rounded-xl text-sm my-2 p-1'
+                            key="new"
+                            shortcut="⌘N"
+                            startContent={<MdOutlineDriveFileRenameOutline className={iconClasses} />}
+                            className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
                             onClick={() => handleFileActionClick(item)}
-
-                            startContent={<BsFillPencilFill className={iconClasses} />}
                           >
                             Rename
+                            <div className="text-xs text-gray-500">
+                              Give a name
+                            </div>
                           </DropdownItem>
-
-
                           <DropdownItem
-                            className='hover:bg-slate-800 rounded-xl text-sm my-2 p-1'
+                            key="copy"
+                            shortcut="⌘C"
+                            className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
                             onClick={() => handleToggleStar(item)}
                             startContent={item.starred ? <BsStarFill className={iconClasses} /> : <BsStar className={iconClasses} />}
                           >
-                            Starred
+                            {item.starred ? 'Unstarred' : 'Starred'}
+                            <div className="text-xs text-gray-500">
+                              Keep in favorites
+                            </div>
                           </DropdownItem>
-
-
                           <DropdownItem
-                            className='hover:bg-slate-800 rounded-xl text-sm my-2 p-1'
-                            onClick={() => downloadFile(item)}
+                            key="copy"
+                            shortcut="⌘C"
                             startContent={<FaDownload className={iconClasses} />}
+                            className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
+                            onClick={() => downloadFile(item)}
                           >
                             Download
+                            <div className="text-xs text-gray-500">
+                              Download in local
+                            </div>
                           </DropdownItem>
                         </DropdownSection>
-                        <DropdownItem
-                          className="text-red-500 hover:bg-red-300 rounded-xl text-sm my-4 p-1 mt-1"
-                          onClick={() => deleteFile(item)}
-                          startContent={<DeleteOutlinedIcon className={cn(iconClasses, "text-red-500")} />}
-                        >
-                          Delete file
-                        </DropdownItem>
+                        <DropdownSection title="Danger zone">
+                          <DropdownItem
+                            key="delete"
+                            className="text-red-400 hover:bg-[#292929] hover:border-red-400 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
+                            color="danger"
+                            shortcut="⌘D"
+                            startContent={<FaTrash className={cn(iconClasses, "text-red-400")} />}
+                            onClick={() => deleteFile(item)}
+                          >
+                            Delete
+                            <div className="text-xs text-red-400">
+                              Move to trash
+                            </div>
+                          </DropdownItem>
+                        </DropdownSection>
+
                       </DropdownMenu>
                     </Dropdown>
 
@@ -315,7 +334,7 @@ function FileList({ fileList, file }) {
 
       ) : (
         <>
-          <div className='grid grid-cols-1 md:grid-cols-[min-content,3fr,2fr,1fr,1fr,1fr,auto] gap-4 text-[13px] font-semibold border-b-[1px] pb-2 mt-3 border-gray-600 text-gray-400'>
+          <div className='grid grid-cols-1 md:grid-cols-[min-content,3fr,1.9fr,0.9fr,1.2fr,1fr,auto] gap-4 text-[13px] font-semibold border-b-[1px] pb-2 mt-3 border-gray-600 text-gray-400'>
             <h2 className='ml-5 text-[15px]'>#</h2>
             <h2 className='ml-5' onClick={handleSortByName}>
               Name
@@ -325,7 +344,7 @@ function FileList({ fileList, file }) {
                 </span>
               )}
             </h2>
-            <h2 className='ml-8' onClick={handleSortByDateModified}>
+            <h2 className='ml-4' onClick={handleSortByDateModified}>
               Date Modified
               {sortColumn === 'dateModified' && (
                 <span className={`ml-2 ${sortOrder === 'asc' ? 'animate-bounce-up' : 'animate-bounce-down'} text-[#1ED760]`}>
@@ -333,7 +352,7 @@ function FileList({ fileList, file }) {
                 </span>
               )}
             </h2>
-            <h2 onClick={handleSortBySize}>
+            <h2 className='ml-[-2]' onClick={handleSortBySize}>
               Size
               {sortColumn === 'size' && (
                 <span className={`ml-2 ${sortOrder === 'asc' ? 'animate-bounce-up' : 'animate-bounce-down'} text-[#1ED760]`}>
@@ -359,7 +378,7 @@ function FileList({ fileList, file }) {
                 key={index}
                 onFileImageClick={handleFileImageClick}
                 onToggleStar={handleToggleStar}
-                onFileDeleted={handleFileDeleted} 
+                onFileDeleted={handleFileDeleted}
               />
             ))}
           </div>
