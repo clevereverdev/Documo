@@ -24,6 +24,7 @@ function CreateFolderModal({ isOpen, onClose, onFolderCreated }) {
   const onCreate = async () => {
     console.log(folderName);
     try {
+      
       // Create a new folder object
       const newFolder = {
         name: folderName,

@@ -1,7 +1,6 @@
 import moment from "moment";
 import React, { useContext, useState, useEffect, useRef } from "react";
 import { BsFillTrashFill, BsFillPencilFill, BsStarFill, BsStar } from 'react-icons/bs';
-import { FaDownload } from 'react-icons/fa';
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, DropdownSection, cn, Tooltip } from "@nextui-org/react";
 import { getFirestore, doc, updateDoc, arrayUnion, getDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { app } from "../../firebase/firebase";
@@ -12,6 +11,8 @@ import { UserAvatarContext } from '../../context/UserAvatarContext';
 import Image from 'next/image';
 import { useFileActions, useFileRename } from "../File/UseFileActions";
 import { onSnapshot } from "firebase/firestore";
+import { MdOutlineDriveFileRenameOutline } from "react-icons/md";
+import { FaDownload, FaTrash, FaShare } from "react-icons/fa6";
 
 
 import LockIcon from '@mui/icons-material/Lock';
@@ -70,7 +71,7 @@ function FileItem({ file, onFileImageClick, onToggleStar, index, isTrashItem, on
 
 const [isSensitive, setIsSensitive] = useState(file.sensitive);
 const [afile, setFile] = useState(file);
-
+const [showTooltip, setShowTooltip] = useState(false);
 
 const [starred, setStarred] = useState(file.starred);
 
@@ -102,7 +103,9 @@ const [starred, setStarred] = useState(file.starred);
         setIsEditing(false);
     };
   
-
+    useEffect(() => {
+      setStarred(file.starred);
+    }, [file.starred]);
   // Whenever the userAvatar changes, we change the key to force re-render
   useEffect(() => {
     setKey(prevKey => prevKey + 1);
@@ -370,7 +373,6 @@ const [starred, setStarred] = useState(file.starred);
       const minutesLeft = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
 
 
-
       if (daysLeft > 1) {
         return `${daysLeft} days left`;
       } else if (hoursLeft > 0) {
@@ -382,8 +384,16 @@ const [starred, setStarred] = useState(file.starred);
       }
     }
   }
+  const handleUnstar = async () => {
+    if (starred && onToggleStar) {
+      await onToggleStar(file);
+      setStarred(false); // Set starred to false regardless of its previous state
+    }
+  };
+  
 
 
+  const iconClasses = "text-xl text-default-500 pointer-events-none flex-shrink-0";
 
   // Conditional rendering logic
   let actionButtons;
@@ -398,74 +408,130 @@ const [starred, setStarred] = useState(file.starred);
   } else {
     actionButtons = (
       <div className="file-actions group flex items-center justify-between">
-        <div className="flex gap-2 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        <div className="flex gap-2 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-200 mx-1">
           <Tooltip
             showArrow={false}
             content="Starred"
             placement="bottom"
             className="tooltip-container bg-gray-300 text-gray-700 font-bold text-xs py-1 px-2 rounded-lg"
           >
-            <div className="icon-wrapper p-3">
-              {starred ? (
-                <BsStarFill className="icon-fill" onClick={handleToggleStar} />
-              ) : (
-                <BsStar className="icon-outline" onClick={handleToggleStar} />
-              )}
-            </div>
+            <div className="icon-wrapper p-3 rounded-full focus:outline-none hover:bg-opacity-50 hover:bg-gray-600">
+  {starred ? (
+    <BsStarFill className="icon-fill" onClick={handleUnstar} /> // Call handleUnstar here
+  ) : (
+    <BsStar className="icon-outline" onClick={handleToggleStar} />
+  )}
+</div>
           </Tooltip>
         </div>
-        <Image src={userAvatar} width={30} height={30} alt="User Avatar" className="self-center ml-auto" />
-        <div className="flex gap-2 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          <Dropdown>
-            <DropdownTrigger>
-              <button className="flex items-center space-x-2 p-2 rounded-full focus:outline-none hover:bg-opacity-50 hover:bg-gray-600">
-                <MoreHorizIcon className="text-gray-300 text-2xl" />
-              </button>
-            </DropdownTrigger>
-            <DropdownMenu className='bg-black w-[180px] h-[225px] rounded-xl'>
-              <DropdownSection title="Actions" className='text-lg font-semibold border-b border-gray-700 pb-2 font-Payton'>
-                <DropdownItem
-                  className='hover:bg-slate-800 rounded-xl text-sm my-2 p-1'
-                  onClick={() => handleFileActionClick(file)} // Only set isRenaming to true here
-                >
-                  Rename
-                </DropdownItem>
-                <DropdownItem
-                  className='hover:bg-slate-800 rounded-xl text-sm my-2 p-1'
-                  onClick={() => downloadFile(file)}
-                >
-                  Download
-                </DropdownItem>
-                <DropdownItem
-                  className='hover:bg-slate-800 rounded-xl text-sm my-2 p-1'
-                  onClick={() => handleShareFile(file)}
-                >
-                 Share
-                </DropdownItem>
-                {isSensitive ? (
-                  <DropdownItem
-                    className='hover:bg-slate-800 rounded-xl text-sm my-2 p-1'
-                    onClick={handleUnlock}
-                  >
-                    <LockOpenIcon className="mr-2" /> Unlock
-                  </DropdownItem>
-                ) : (
-                  <DropdownItem
-                    className='hover:bg-slate-800 rounded-xl text-sm my-2 p-1'
-                    onClick={handleLock}
-                  >
-                    <LockIcon className="mr-2" /> Lock
-                  </DropdownItem>
-                )}
-              </DropdownSection>
-              <DropdownItem
-                className="text-red-500 hover:bg-red-300 rounded-xl text-sm my-4 p-1 mt-1"
-                onClick={()=>deleteFile(file)}
-              >
-                Delete file
-              </DropdownItem>
-            </DropdownMenu>
-          </Dropdown>
+        <Image src={userAvatar} width={30} height={30} alt="User Avatar" className="self-center ml-auto mx-1" />
+        <div className="flex gap-2 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-200" style={{ position: 'relative', display: 'inline-block' }}>
+        <Dropdown>
+  <DropdownTrigger>
+    <button className="flex items-center space-x-2 p-2 rounded-full focus:outline-none hover:bg-opacity-50 hover:bg-gray-600 z-[1001]"
+    onMouseEnter={() => setShowTooltip(true)}
+    onMouseLeave={() => setShowTooltip(false)}
+     >
+      <MoreHorizIcon className="text-gray-300 text-2xl" />
+      {showTooltip && (
+            <div className="absolute top-[70px] left-3 transform -translate-x-1/2 -translate-y-full bg-gray-300 text-gray-700 font-bold text-xs py-1 px-2 rounded-lg z-10">
+            More
+        </div>
+        
+          )}
+    </button>
+   
+  </DropdownTrigger>
+  <DropdownMenu variant="faded" aria-label="Dropdown menu with description" className='bg-[#18181b] rounded-xl py-2'> 
+    <DropdownSection title="Actions" showDivider>  
+      <DropdownItem
+        key="new"
+        shortcut="⌘N"
+        startContent={<MdOutlineDriveFileRenameOutline className={iconClasses} />}
+        className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
+        onClick={() => handleFileActionClick(file)} // Only set isRenaming to true here
+      >
+        Rename
+        <div className="text-xs text-gray-500">
+         Give a name
+        </div>
+      </DropdownItem>
+      <DropdownItem
+        key="copy"
+        shortcut="⌘C"
+        startContent={<FaDownload className={iconClasses} />}
+        className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
+        onClick={() => downloadFile(file)}
+      >
+        Download
+        <div className="text-xs text-gray-500">
+          Download in local
+        </div>
+      </DropdownItem>
+      <DropdownItem
+        key="edit"
+        shortcut="⌘E"
+        showDivider
+        startContent={<FaShare className={iconClasses} />}
+        className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
+        style={{ boxSizing: 'border-box' }}
+        onClick={() => handleShareFile(file)}
+        >
+        Share
+        <div className="text-xs text-gray-500">
+          Share with friends
+        </div>
+      </DropdownItem>
+      {isSensitive ? (
+      <DropdownItem
+        key="edit"
+        shortcut="⌘E"
+        showDivider
+        startContent={<LockOpenIcon className={iconClasses} />}
+        className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
+        style={{ boxSizing: 'border-box' }}
+        onClick={handleUnlock}
+        >
+        Unlock
+        <div className="text-xs text-gray-500">
+          Unlock it to see
+        </div>
+      </DropdownItem>
+       ) : (
+      <DropdownItem
+        key="edit"
+        shortcut="⌘E"
+        showDivider
+        startContent={<LockIcon className={iconClasses} />}
+        className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
+        style={{ boxSizing: 'border-box' }}
+        onClick={handleLock}
+    >
+        Lock
+        <div className="text-xs text-gray-500">
+          Protect with lock
+        </div>
+      </DropdownItem>
+        )}
+    </DropdownSection>
+    <DropdownSection title="Danger zone">  
+      <DropdownItem
+        key="delete"
+        className="text-red-400 hover:bg-[#292929] hover:border-red-400 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
+        color="danger"
+        shortcut="⌘D"
+        startContent={<FaTrash className={cn(iconClasses, "text-red-400")} />}
+        onClick={()=>deleteFile(file)}
+      >
+        Delete
+        <div className="text-xs text-red-400">
+          Move to trash
+        </div>
+      </DropdownItem>
+    </DropdownSection>
+  </DropdownMenu>
+</Dropdown>
+
         </div>
       </div>
     );
@@ -475,10 +541,10 @@ const [starred, setStarred] = useState(file.starred);
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-[min-content,3fr,1.5fr,1fr,1fr,auto] gap-4 text-gray-400 items-center m-2 p-3 py-3 hover:bg-[#2a2929] rounded-md group">
+      <div className="grid grid-cols-1 md:grid-cols-[min-content,3fr,1.5fr,1fr,1fr,auto] gap-4 text-gray-400 items-center m-2 p-2 py-2 hover:bg-[#343434] rounded-md group">
         <div>{index}</div> {/* Display the index here */}
-        <div className="flex items-center gap-2">
-          <div className="flex justify-center items-center bg-inherit w-8 h-8" onClick={() => onFileImageClick(file)}>
+        <div className="flex items-center gap--2">
+          <div className="flex justify-center items-center bg-gray-700 w-11 h-11 p-1 mx-2" onClick={() => onFileImageClick(file)}>
             <Image
               src={displayImageSrc}
               alt={file.name}
@@ -501,23 +567,23 @@ const [starred, setStarred] = useState(file.starred);
               />
             ) : (
               <span onDoubleClick={handleRenameClick} className="flex flex-col">
-                <span className="truncate text-sm text-gray-300">{file.name}</span>
-                <div className='flex'>
-                  {isSensitive && (
-                    <>
-                      <LockIcon style={{ fontSize: '12', paddingTop: '1px', color: '#1ED760' }} />
-                      <button className="flex justify-center items-center text-white text-[7.5px] cursor-default bg-gray-600 p-1 w-3 h-3 rounded-sm">S</button>
-                      <span className='text-xs ml-1'>locked</span>
-                    </>
-                  )}
-                </div>
+                <span className="truncate text-sm text-gray-300 mb-1">{file.name}</span>
+                <div className='flex justify-center items-center'>
+  {isSensitive && (
+    <>
+      <LockIcon className='text-black bg-[#1ED760] rounded-full h-5 w-5 p-[2px] mr-1.5' style={{ fontSize: '14px' }} />
+      <button className="flex justify-center items-center text-white text-[7.5px] cursor-default bg-gray-600 p-2 w-3 h-4 rounded-sm mr-1.5">S</button>
+      <span className='text-xs mr-1.5'>locked</span>
+    </>
+  )}
+</div>
               </span>
             )}
           </div>
         </div>
         <div className="ml-5 text-sm">{moment(file.modifiedAt).format("MMM DD, YYYY")}</div>
-        <div className="text-sm">{formatFileSize(file.size)}</div>
-        <div className="ml-4 text-sm">{file.type || "Unknown"}</div>
+        <div className="text-sm ml-3">{formatFileSize(file.size)}</div>
+        <div className="ml-9 text-sm">{file.type || "Unknown"}</div>
         <div className="flex gap-2 cursor-pointer">
           {actionButtons}
         </div>

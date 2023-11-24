@@ -281,7 +281,7 @@ const Search = ({ onSearch }) => {
 
       {/* Search history dropdown */}
       {showHistory && (
-    <div className="absolute z-[1001] w-[350px] bg-[#282424] rounded shadow-lg max-h-60 overflow-auto rounded-t-lg" style={{ top: '100%' }}>
+    <div className="absolute z-[1001] w-[350px] h-[200px] bg-[#282424] rounded shadow-lg max-h-60 overflow-auto rounded-t-lg rounded-b-2xl" style={{ top: '100%' }}>
       {searchHistory.length > 0 ? (
         searchHistory.map((term, index) => (
           <div
@@ -302,9 +302,10 @@ const Search = ({ onSearch }) => {
           </div>
         ))
       ) : (
-        <div className="p-2 text-center text-gray-200">
-          <img src="/No_recent_search.png" alt="No recent searches" className="mx-auto mb-2 w-[190px] h-[190px]" />
+        <div className="p-2 text-center text-gray-200 m-3">
+          <img src="/No_recent_search.png" alt="No recent searches" className="mx-auto mb-4 w-[90px] h-[90px]" />
           No recent searches
+          <h3 className="text-sm text-gray-500 mt-1">All searches will be appear here</h3>
         </div>      
         )}
     </div>

@@ -120,7 +120,7 @@ export default function Layout({ children, setFolderList, setFileList }) {
             </div>
           </div>
         </div>
-        <main className='main-content flex-1 ml-[188px] bg-[#121212] rounded-l-2xl rounded-r-2xl border-5 m-3 overflow-y-hidden'>
+        <main className='main-content flex-1 ml-[188px] rounded-l-2xl rounded-r-2xl border-5 m-3 overflow-y-hidden' style={{ background: 'linear-gradient(to bottom, #121212, #292929)'}}>
           {children}
         </main>
 

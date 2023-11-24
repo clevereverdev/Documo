@@ -61,7 +61,7 @@ const onFolderStarToggled = (folderId, newStarStatus) => {
 // ...
 
   return (
-    <div className="p-5 mt-5 bg-[#171717] rounded-lg">
+    <div className="p-5 mt-5 bg-[#171717] rounded-lg h-[12rem]">
       {isBig ? (
         <h2 className="text-17px font-bold items-center">
           Recent Folders
@@ -87,8 +87,6 @@ const onFolderStarToggled = (folderId, newStarStatus) => {
                   onFolderDeleted={onFolderDeleted}
                   onFolderRenamed={onFolderRenamed}
                   onFolderStarToggled={onFolderStarToggled}
-
-
 
                   // Include other props like isTrash, onRestore, onDeleteForever if needed
                 />

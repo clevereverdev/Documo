@@ -111,13 +111,14 @@ function FolderDetails() {
         </div>
         <div className={styles.storage}
           style={{
-            backgroundColor: '#fff',
+            background: 'linear-gradient(to top, #323232, #191919)',
             padding: '10px',
-            borderRadius: '5px'
+            borderRadius: '5px',
+            borderTopLeftRadius: '20px',
+            borderBottomLeftRadius: '20px'
           }}>
-          <h1 className='text-md mb-5 font-bold'>Storage</h1>
-
         </div>
+
       </div>
 
     </Layout>
