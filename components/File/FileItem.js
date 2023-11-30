@@ -5,25 +5,27 @@ import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, DropdownSection,
 import { getFirestore, doc, updateDoc, arrayUnion, getDoc, collection, query, where, getDocs, setDoc } from "firebase/firestore";
 import { app } from "../../firebase/firebase";
 import { ShowToastContext } from "../../context/ShowToastContext";
-import defaultFileImage from '../../public/zip.png';
 import { useNotifications } from '../../context/NotificationContext';
 import { UserAvatarContext } from '../../context/UserAvatarContext';
 import Image from 'next/image';
 import { useFileActions, useFileRename } from "../File/UseFileActions";
 import { onSnapshot } from "firebase/firestore";
 import { MdOutlineDriveFileRenameOutline, MdRestore } from "react-icons/md";
-import { FaDownload, FaTrash, FaShare } from "react-icons/fa6";
+import { FaDownload, FaTrash, FaShare, FaFilePdf, FaFileImage } from "react-icons/fa6";
 import PasswordModal from './PasswordModal'; // Import the PasswordModal component
 import ShareFileModal from 'components/File/ShareFileModel';
-
+import { TiPin } from "react-icons/ti";
+import { RiUnpinFill } from "react-icons/ri";
+import { TbPinnedFilled } from "react-icons/tb";
 
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { useAuth } from "../../firebase/auth";
+import { AiOutlinePrinter } from 'react-icons/ai'; // Import a printer icon for the print button
 
-function FileItem({ file, onFileImageClick, onToggleStar, index, isTrashItem, onRestore, onDeleteForever, onRename, isSharedContext }) {
+function FileItem({ file, onFileImageClick, onToggleStar, index, isTrashItem, onRestore, onDeleteForever, onRename, isSharedContext, togglePin }) {
 
   const db = getFirestore(app);
   const { authUser } = useAuth(); // Get the authenticated user
@@ -115,124 +117,62 @@ function FileItem({ file, onFileImageClick, onToggleStar, index, isTrashItem, on
       }
     };
   }, [file, db]);
+
+
+  const handlePrintImage = (imageUrl) => {
+    // Create an iframe element
+    const iframe = document.createElement('iframe');
+    iframe.style.visibility = 'hidden';
+    iframe.style.position = 'absolute';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = 'none'; // Remove the border for the iframe
   
-  // Function to handle the lock action
+    // Append the iframe to the document body
+    document.body.appendChild(iframe);
+  
+    // Write the image and print script to the iframe document
+    iframe.contentDocument.write(`
+      <html>
+        <head>
+          <title>Print</title>
+          <style>
+            /* Styles to ensure the image is centered and retains its aspect ratio */
+            body {
+              margin: 0;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              height: 100vh;
+            }
+            img {
+              max-width: 100%;
+              max-height: 100vh;
+              object-fit: contain; /* This ensures the image is not stretched */
+            }
+          </style>
+        </head>
+        <body>
+          <img src="${imageUrl}" onload="window.print(); setTimeout(() => window.top.close(), 500);" />
+        </body>
+      </html>`
+    );
+  
+    // Close the document to finish loading the page
+    iframe.contentDocument.close();
+  
+    // Remove the iframe after printing
+    iframe.onload = function() {
+      setTimeout(() => {
+        document.body.removeChild(iframe);
+      }, 1000); // Wait for a second before removing to ensure print dialogue appears
+    };
+  };
+  const isImage = /\.(jpe?g|png|gif|bmp|webp)$/i.test(file.name);
 
-
-  // const handleLock = async (password) => {
-  //   const password = prompt("Set a password for this file:");
-  //   if (password) {
-  //     try {
-  //       const fileRef = doc(db, "files", file.id.toString());
-  //       await updateDoc(fileRef, {
-  //         password: password,
-  //         sensitive: true
-  //       });
-  //       setIsSensitive(true);
-  //       setFile(previousFile => ({ ...previousFile, password: password })); // Update the password in local state
-  //       setShowToastMsg("File locked successfully.");
-  //       addNotification('image', {
-  //         src: displayImageSrc,
-  //         message: `File ${file.name} is locked successfully.`,
-  //         name: file.name,
-  //         isFile: true,
-  //         isLocked: true
-  //     }, file.id);
-  //     } catch (error) {
-  //       console.error("Error locking file:", error);
-  //       setShowToastMsg("Failed to lock file.");
-  //     }
-  //   }
-  // };
-
-  // const sendEmailNotification = async (emailDetails) => {
-  //   try {
-  //     const response = await fetch('/api/send-email', {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify(emailDetails),
-  //     });
-  //     const data = await response.json();
-  //     console.log(data.message);
-  //   } catch (error) {
-  //     console.error('Error:', error);
-  //   }
-  // };
-
-  // const sendResetCodeByEmail = async (email, resetCode) => {
-  //   const emailDetails = {
-  //     to: email,
-  //     subject: 'Your Password Reset Code',
-  //     text: `Your password reset code is: ${resetCode}. This code will expire in 10 minutes.`
-  //   };
-
-  //   try {
-  //     const response = await fetch('/api/send-email', {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify(emailDetails),
-  //     });
-  //     const data = await response.json();
-  //     console.log(data.message);
-  //     return data.success; // Assuming your API returns a success status
-  //   } catch (error) {
-  //     console.error('Error:', error);
-  //     return false; // Indicate failure
-  //   }
-  // };
-
-  // const handleUnlock = async (password) => {
-  //   const enteredPassword = prompt("Enter password to unlock or type 'reset' to reset your password:");
-
-  //   // Instead of comparing with file.password, use the afile.password 
-  //   // because afile is your state that reflects real-time changes.
-  //   if (enteredPassword === 'reset') {
-  //     // ... reset logic ...
-  //   } else if (enteredPassword === afile.password) {
-  //     try {
-  //       const fileRef = doc(db, "files", file.id.toString());
-  //       await updateDoc(fileRef, {
-  //         password: null,
-  //         sensitive: false
-  //       });
-  //       setIsSensitive(false);
-  //       setFile(previousFile => ({ ...previousFile, password: null })); // This updates the local state
-  //       setShowToastMsg("File unlocked successfully.");
-  //       addNotification('image', {
-  //         src: displayImageSrc,
-  //         message: `File ${file.name} is unlocked successfully.`,
-  //         name: file.name,
-  //         isFile: true,
-  //         isUnlocked: true
-  //     }, file.id);
-  //     } catch (error) {
-  //       console.error("Error unlocking file:", error);
-  //       setShowToastMsg("Failed to unlock file.");
-  //     }
-  //   } else {
-  //     // If the password doesn't match, it means the local state is not up to date or the entered password is wrong.
-  //     alert("Incorrect password!");
-  //   }
-  // };
-
-  // const handleResetSubmit = async (enteredCode, newPassword) => {
-  //   if (enteredCode === resetCode) {
-  //     // Update the password in Firestore
-  //     const fileRef = doc(db, "files", file.id.toString());
-  //     await updateDoc(fileRef, {
-  //       password: newPassword,
-  //     });
-  //     setShowToastMsg("Password has been reset successfully.");
-  //     setShowResetModal(false); // Close the modal
-  //     setResetCode(null); // Clear the stored reset code
-  //   } else {
-  //     setShowToastMsg("Incorrect code entered.");
-  //   }
-  // };
+  
+  
+  
 const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 const [shareWithUser, setShareWithUser] = useState('');
 const [fileToShare, setFileToShare] = useState(null);
@@ -349,14 +289,6 @@ const openShareModal = (file) => {
       setShowToastMsg("An error occurred while sharing the file.");
     }
   };
-  
-  
-
-  
-
-  
-  
-
 
   // Format File Size
   const formatFileSize = (size) => {
@@ -374,24 +306,33 @@ const openShareModal = (file) => {
     return name;
   };
 
-  // Map file extensions to corresponding images
-  const getFileImage = (extension) => {
-    switch (extension.toLowerCase()) {
-      case 'pdf':
-        return '/pdf.png';
-      case 'zip':
-        return '/zip.png';
-      default:
-        return defaultFileImage; // Default image for unknown file types
-    }
-  };
+// Define the path to the default image for unknown file types
+const defaultFileImage = '/default.png';
+// Map file extensions to corresponding images
+const getFileImage = (extension) => {
+  switch (extension.toLowerCase()) {
+    case 'pdf':
+      return '/pdf.png';
+    case 'zip':
+      return '/zip.png';
+    case 'csv':
+      return '/csv.png';
+    case 'txt':
+      return '/txt.png';
+    case 'mp3':
+      return '/mp3.png';
+    default:
+      return defaultFileImage; // Use the default image for unknown file types
+  }
+};
 
   // Determine the image source based on the file extension
-  const fileExtension = file.name.toLowerCase().split('.').pop();
-  const imageSrc = getFileImage(fileExtension);
-  const displayImageSrc = ['pdf', 'zip'].includes(fileExtension)
-    ? imageSrc
-    : file.imageUrl;
+const fileExtension = file.name.toLowerCase().split('.').pop();
+const imageSrc = getFileImage(fileExtension);
+const displayImageSrc = ['pdf', 'zip', 'csv', 'txt', 'mp3'].includes(fileExtension)
+  ? imageSrc
+  : file.imageUrl; // Use the default image for unknown file types if file.imageUrl is not defined
+
 
 
   function getTimeLeft(deletedAt) {
@@ -517,40 +458,11 @@ const openShareModal = (file) => {
     };
   }
 
-    // const handleUnlock = async (password) => {
-    //   const enteredPassword = prompt("Enter password to unlock or type 'reset' to reset your password:");
-
-    //   if (enteredPassword === 'reset') {
-    //     // ... reset logic ...
-    //   } else if (enteredPassword === afile.password) {
-    //     try {
-    //       const fileRef = doc(db, "files", file.id.toString());
-    //       await updateDoc(fileRef, {
-    //         password: null,
-    //         sensitive: false
-    //       });
-    //       setIsSensitive(false);
-    //       setFile(previousFile => ({ ...previousFile, password: null })); // This updates the local state
-    //       setShowToastMsg("File unlocked successfully.");
-    //       addNotification('image', {
-    //         src: displayImageSrc,
-    //         message: `File ${file.name} is unlocked successfully.`,
-    //         name: file.name,
-    //         isFile: true,
-    //         isUnlocked: true
-    //     }, file.id);
-    //     } catch (error) {
-    //       console.error("Error unlocking file:", error);
-    //       setShowToastMsg("Failed to unlock file.");
-    //     }
-    //   } else {
-    //     // If the password doesn't match, it means the local state is not up to date or the entered password is wrong.
-    //     alert("Incorrect password!");
-    //   }
-    // };
-
-
-
+// Add the pin icon click handler
+const handlePinClick = (e) => {
+  e.stopPropagation(); // Prevent triggering other click events
+  togglePin(file);
+};
 
     // Conditional rendering logic
     let actionButtons;
@@ -731,6 +643,20 @@ const openShareModal = (file) => {
                       Download in local
                     </div>
                   </DropdownItem>
+            
+              <DropdownItem
+              key="pin"
+              shortcut="⌘P"
+              startContent={file.pinned ? <RiUnpinFill className={iconClasses} /> : <TiPin className={iconClasses} />}
+              className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
+              onClick={() => togglePin(file)}
+              >
+              {file.pinned ? 'Unpin' : 'Pin'}
+              <div className="text-xs text-gray-500">
+                {file.pinned ? 'Unpin this file' : 'Pin this file'}
+              </div>
+            </DropdownItem>
+
                   <DropdownItem
                     key="Share"
                     shortcut="⌘E"
@@ -777,7 +703,22 @@ const openShareModal = (file) => {
                       </div>
                     </DropdownItem>
                   )}
+                  <DropdownItem
+  key="Print Image"
+  startContent={<AiOutlinePrinter className={iconClasses} />}
+  onClick={() => isImage && handlePrintImage(file.imageUrl)}
+  className={!isImage ? 'opacity-50 cursor-not-allowed text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]' : 'text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]'}
+  disabled={!isImage} // Disable the item if not an image
+
+>
+  Print Image
+  <div className="text-xs text-gray-500">
+    {isImage ? 'Print this image' : 'Not available for this file type'}
+  </div>
+</DropdownItem>
+
                 </DropdownSection>
+
                 <DropdownSection title="Danger zone">
                   <DropdownItem
                     key="Delete"
@@ -800,8 +741,6 @@ const openShareModal = (file) => {
         </div>
       );
     }
-
-
 
     return (
       <>
@@ -831,11 +770,14 @@ const openShareModal = (file) => {
                 />
               ) : (
                 <span onDoubleClick={handleRenameClick} className="flex flex-col">
-                  <span className="truncate text-sm text-gray-300 mb-1">{file.name}</span>
-                  <div className='flex justify-center items-center'>
+                 <span className="text-sm text-gray-300 mb-1">{truncateFileName(file.name)}</span>
+                  <div className='flex items-center'>
+                    {file.pinned && (
+                     <TbPinnedFilled className='text-black bg-[#1ED760] rounded-full h-4 w-4 p-[1px] mr-1.5' style={{ fontSize: '13px' }}/>
+                    )}
                     {isSensitive && (
                       <>
-                        <LockIcon className='text-black bg-[#1ED760] rounded-full h-5 w-5 p-[2px] mr-1.5' style={{ fontSize: '14px' }} />
+                        <LockIcon className='text-black bg-[#1ED760] rounded-full h-6 w-6 p-[2px] mr-1.5' style={{ fontSize: '13px' }} />
                         <button className="flex justify-center items-center text-white text-[7.5px] cursor-default bg-gray-600 p-2 w-3 h-4 rounded-sm mr-1.5">S</button>
                         <span className='text-xs mr-1.5'>locked</span>
                       </>
@@ -873,10 +815,6 @@ const openShareModal = (file) => {
   }}
   file={fileToShare}
 />
-
-
-
-
 
         {showResetModal && (
           <ResetModal

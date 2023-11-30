@@ -17,9 +17,11 @@ import FolderPasswordModal from './FolderPasswordModal'; // Import the new compo
 import { ShowToastContext } from "../../context/ShowToastContext";
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import ShareFolderModal from './ShareFolderModal';
+import { TiPin } from "react-icons/ti";
+import { RiUnpinFill } from "react-icons/ri";
 
 
-function FolderItem({ folder, isTrashItem, isSharedContext, onToggleDropdown, onRestore, onDeleteForever, onFolderDeleted, onFolderRenamed, onFolderStarToggled }) {
+function FolderItem({ folder, isTrashItem, isSharedContext, onToggleDropdown, onRestore, onDeleteForever, onFolderDeleted, onFolderRenamed, onFolderStarToggled, onTogglePinned }) {
   const [showDropdown, setShowDropdown] = useState(false);
   const { showToastMsg, setShowToastMsg } = useContext(ShowToastContext);
   const router = useRouter();
@@ -348,7 +350,6 @@ const openShareModal = (folder) => {
   };
 
 
-
 let actionButtons;
   
   if (isTrashItem) {
@@ -502,6 +503,20 @@ let actionButtons;
               </div>
             </DropdownItem>
 
+              <DropdownItem
+              key="pin"
+              shortcut="⌘P"
+              startContent={folder.pinned ? <RiUnpinFill className={iconClasses} /> : <TiPin className={iconClasses} />}
+              className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
+              onClick={() => onTogglePinned(folder)}
+              >
+              {folder.pinned ? 'Unpin' : 'Pin'}
+              <div className="text-xs text-gray-500">
+                {folder.pinned ? 'Unpin this folder' : 'Pin this folder'}
+              </div>
+            </DropdownItem>
+
+
             <DropdownItem
                     key="Share"
                     shortcut="⌘E"
@@ -572,14 +587,20 @@ let actionButtons;
 
   
   return (
-    <div className={`relative w-full flex flex-col justify-center items-center h-[120px] bg-gray-500 rounded-2xl`} onClick={navigateToFolder}>
+    <div className={`relative w-[120px] gap-4 flex flex-col justify-center items-center h-[120px] bg-gray-500 rounded-2xl`} onClick={navigateToFolder}>
       {/* Dropdown button */}
       <div className="folder-item">
       {actionButtons}
     </div>
 
       <div>
-        <Image src='/folder.png' alt='folder' width={40} height={40} />
+      <Image src='/folder.png' alt='folder' width={40} height={40} />
+    {folder.pinned && (
+      <div className="absolute top-0 left-0">
+        {/* Replace with your actual pinned icon */}
+        <TiPin className='text-4xl text-green-500' />
+      </div>
+    )}
         {isRenaming ? (
           <form onSubmit={handleRenameSubmit} onClick={(e) => e.stopPropagation()} className="flex flex-col items-center p-2">
             <input

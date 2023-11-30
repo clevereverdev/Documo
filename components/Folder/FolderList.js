@@ -1,12 +1,19 @@
 // FolderList.js
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import FolderItem from "./FolderItem";
 import { useRouter } from "next/router";
 import FolderItemSmall from "./FolderItemSmall";
+import { useFolderActions } from "../Folder/UseFolderActions"
+import { AiOutlineLeft, AiOutlineRight } from 'react-icons/ai';
 
 
 function FolderList({ folderList, fileList, onFolderDeleted, isBig = true }) {
-  console.log("Folder list in FolderList component:", folderList);
+  const { togglePinned } = useFolderActions();
+  const [localFolderList, setLocalFolderList] = useState(folderList); // Renamed state variable to avoid conflict
+  const [sortedFolders, setSortedFolders] = useState([]);
+  const [carouselIndex, setCarouselIndex] = useState(0);
+  const [showArrows, setShowArrows] = useState(false);
+
 
   const [activeFolder, setActiveFolder] = useState();
   const [activeDropdownId, setActiveDropdownId] = useState(null);
@@ -14,6 +21,20 @@ function FolderList({ folderList, fileList, onFolderDeleted, isBig = true }) {
     setActiveDropdownId(activeDropdownId === folderId ? null : folderId);
   };
   const router = useRouter();
+
+  useEffect(() => {
+    // Update the localFolderList state when folderList prop changes
+    setLocalFolderList(folderList);
+  }, [folderList]);
+
+  useEffect(() => {
+    if (Array.isArray(folderList)) {
+      const sorted = [...folderList].sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
+      setSortedFolders(sorted);
+      setShowArrows(sorted.length > 5); // Show both arrows when there are more than 5 folders
+    }
+  }, [folderList]);
+
 
   // const onFolderClick = async (e, index, item) => {
   //   e.preventDefault();
@@ -58,53 +79,97 @@ const onFolderStarToggled = (folderId, newStarStatus) => {
   setFolderList(updatedFolders); // Assuming you have a state called folderList
 };
 
-// ...
+// TOGGLE FOLDER
+const handleTogglePinned = async (folder) => {
+  try {
+    await togglePinned(folder);
+    
+    // Update the localFolderList state
+    const updatedFolders = localFolderList.map(f => {
+      if (f.id === folder.id) {
+        return { ...f, pinned: !f.pinned };
+      }
+      return f;
+    });
+    setLocalFolderList(updatedFolders);
+  } catch (error) {
+    console.error("Error toggling pinned status:", error);
+  }
+};
 
-  return (
-    <div className="p-5 mt-5 bg-[#171717] rounded-lg h-[12rem]">
-      {isBig ? (
-        <h2 className="text-17px font-bold items-center">
-          Recent Folders
-          <span className="float-right text-blue-400 font-normal text-[13px]">
-            View All
-          </span>
-        </h2>
-      ) : null}
-      {isBig ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 mt-3 gap-4">
-         {folderList.map((item, index) => {
-      // Check if fileList is an array before calling .filter
-      const filesForFolder = Array.isArray(fileList) ? fileList.filter(file => file.parentFolderId === item.id) : [];
+// CAROUSEL
+const handleScrollLeft = () => {
+  if (carouselIndex > 0) {
+    setCarouselIndex(carouselIndex - 1);
+  }
+};
 
-            return (
-                <div key={index} className="folder-item-clickable" 
-                >
-                <FolderItem
-                  folder={item}
-                  fileList={filesForFolder}
-                  onToggleDropdown={() => handleDropdownToggle(item.id)}
-                  isUnlocked={item.isUnlocked}
-                  onFolderDeleted={onFolderDeleted}
-                  onFolderRenamed={onFolderRenamed}
-                  onFolderStarToggled={onFolderStarToggled}
+const handleScrollRight = () => {
+  if (carouselIndex < sortedFolders.length - 5) {
+    setCarouselIndex(carouselIndex + 1);
+  }
+};
 
-                  // Include other props like isTrash, onRestore, onDeleteForever if needed
-                />
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div>
-          {folderList.map((item, index) => (
-            <div key={item.id} onClick={() => onFolderClick(index, item)}>
-              <FolderItemSmall folder={item} />
+
+
+return (
+  <div className="p-5 mt-5 bg-[#171717] rounded-lg h-[12rem]">
+    {isBig ? (
+      <h2 className="text-17px font-bold items-center">
+        Recent Folders
+      </h2>
+    ) : null}
+
+    {isBig ? (
+      <div className="relative">
+      {showArrows && (
+          <div className="absolute inset-y-0 flex items-center mt-20">
+            
+            <AiOutlineLeft
+              className={`text-blue-400 cursor-pointer bg-black rounded-full w-8 h-8 p-2 text-white ${carouselIndex <= 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+              onClick={handleScrollLeft}
+              disabled={carouselIndex <= 0}
+            />
+            
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 m-3">
+              {sortedFolders.slice(carouselIndex, carouselIndex + 5).map((item, index) => {
+                const filesForFolder = Array.isArray(fileList) ? fileList.filter(file => file.parentFolderId === item.id) : [];
+                return (
+                  <div key={index} className="folder-item-clickable">
+                    <FolderItem
+                      folder={item}
+                      fileList={filesForFolder}
+                      onToggleDropdown={() => handleDropdownToggle(item.id)}
+                      isUnlocked={item.isUnlocked}
+                      onFolderDeleted={onFolderDeleted}
+                      onFolderRenamed={onFolderRenamed}
+                      onFolderStarToggled={onFolderStarToggled}
+                      onTogglePinned={handleTogglePinned}
+                    />
+                  </div>
+                );
+              })}
             </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+            <AiOutlineRight
+              className={`text-blue-400 cursor-pointer bg-black rounded-full w-8 h-8 p-2 text-white ${carouselIndex >= sortedFolders.length - 5 ? 'opacity-50 cursor-not-allowed' : ''}`}
+              onClick={handleScrollRight}
+              disabled={carouselIndex >= sortedFolders.length - 5}
+            />
+          </div>
+        )}
+      </div>
+    ) : (
+      <div>
+        {folderList.map((item, index) => (
+          <div key={item.id} onClick={() => onFolderClick(index, item)}>
+            <FolderItemSmall folder={item} />
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+);
+
 }
 
 export default FolderList;

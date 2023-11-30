@@ -29,10 +29,11 @@ function FileList({ fileList, file }) {
   const [gridView, setGridView] = useState(false); // Add grid view state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentFile, setCurrentFile] = useState(null);
-  const { deleteFile, toggleStar, downloadFile, renameFile } = useFileActions();
+  const { deleteFile, toggleStar, downloadFile, renameFile, togglePin } = useFileActions();
   const { isRenaming, newName, handleRenameClick, handleNameChange, handleKeyDown, handleRenameSubmit } = useFileRename(currentFile, renameFile);
   const [starredFiles, setStarredFiles] = useState(new Set());
-
+  const [files, setFiles] = useState([]);
+  const [localFileList, setLocalFileList] = useState(fileList); // Local state for files
 
   const handleToggleStar = async (file) => {
     const currentStarredStatus = file.starred;
@@ -77,6 +78,35 @@ function FileList({ fileList, file }) {
     setIsDropdownOpen(newDropdownState);
   };
 
+ 
+
+
+useEffect(() => {
+  // Update the localFileList state when fileList prop changes
+  setLocalFileList(fileList);
+}, [fileList]);
+
+useEffect(() => {
+  // Sort files only if localFileList is an array
+  if (Array.isArray(localFileList)) {
+    const sorted = [...localFileList].sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
+    setSortedFiles(sorted);
+  }
+}, [localFileList]);
+
+const handleTogglePin = async (file) => {
+  console.log("Toggling pin for file:", file);
+  await togglePin(file);
+
+  // Update the localFileList state
+  const updatedFiles = localFileList.map(f => {
+    if (f.id === file.id) {
+      return { ...f, pinned: !f.pinned };
+    }
+    return f;
+  });
+  setLocalFileList(updatedFiles); // Update local state
+};
 
   useEffect(() => {
     console.log("isDropdownOpen:", isDropdownOpen); // Add this line
@@ -371,7 +401,7 @@ function FileList({ fileList, file }) {
             <h2>Actions</h2>
           </div>
           <div className='overflow-auto' style={{ flex: 1, maxHeight: 'calc(55vh - 100px)' }}>
-            {sortedFiles && sortedFiles.map((item, index) => (
+          {sortedFiles.map((item, index) => (
               <FileItem
                 file={item}
                 index={index + 1} // Add 1 since index starts at 0
@@ -379,6 +409,8 @@ function FileList({ fileList, file }) {
                 onFileImageClick={handleFileImageClick}
                 onToggleStar={handleToggleStar}
                 onFileDeleted={handleFileDeleted}
+                togglePin={handleTogglePin}
+
 
               />
             ))}
