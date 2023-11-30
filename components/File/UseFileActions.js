@@ -29,45 +29,60 @@ export const useFileActions = () => {
 
     // DELETE FILE
     const deleteFile = async (file) => {
-        const fileExtension = file.name.toLowerCase().split('.').pop();
-        const imageSrc = getFileImage(fileExtension);
-        const displayImageSrc = ['pdf', 'zip'].includes(fileExtension) ? imageSrc : file.imageUrl;
-    
-        // Reference to the original file document
-        const fileRef = doc(db, "files", file.id.toString());
-    
-        // Reference to the 'deleted_files' collection
+        const fileRefInFiles = doc(db, "files", file.id.toString());
+        const fileRefInSharedFiles = doc(db, "shared_files", file.id.toString());
         const deletedFileRef = doc(collection(db, "deleted_files"));
     
-        // Fetch the file name
-        const fileSnapshot = await getDoc(fileRef);
+        console.log(`Attempting to delete file with ID: ${file.id}`);
+    
+        // Check in 'files' collection first
+        let fileSnapshot = await getDoc(fileRefInFiles);
+        let fileRef = fileRefInFiles;
+    
+        if (!fileSnapshot.exists()) {
+            // If not found in 'files', check in 'shared_files'
+            fileSnapshot = await getDoc(fileRefInSharedFiles);
+            fileRef = fileRefInSharedFiles;
+        }
+    
         if (fileSnapshot.exists()) {
-            const fileName = fileSnapshot.data().name;
+            try {
+                const fileName = fileSnapshot.data().name;
+                console.log(`File found: ${fileName}. Proceeding with deletion.`);
     
-            // First, set the file document in the 'deleted_files' collection
-            await setDoc(deletedFileRef, {
-                ...file,
-                deletedAt: new Date(),
-            });
+                // Move the file document to the 'deleted_files' collection
+                await setDoc(deletedFileRef, {
+                    ...fileSnapshot.data(),
+                    deletedAt: new Date(),
+                });
     
-            // Then delete the original file document
-            await deleteDoc(fileRef).then(() => {
-                setShowToastMsg('File Deleted!!!');
-                setTimeout(() => {
-                    window.location.reload(); // Consider removing this if you manage state updates properly
-                }, 1500);
-                
-                // Add a new field 'name' to the notification data
+                // Then delete the original file document
+                await deleteDoc(fileRef);
+                setShowToastMsg(`${fileName} was deleted.`);
+    
+                // Add a notification for the deletion
                 addNotification('image', {
-                    src: displayImageSrc,
-                    name: fileName, // Include the file name
+                    src: file.imageUrl,
+                    name: fileName,
                     message: `${fileName} was deleted.`,
                     isFile: true,
                     isDeleted: true
                 });
-            });
+    
+                // If you have a state management logic to update the UI, trigger it here
+            } catch (error) {
+                console.error("Error deleting file:", error);
+                setShowToastMsg("An error occurred while deleting the file.");
+            }
+        } else {
+            console.error("Document does not exist in both 'files' and 'shared_files' collections:", file.id);
+            setShowToastMsg("Document does not exist.");
         }
     };
+    
+    
+    
+    
 
 
     useEffect(() => {
@@ -86,45 +101,39 @@ export const useFileActions = () => {
     }, [db]);
 
     // STARRED/UNSTARRED FILE
-    const toggleStar = async (file, starred) => {
-        const fileExtension = file.name.toLowerCase().split('.').pop();
-        const imageSrc = getFileImage(fileExtension);
-        const displayImageSrc = ['pdf', 'zip'].includes(fileExtension) ? imageSrc : file.imageUrl;
-        const newStarStatus = !starred;
+    const toggleStar = async (file) => {
+        const collectionName = file.sharedBy ? "shared_files" : "files";
+        const fileRef = doc(db, collectionName, file.id.toString());
+        try {
+            const updatedStarred = !file.starred;
+            await updateDoc(fileRef, {
+                starred: updatedStarred,
+            });
+
+            // Check if the document was successfully updated
+            const fileSnapshot = await getDoc(fileRef);
+            if (fileSnapshot.exists()) {
+                const fileName = fileSnapshot.data().name;
+                const fileExtension = fileName.toLowerCase().split('.').pop();
+                const imageSrc = getFileImage(fileExtension);
+                const displayImageSrc = ['pdf', 'zip'].includes(fileExtension) ? imageSrc : fileSnapshot.data().imageUrl;
     
-        const fileRef = doc(db, "files", file.id.toString());
-    
-        await updateDoc(fileRef, {
-            starred: newStarStatus,
-        });
-    
-        // Fetch the file name
-        const fileSnapshot = await getDoc(fileRef);
-        if (fileSnapshot.exists()) {
-            const fileName = fileSnapshot.data().name;
-    
-            // Notify the user about the change
-            if (newStarStatus) {
+                // Notify the user about the change
                 addNotification('image', {
                     src: displayImageSrc,
-                    message: `You've starred the file: ${fileName}.`,
+                    message: `You've ${newStarStatus ? 'starred' : 'unstarred'} the file: ${fileName}.`,
                     isFile: true,
-                    isStarred: true,
+                    isStarred: newStarStatus,
                     name: fileName, // Include the file name
                 });
             } else {
-                addNotification('image', {
-                    src: displayImageSrc,
-                    message: `You've unstarred the file: ${fileName}.`,
-                    isFile: true,
-                    isUnstarred: true,
-                    name: fileName, // Include the file name
-                });
+                console.error("Document does not exist!");
             }
-        } else {
-            console.error("Document does not exist!");
+        } catch (error) {
+            console.error("Error toggling star:", error);
         }
     };
+    
 
     //DOWNLOAD FILE
     const downloadFile = (file) => {
@@ -164,37 +173,50 @@ export const useFileActions = () => {
 
     // RENAME FILE
     const renameFile = async (file, newName, onRenameSuccess) => {
-        if (!file || !file.name) {
-            console.error("File is not provided or doesn't have a name");
+        if (!file || !file.id || !file.name) {
+            console.error("Invalid file data");
             return;
         }
-        const fileExtension = file.name.toLowerCase().split('.').pop();
-        const imageSrc = getFileImage(fileExtension);
-        const displayImageSrc = ['pdf', 'zip'].includes(fileExtension) ? imageSrc : file.imageUrl;
+    
         if (newName.trim() === '') {
-            setShowToastMsg('Name cannot be blank!');
+            showToastMsg('Name cannot be blank!');
             return;
         }
-        const fileRef = doc(db, "files", file.id.toString());
-    await updateDoc(fileRef, { name: newName }).then(() => {
-        setTimeout(() => {
-            window.location.reload(); // Consider removing this if you manage state updates properly
-        }, 500);
-    });
-    const fileName = newName
-        setShowToastMsg('File renamed successfully!');
-
-        // Add a notification for the renaming action
-        addNotification('image', {
-            src: displayImageSrc,
-            message: `File renamed to: ${newName}.`,
-            name: fileName,
-            isFile: true,
-            isRename: true
-        }, file.id);
+    
+        // First, check in 'files' collection
+        let fileRef = doc(db, "files", file.id.toString());
+        let docSnapshot = await getDoc(fileRef);
+    
+        if (!docSnapshot.exists()) {
+            // If not found in 'files', check in 'shared_files'
+            fileRef = doc(db, "shared_files", file.id.toString());
+            docSnapshot = await getDoc(fileRef);
+        }
+    
+        if (docSnapshot.exists()) {
+            try {
+                await updateDoc(fileRef, { name: newName });
+                console.log("File renamed successfully!");
+                setShowToastMsg('File renamed successfully!');
+                onRenameSuccess && onRenameSuccess(file.id, newName);
+            } catch (error) {
+                console.error("Error renaming file:", error);
+                setShowToastMsg("Failed to rename file.");
+            }
+        } else {
+            console.error("Document does not exist in both 'files' and 'shared_files' collections:", file.id);
+            setShowToastMsg("File not found for renaming.");
+        }
     };
     
-    const lockFile = async (file) => {
+      
+    
+      
+      
+    
+    
+    
+      const lockFile = async (file) => {
         const fileRef = doc(db, "files", file.id.toString());
         await updateDoc(fileRef, {
             sensitive: true,
@@ -209,6 +231,7 @@ export const useFileActions = () => {
             isLocked: true
         }, file.id);
     };
+    
 
     // UNLOCK FILE
     const unlockFile = async (file) => {

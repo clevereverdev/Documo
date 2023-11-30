@@ -1,178 +1,149 @@
-import React, { useEffect, useState } from "react";
-import { collection, getFirestore, query, onSnapshot, doc, deleteDoc, setDoc, where } from "firebase/firestore";
-import Layout from "@/Sidebar";
+import React, { useState, useEffect, useRef } from "react";
+import { collection, getFirestore, query, where, onSnapshot, doc, updateDoc, deleteDoc, setDoc, getDocs } from "firebase/firestore";
 import FileItem from "@/File/FileItem";
-import FolderItem from "@/Folder/FolderItem"; // Make sure this path is correct
-import SearchBar from "@/Search";
+import FolderItem from "@/Folder/FolderItem";
 import { app } from "../firebase/firebase";
+import Layout from "@/Sidebar";
+import SearchBar from "@/Search";
+import StorageView from '../components/Storage/StorageView';
+import styles from "../styles/Home.module.css";
 
 export default function Trash() {
-  const [deletedFiles, setDeletedFiles] = useState([]);
-  const [deletedFolders, setDeletedFolders] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const db = getFirestore(app);
+  const [deletedItems, setDeletedItems] = useState([]);
+  const [filteredDeletedItems, setFilteredDeletedItems] = useState([]);
+  const [searchHistory, setSearchHistory] = useState([]);
 
   useEffect(() => {
-    // Fetch deleted files
-    const filesQuery = query(collection(db, "deleted_files"));
-    const unsubscribeFiles = onSnapshot(filesQuery, (querySnapshot) => {
-      const files = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id, type: 'file' }));
-      setDeletedFiles(files);
-    });
+    const savedHistory = localStorage.getItem('deletedSearchHistory');
+    const parsedHistory = savedHistory ? JSON.parse(savedHistory) : [];
+    setSearchHistory(parsedHistory);
+  }, []);
 
-    // Fetch deleted folders
+  const db = getFirestore(app);
+  
+  function getFileExtension(filename) {
+    // This will extract the extension from the filename
+    const match = filename.match(/\.([0-9a-z]+)(?:[\?#]|$)/i);
+    return match ? match[1] : 'file'; // return 'file' if no extension is found
+  }
+
+  useEffect(() => {
+    const filesQuery = query(collection(db, "deleted_files"));
     const foldersQuery = query(collection(db, "deleted_folders"));
-    const unsubscribeFolders = onSnapshot(foldersQuery, (querySnapshot) => {
-      const folders = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id, type: 'folder' }));
-      setDeletedFolders(folders);
+
+    const unsubscribeFiles = onSnapshot(filesQuery, (fileSnapshot) => {
+      const files = fileSnapshot.docs.map(doc => {
+        const data = doc.data();
+        const extension = getFileExtension(data.name); // Extract the file extension
+        return { ...data, id: doc.id, type: extension }; // Use the extracted extension
+      });
+      
+      // Combine with folders (assuming folders are handled separately)
+  const unsubscribeFolders = onSnapshot(foldersQuery, (folderSnapshot) => {
+    const folders = folderSnapshot.docs.map(doc => ({
+      ...doc.data(),
+      id: doc.id,
+      type: 'folder',
+      imageUrl: '/folder.png', // Static image URL for folders
+      size: 'Unknown' // Folders will always have 'Unknown' size
+    }));
+        
+        // Combine and set starred items
+        setDeletedItems([...files, ...folders]);
+        setFilteredDeletedItems([...files, ...folders]);
+
+      });
     });
 
     return () => {
       unsubscribeFiles();
-      unsubscribeFolders();
+      //unsubscribeFolders(); // Uncomment if necessary
     };
   }, [db]);
 
-  const handleSearch = (term) => {
-    setSearchTerm(term.toLowerCase());
+
+  // Define a search function for starred files
+const searchDeletedItems = (searchTerm) => {
+  let searchResult = [];
+  if (searchTerm.trim() === '') {
+    // If the search bar is empty, show all starred items
+    searchResult = [...deletedItems];
+  } else {
+    // Filter the starredItems based on the search term
+    searchResult = deletedItems.filter((item) =>
+      item.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }
+  // Update the filtered starred items list
+  setFilteredDeletedItems(searchResult);
+
+  // Update search history if the term is not already in the history
+  if (searchTerm && !searchHistory.includes(searchTerm)) {
+    const newHistory = [searchTerm, ...searchHistory].slice(0, 5);
+    updateSearchHistory(newHistory);
+  }
+};
+
+  const updateSearchHistory = (newHistory) => {
+    setSearchHistory(newHistory);
+    localStorage.setItem('deletedSearchHistory', JSON.stringify(newHistory));
   };
-  // Add state for search terms specific to folders and files
-  const [searchTermFolders, setSearchTermFolders] = useState('');
-  const [searchTermFiles, setSearchTermFiles] = useState('');
 
-  // ... useEffect hooks ...
+  const restoreFile = async (file) => {
+    const fileRef = doc(db, "deleted_files", file.id);
+    const restoredFileRef = doc(db, "files", file.id);
 
-  const handleSearchFolders = (term) => {
-    setSearchTermFolders(term.toLowerCase());
+    try {
+      await deleteDoc(fileRef);
+      await setDoc(restoredFileRef, { ...file, deleted: false, deletedAt: null });
+
+      setDeletedItems(prevItems => prevItems.filter(f => f.id !== file.id));
+      console.log(`${file.name} has been restored.`);
+    } catch (error) {
+      console.error("Error restoring file: ", error);
+    }
   };
 
-  const handleSearchFiles = (term) => {
-    setSearchTermFiles(term.toLowerCase());
+  const deleteFileForever = async (file) => {
+    const fileRef = doc(db, "deleted_files", file.id);
+    try {
+      await deleteDoc(fileRef);
+      console.log(`${file.name} has been permanently deleted.`);
+      setDeletedItems(prevItems => prevItems.filter(f => f.id !== file.id));
+    } catch (error) {
+      console.error("Error deleting file forever: ", error);
+    }
   };
 
-  // Filter folders and files separately
-  const filteredFolders = searchTermFolders
-    ? deletedFolders.filter(folder => folder.name.toLowerCase().includes(searchTermFolders))
-    : deletedFolders;
+  const restoreFolder = async (folder) => {
+    const folderRef = doc(db, "deleted_folders", folder.id);
+    const restoredFolderRef = doc(db, "Folders", folder.id);
 
-  const filteredFiles = searchTermFiles
-    ? deletedFiles.filter(file => file.name.toLowerCase().includes(searchTermFiles))
-    : deletedFiles;
+    try {
+      await deleteDoc(folderRef);
+      await setDoc(restoredFolderRef, { ...folder, deleted: false, deletedAt: null });
 
+      setDeletedItems(prevItems => prevItems.filter(f => f.id !== folder.id));
+      console.log(`${folder.name} has been restored.`);
+    } catch (error) {
+      console.error("Error restoring folder: ", error);
+    }
+  };
+  
+  const deleteFolderForever = async (folder) => {
+    try {
+      const folderRef = doc(db, "deleted_folders", folder.id);
+      await deleteDoc(folderRef);
+  
+      setDeletedItems(prevItems => prevItems.filter(f => f.id !== folder.id));
+      console.log(`${folder.name} has been permanently deleted.`);
+    } catch (error) {
+      console.error("Error deleting folder forever: ", error);
+    }
+  };
+  
+  
 
-
-    const restoreFile = async (file) => {
-        // Reference to the document in the 'deleted_files' collection
-        const fileRef = doc(db, "deleted_files", file.id.toString());
-        
-        // Reference to the document in the 'files' collection (if moving it back)
-        const restoredFileRef = doc(db, "files", file.id.toString());
-      
-        try {
-          // Remove from 'deleted_files' and add back to 'files' collection
-          await deleteDoc(fileRef);  // Delete from 'deleted_files'
-          await setDoc(restoredFileRef, {
-            ...file,
-            deleted: false, // Set deleted to false
-            deletedAt: null, // Optionally remove the 'deletedAt' field
-          });
-      
-          // Optionally update the local state to remove the file from the list
-          setDeletedFiles(prevFiles => prevFiles.filter(f => f.id !== file.id));
-      
-          // Show success message
-          console.log(`${file.name} has been restored.`);
-          // Add any user notification logic here
-        } catch (error) {
-          console.error("Error restoring file: ", error);
-          // Display error message to user
-          // Add any user notification logic here
-        }
-      };
-      
-      const deleteFileForever = async (file) => {
-        // If you're using a 'deleted_files' collection, reference that
-        // Otherwise, it's just the 'files' collection
-        const fileRef = doc(db, "deleted_files", file.id.toString());
-        try {
-          await deleteDoc(fileRef);
-          console.log(`${file.name} has been permanently deleted.`);
-          // Show a toast or snackbar message here if you wish
-        } catch (error) {
-          console.error("Error deleting file forever: ", error);
-          // Handle the error, maybe show a message to the user
-        }
-      };
-
-      useEffect(() => {
-        const autoDeleteOldFiles = async () => {
-            const thirtyDaysAgo = new Date();
-            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30); // Set to 30 days ago
-          
-            const oldFilesQuery = query(
-              collection(db, "deleted_files"),
-              where("deletedAt", "<=", thirtyDaysAgo)
-            );
-          
-            const querySnapshot = await getDocs(oldFilesQuery);
-            const deletionPromises = [];
-            querySnapshot.forEach((docSnapshot) => {
-              deletionPromises.push(deleteDoc(docSnapshot.ref));
-            });
-          
-            // Wait for all deletions to complete
-            await Promise.all(deletionPromises);
-            console.log('Files older than 30 days have been deleted.');
-          };
-          
-          // Call the function to initiate the deletion process
-          autoDeleteOldFiles().catch(console.error);
-          
-          
-      }, [db])
-
-      const restoreFolder = async (folder) => {
-        // Reference to the document in the 'deleted_files' collection
-        const folderRef = doc(db, "deleted_folders", folder.id.toString());
-        
-        // Reference to the document in the 'files' collection (if moving it back)
-        const restoredFolderRef = doc(db, "Folders", folder.id.toString());
-      
-        try {
-          // Remove from 'deleted_files' and add back to 'files' collection
-          await deleteDoc(folderRef);  // Delete from 'deleted_files'
-          await setDoc(restoredFolderRef, {
-            ...folder,
-            deleted: false, // Set deleted to false
-            deletedAt: null, // Optionally remove the 'deletedAt' field
-          });
-      
-          // Optionally update the local state to remove the file from the list
-          setDeletedFiles(prevFolders => prevFolders.filter(f => f.id !== folder.id));
-      
-          // Show success message
-          console.log(`${folder.name} has been restored.`);
-          // Add any user notification logic here
-        } catch (error) {
-          console.error("Error restoring file: ", error);
-          // Display error message to user
-          // Add any user notification logic here
-        }
-      };
-    
-      const deleteFolderForever = async (folder) => {
-       // If you're using a 'deleted_files' collection, reference that
-        // Otherwise, it's just the 'files' collection
-        const folderRef = doc(db, "deleted_folders", folder.id.toString());
-        try {
-          await deleteDoc(folderRef);
-          console.log(`${folder.name} has been permanently deleted.`);
-          // Show a toast or snackbar message here if you wish
-        } catch (error) {
-          console.error("Error deleting folder forever: ", error);
-          // Handle the error, maybe show a message to the user
-        }
-      };
 
       useEffect(() => {
         const autoDeleteOldFolders = async () => {
@@ -201,53 +172,78 @@ export default function Trash() {
           
       }, [db])
     
-      
 
   return (
     <Layout>
-      <div className="m-5">
-        <SearchBar onSearch={handleSearch} />
-      </div>
-      <div className='m-4'>
-        <h2 className='text-[18px] font-Payton mb-4'>Deleted Folders</h2>
-        {/* Render the deleted folders here */}
-        {filteredFolders.map((folder, index) => (
-         <FolderItem 
-         key={folder.id}
-         folder={folder}
-         isTrash={true}
-         onRestore={restoreFolder}
-         onDeleteForever={deleteFolderForever}
-       />
-        ))}
-        </div>
-      <div className='m-4'>
-        <h2 className='text-[18px] font-Payton mb-4'>Deleted Files</h2>
-        <div className='grid grid-cols-1 md:grid-cols-[min-content,1.5fr,1fr,1fr,1fr,1fr,auto] gap-4 text-[13px] font-semibold border-b-[1px] pb-2 mt-3 border-gray-600 text-gray-400'>
-          <h2>#</h2>
-          <h2 className='ml-3'>Name</h2>
-          <h2>Date Modified</h2>
-          <h2>Size</h2>
-          <h2>Kind</h2>
-          <h2>Action</h2>
-        </div>
-        {filteredFiles.length ? (
-          filteredFiles.map((file, index) => (
-            <FileItem 
-            key={file.id}
-            file={file}
-            index={index + 1}
-            isTrashItem={true}
-            onRestore={restoreFile}
-            onDeleteForever={deleteFileForever}
-/>
-          ))
-        ) : (
-          <div className='flex flex-col items-center justify-center text-gray-400 mt-10'>
-            <p>No files in Trash.</p>
+      <div className="flex flex-col lg:flex-row h-[727px]" style={{ gap: '1rem', marginBottom: '2rem' }}> {/* Add bottom margin */}
+        
+        <div className="flex-1 overflow-auto"> {/* Main content area flex item */}
+          <div className="m-6">
+            <SearchBar onSearch={searchDeletedItems} />
           </div>
-        )}
-      </div>
-    </Layout>
+          <div className='m-3'>
+  <div className='m-2 rounded-b-2xl h-[600px]'>
+    <h2 className='text-[25px] text-blue-400 font-bold mb-4'>Trash Items</h2>
+  
+    <div className='grid grid-cols-1 md:grid-cols-[min-content,3.9fr,1.8fr,1.2fr,1fr,1fr,auto] gap-6 text-[13px] font-semibold border-b-[1px] pb-2 mt-3 mx-4 border-gray-600 text-gray-400'>
+      <h2>#</h2>
+      <h2>Name</h2>
+      <h2>Date Modified</h2>
+      <h2>Size</h2>
+      <h2>Kind</h2>
+      <h2>Action</h2>
+    </div>
+    {/* Render combined starred items (folders and files) */}
+{filteredDeletedItems.length ? (
+   filteredDeletedItems.map((item, index) => {
+    if (item.deleted) {
+      return null; // Skip rendering deleted items
+    }
+    const isFolder = item.type === 'Folder';
+    return isFolder ? (
+      <FolderItem 
+        key={item.id}
+        folder={item}
+        index={index + 1}
+        isTrashItem={true}
+        onRestore={() => restoreFolder(item)}
+        onDeleteForever={() => deleteFolderForever(item)}
+      />
+      
+    ) : (
+      <FileItem 
+        key={item.id}
+        file={item}
+        index={index + 1}
+        isTrashItem={true}
+        onRestore={() => restoreFile(item)}
+        onDeleteForever={() => deleteFileForever(item)}
+      />
+    );
+  })
+) : (
+      <div className='flex flex-col items-center justify-center text-gray-400 mt-[100px]'>
+      <img src="/Trash.png" height="400" width="400" alt="No items" className='mb-4' />
+      <div className="text-xl text-gray-200 font-Payton">Trash is empty</div>
+      <div className="text-sm text-gray-400">Trash items will appear here and will be deleted automatically after 30 days.</div>
+    </div>
+  )}
+</div>
+</div>
+</div>
+<div className={styles.storage} style={{
+            flex: 'none', // Ensures that this area doesn't grow or shrink
+            width: '25rem', // Adjust the width as desired
+            height: '47rem',
+            background: 'linear-gradient(to top, #323232, #191919)',
+            padding: '10px',
+            borderRadius: '5px',
+            borderTopLeftRadius: '20px',
+            borderBottomLeftRadius: '20px',
+          }}>
+          <StorageView />
+        </div>
+  </div>
+  </Layout>
   );
 }

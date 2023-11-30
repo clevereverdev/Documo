@@ -15,41 +15,58 @@ export const useFolderActions = () => {
 
     // DELETE FOLDER
     const deleteFolder = async (folder) => {
-      if (!folder) {
+      if (!folder || !folder.id) {
           console.error("Invalid folder object passed to deleteFolder:", folder);
           return;
       }
   
-      // Reference to the original folder document
-      const folderRef = doc(db, "Folders", folder.id.toString());
+      // References to the folder in both 'Folders' and 'shared_folders' collections
+      const folderRefInFolders = doc(db, "Folders", folder.id.toString());
+      const folderRefInSharedFolders = doc(db, "shared_folders", folder.id.toString());
   
       // Reference to the 'deleted_folders' collection
       const deletedFolderRef = doc(collection(db, "deleted_folders"));
   
       try {
-          // First, set the folder document in the 'deleted_folders' collection
-          await setDoc(deletedFolderRef, {
-              ...folder,
-              deletedAt: new Date(),
-          });
+          // Check in 'Folders' collection first
+          let folderSnapshot = await getDoc(folderRefInFolders);
+          let folderRef = folderRefInFolders;
   
-          // Then delete the original folder document
-          await deleteDoc(folderRef);
-          setShowToastMsg(`Folder "${folder.name}" deleted successfully!`);
+          if (!folderSnapshot.exists()) {
+              // If not found in 'Folders', check in 'shared_folders'
+              folderSnapshot = await getDoc(folderRefInSharedFolders);
+              folderRef = folderRefInSharedFolders;
+          }
   
-          // Add a notification for the deletion action
-          addNotification('folder', {
-              src: './folder.png',
-              message: `Folder "${folder.name}" was deleted.`,
-              name: folder.name,
-              isFolder: true,
-              isDeleted: true
-          });
+          if (folderSnapshot.exists()) {
+              // First, set the folder document in the 'deleted_folders' collection
+              await setDoc(deletedFolderRef, {
+                  ...folderSnapshot.data(),
+                  deletedAt: new Date(),
+              });
+  
+              // Then delete the original folder document
+              await deleteDoc(folderRef);
+              setShowToastMsg(`Folder "${folderSnapshot.data().name}" deleted successfully!`);
+  
+              // Add a notification for the deletion action
+              addNotification('folder', {
+                  src: './folder.png',
+                  message: `Folder "${folderSnapshot.data().name}" was deleted.`,
+                  name: folderSnapshot.data().name,
+                  isFolder: true,
+                  isDeleted: true
+              });
+          } else {
+              console.error("Folder does not exist in both 'Folders' and 'shared_folders' collections:", folder.id);
+              setShowToastMsg("Folder not found for deletion.");
+          }
       } catch (error) {
           console.error("Error deleting folder:", error);
           setShowToastMsg('Error deleting folder.');
       }
   };
+  
 
     // TOGGLE STARRED STATUS OF FOLDER
 const toggleStarred = async (folder) => {
@@ -124,43 +141,67 @@ const toggleStarred = async (folder) => {
 
        // RENAME FOLDER
        const renameFolder = async (folderId, newName) => {
-        const folderRef = doc(db, "Folders", folderId);
-        try {
-          await updateDoc(folderRef, { name: newName });
-          addNotification('image', { 
-            src: './folder.png', 
-            message: `Folder  renamed to "${newName}" successfully`,
-            name: newName,
-            isRename: true
-          });
-          setShowToastMsg(`Folder renamed to ${newName} successfully!`);
-        } catch (error) {
-          console.error("Error renaming folder:", error);
-          setShowToastMsg('Error renaming folder.');
+        if (!folderId || !newName) {
+            console.error("Invalid folderId or newName passed to renameFolder");
+            return;
         }
-      };
+    
+        // References to the folder in both 'Folders' and 'shared_folders' collections
+        const folderRefInFolders = doc(db, "Folders", folderId);
+        const folderRefInSharedFolders = doc(db, "shared_folders", folderId);
+    
+        try {
+            // Check in 'Folders' collection first
+            let folderSnapshot = await getDoc(folderRefInFolders);
+            let folderRef = folderRefInFolders;
+    
+            if (!folderSnapshot.exists()) {
+                // If not found in 'Folders', check in 'shared_folders'
+                folderSnapshot = await getDoc(folderRefInSharedFolders);
+                folderRef = folderRefInSharedFolders;
+            }
+    
+            if (folderSnapshot.exists()) {
+                await updateDoc(folderRef, { name: newName });
+                addNotification('image', { 
+                  src: './folder.png', 
+                  message: `Folder renamed to "${newName}" successfully`,
+                  name: newName,
+                  isRename: true
+                });
+                setShowToastMsg(`Folder renamed to ${newName} successfully!`);
+            } else {
+                console.error("Folder does not exist in both 'Folders' and 'shared_folders' collections:", folderId);
+                setShowToastMsg("Folder not found for renaming.");
+            }
+        } catch (error) {
+            console.error("Error renaming folder:", error);
+            setShowToastMsg('Error renaming folder.');
+        }
+    };
+    
       
 // LOCK FOLDER
-const lockFolder = async (folder, password) => {
-    const folderRef = doc(db, "Folders", folder.id.toString());
-    await updateDoc(folderRef, {
-      locked: true,
-      password: password, // You should encrypt this password before saving
-    });
-    setShowToastMsg('Folder locked successfully!');
-  };
+// const lockFolder = async (folder) => {
+//     const folderRef = doc(db, "Folders", folder.id.toString());
+//     await updateDoc(folderRef, {
+//       locked: true,
+//       password: password, // You should encrypt this password before saving
+//     });
+//     setShowToastMsg('Folder locked successfully!');
+//   };
 
-  // UNLOCK FOLDER
-  const unlockFolder = async (folder, password) => {
-    // Here you should verify the password before unlocking
-    // This example assumes the password is correct
-    const folderRef = doc(db, "Folders", folder.id.toString());
-    await updateDoc(folderRef, {
-      locked: false,
-      password: null,
-    });
-    setShowToastMsg('Folder unlocked successfully!');
-  };
+//   // UNLOCK FOLDER
+//   const unlockFolder = async (folder) => {
+//     // Here you should verify the password before unlocking
+//     // This example assumes the password is correct
+//     const folderRef = doc(db, "Folders", folder.id.toString());
+//     await updateDoc(folderRef, {
+//       locked: null,
+//       // password: null,
+//     });
+//     setShowToastMsg('Folder unlocked successfully!');
+//   };
 
 const sendResetCode = async (folder) => {
   const resetCode = Math.random().toString(36).substring(2, 8); // Generate a random reset code
@@ -196,5 +237,5 @@ const validateResetCodeAndSetNewPassword = async (folder, enteredCode, newPasswo
 };
   
     
-    return { deleteFolder, toggleStarred, downloadFolderAsZip, renameFolder, lockFolder, unlockFolder, sendResetCode, validateResetCodeAndSetNewPassword    };
+    return { deleteFolder, toggleStarred, downloadFolderAsZip, renameFolder, sendResetCode, validateResetCodeAndSetNewPassword    };
 };

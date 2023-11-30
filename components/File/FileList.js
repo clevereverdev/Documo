@@ -379,6 +379,7 @@ function FileList({ fileList, file }) {
                 onFileImageClick={handleFileImageClick}
                 onToggleStar={handleToggleStar}
                 onFileDeleted={handleFileDeleted}
+
               />
             ))}
           </div>

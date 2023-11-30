@@ -312,7 +312,7 @@ const StorageView = () => {
   ></div>
 
   {/* Overlay Content */}
-  <div className="relative z-20 p-6">
+  <div className="relative z-60 p-6">
     {/* Headline */}
     <h2 className="text-2xl font-bold font-Payton text-white">
       NEED SPACE

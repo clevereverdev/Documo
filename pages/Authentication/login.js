@@ -6,7 +6,7 @@ import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 
 import { useAuth } from "../../firebase/auth";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import Loader from "../../components/loader";
+import Loader from "../../components/Loader";
 import { FaEnvelope, FaEye, FaEyeSlash, FaLock } from "react-icons/fa";
 import 'react-toastify/dist/ReactToastify.css'; // CSS import
 import { toast } from 'react-toastify'; // Toast import

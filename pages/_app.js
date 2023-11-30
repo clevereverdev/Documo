@@ -47,10 +47,10 @@ export default function App({ Component, pageProps }) {
 function NotificationWrapper({ children }) {
   const { authUser, isLoading } = useFirebaseAuth();
 
-  // Handle loading state or no user state as per your app's requirements
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
+  // // Handle loading state or no user state as per your app's requirements
+  // if (isLoading) {
+  //   return <div>Loading...</div>;
+  // }
 
   if (!authUser) {
     return children; // Or redirect to login
