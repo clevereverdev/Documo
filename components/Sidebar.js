@@ -64,7 +64,7 @@ export default function Layout({ children, setFolderList, setFileList }) {
     <div className='max-h-screen flex flex-col'>
       {isLoading && <Loader />}
       <div className='flex flex-col md:flex-row flex-1'>
-        <div className="p-6 w-[167px] h-[calc(100%-1.5rem)] z-20 fixed top-0.75rem left-0 lg:w-65 rounded-l-3xl rounded-r-3xl flex justify-center bg-[#121212] m-3">
+        <div className="p-6 w-[167px] h-[calc(100%-1.5rem)] z-60 fixed top-0.75rem left-0 lg:w-65 rounded-l-3xl rounded-r-3xl flex justify-center bg-[#121212] m-3">
           <div className="flex flex-col justify-start item-center">
             <div className="flex items-center justify-center"> { /* Assuming you want it vertically and horizontally centered on the screen */}
               <Link href="/">

@@ -15,26 +15,26 @@ function FolderList({ folderList, fileList, onFolderDeleted, isBig = true }) {
   };
   const router = useRouter();
 
-  const onFolderClick = async (e, index, item) => {
-    e.preventDefault();
-    e.stopPropagation();
+  // const onFolderClick = async (e, index, item) => {
+  //   e.preventDefault();
+  //   e.stopPropagation();
 
-    // Only prompt for password if the folder is locked and not already unlocked
-    if (item.locked && !item.isUnlocked) {
-      const enteredPassword = prompt('This folder is locked. Enter the password:');
-      if (enteredPassword !== item.password) {
-        alert('Incorrect password.');
-        return; // Do not navigate if the password is incorrect
-      }
-    }
+  //   // Only prompt for password if the folder is locked and not already unlocked
+  //   if (item.locked && !item.isUnlocked) {
+  //     const enteredPassword = prompt('This folder is locked. Enter the password:');
+  //     if (enteredPassword !== item.password) {
+  //       alert('Incorrect password.');
+  //       return; // Do not navigate if the password is incorrect
+  //     }
+  //   }
 
-    // Navigate to the folder
-    setActiveFolder(index);
-    router.push({
-      pathname: "/folder/" + item.id,
-      query: { name: item.name, id: item.id },
-    });
-  };
+  //   // Navigate to the folder
+  //   setActiveFolder(index);
+  //   // router.push({
+  //   //   pathname: "/folder/" + item.id,
+  //   //   query: { name: item.name, id: item.id },
+  //   // });
+  // };
 
   const onFolderRenamed = (folderId, newName) => {
     // Update the state of folderList with the new name
@@ -77,12 +77,12 @@ const onFolderStarToggled = (folderId, newStarStatus) => {
       const filesForFolder = Array.isArray(fileList) ? fileList.filter(file => file.parentFolderId === item.id) : [];
 
             return (
-                <div key={index} className="folder-item-clickable" onClick={(e) => onFolderClick(e, index, item)}>
+                <div key={index} className="folder-item-clickable" 
+                >
                 <FolderItem
                   folder={item}
                   fileList={filesForFolder}
                   onToggleDropdown={() => handleDropdownToggle(item.id)}
-                  isDropdownActive={activeDropdownId === item.id}
                   isUnlocked={item.isUnlocked}
                   onFolderDeleted={onFolderDeleted}
                   onFolderRenamed={onFolderRenamed}

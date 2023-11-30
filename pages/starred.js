@@ -7,7 +7,6 @@ import Layout from "@/Sidebar";
 import SearchBar from "@/Search";
 import StorageView from '../components/Storage/StorageView';
 import styles from "../styles/Home.module.css";
-import {Select, SelectItem, Avatar} from "@nextui-org/react";
 
 export default function Starred() {
   const [starredItems, setStarredItems] = useState([]);
@@ -21,6 +20,7 @@ export default function Starred() {
   }, []);
 
   const db = getFirestore(app);
+  
   function getFileExtension(filename) {
     // This will extract the extension from the filename
     const match = filename.match(/\.([0-9a-z]+)(?:[\?#]|$)/i);
@@ -88,23 +88,6 @@ const searchStarredItems = (searchTerm) => {
     setSearchHistory(newHistory);
     localStorage.setItem('starredSearchHistory', JSON.stringify(newHistory));
   };
-// Event handler for showing only files
-// const showFilesOnly = () => {
-//   console.log("Filtering for files, Items:", starredItems);
-//   const files = starredItems.filter(item => item.type !== 'folder' && item.type !== 'Folder');
-//   console.log("Filtered Files:", files);
-//   setFilteredStarredItems(files);
-// };
-
-// // Event handler for showing only folders
-// const showFoldersOnly = () => {
-//   console.log("Filtering for folders, Items:", starredItems);
-//   const folders = starredItems.filter(item => item.type === 'folder' || item.type === 'Folder');
-//   console.log("Filtered Folders:", folders);
-//   setFilteredStarredItems(folders);
-// };
-
-// New state for sorting
 
 // Add this function inside your Starred.js component
 const toggleStar = async (file) => {

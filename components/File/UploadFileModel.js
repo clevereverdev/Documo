@@ -93,29 +93,29 @@ useEffect(() => {
         console.log("sensitiveFound at upload time: ", sensitiveFound);
 
         // Here we ensure that sensitiveFound is used in its current state
-        await setDoc(doc(db, "files", docId.toString()), {
-          name: file.name,
-          type: file.name.split(".")[1],
-          size: file.size,
-          modifiedAt: file.lastModified,
-          createdBy: authUser.email,
-          parentFolderId: parentFolderId,
-          imageUrl: downloadURL,
-          id: docId,
-          sensitive: sensitiveFound, // Use the sensitiveFound directly
-          password: userSetPassword, // Save the password set by the user
+          await setDoc(doc(db, "files", docId.toString()), {
+            name: file.name,
+            type: file.name.split(".")[1],
+            size: file.size,
+            modifiedAt: file.lastModified,
+            createdBy: authUser.email,
+            parentFolderId: parentFolderId,
+            imageUrl: downloadURL,
+            id: docId,
+            sensitive: sensitiveFound, // Use the sensitiveFound directly
+            password: userSetPassword, // Save the password set by the user
 
-        });
+          });
 
-        setShowToastMsg("File Uploaded Successfully!");
-        // Add a notification for the successful upload
-    addNotification('image', {
-      src: downloadURL,
-      message: `File ${file.name} uploaded successfully`,
-      name: file.name,
-      isFile: true,
-      isCreated: true
-    });
+          setShowToastMsg("File Uploaded Successfully!");
+          // Add a notification for the successful upload
+      addNotification('image', {
+        src: downloadURL,
+        message: `File ${file.name} uploaded successfully`,
+        name: file.name,
+        isFile: true,
+        isCreated: true
+      });
         closeModal(true);
         
         onFileCreated(newFileData); // Directly using the destructured prop

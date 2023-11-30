@@ -1,6 +1,6 @@
 import styles from '../styles/Home.module.css'
 import { useAuth } from "../firebase/auth";
-import Loader from "../components/loader";
+import Loader from "../components/Loader";
 import Layout from "@/Sidebar";
 import { useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
