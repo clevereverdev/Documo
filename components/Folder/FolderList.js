@@ -51,10 +51,10 @@ function FolderList({ folderList, fileList, onFolderDeleted, isBig = true }) {
 
   //   // Navigate to the folder
   //   setActiveFolder(index);
-  //   // router.push({
-  //   //   pathname: "/folder/" + item.id,
-  //   //   query: { name: item.name, id: item.id },
-  //   // });
+  //   router.push({
+  //     pathname: "/folder/" + item.id,
+  //     query: { name: item.name, id: item.id },
+  //   });
   // };
 
   const onFolderRenamed = (folderId, newName) => {
@@ -126,7 +126,7 @@ return (
           <div className="absolute inset-y-0 flex items-center mt-20">
             
             <AiOutlineLeft
-              className={`text-blue-400 cursor-pointer bg-black rounded-full w-8 h-8 p-2 text-white ${carouselIndex <= 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`cursor-pointer bg-black rounded-full w-8 h-8 p-2 text-white ${carouselIndex <= 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
               onClick={handleScrollLeft}
               disabled={carouselIndex <= 0}
             />
@@ -135,7 +135,7 @@ return (
               {sortedFolders.slice(carouselIndex, carouselIndex + 5).map((item, index) => {
                 const filesForFolder = Array.isArray(fileList) ? fileList.filter(file => file.parentFolderId === item.id) : [];
                 return (
-                  <div key={index} className="folder-item-clickable">
+                  <div key={index} className="folder-item-clickable cursor-pointer" onClick={(e) => onFolderClick(e, index, item)}>
                     <FolderItem
                       folder={item}
                       fileList={filesForFolder}
@@ -151,7 +151,7 @@ return (
               })}
             </div>
             <AiOutlineRight
-              className={`text-blue-400 cursor-pointer bg-black rounded-full w-8 h-8 p-2 text-white ${carouselIndex >= sortedFolders.length - 5 ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`cursor-pointer bg-black rounded-full w-8 h-8 p-2 text-white ${carouselIndex >= sortedFolders.length - 5 ? 'opacity-50 cursor-not-allowed' : ''}`}
               onClick={handleScrollRight}
               disabled={carouselIndex >= sortedFolders.length - 5}
             />

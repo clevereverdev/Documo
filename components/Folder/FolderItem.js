@@ -19,6 +19,7 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import ShareFolderModal from './ShareFolderModal';
 import { TiPin } from "react-icons/ti";
 import { RiUnpinFill } from "react-icons/ri";
+import { useAuth } from "../../firebase/auth";
 
 
 function FolderItem({ folder, isTrashItem, isSharedContext, onToggleDropdown, onRestore, onDeleteForever, onFolderDeleted, onFolderRenamed, onFolderStarToggled, onTogglePinned }) {
@@ -28,7 +29,7 @@ function FolderItem({ folder, isTrashItem, isSharedContext, onToggleDropdown, on
   const { addNotification } = useNotifications();
   const db = getFirestore(app)
   const [showTooltip, setShowTooltip] = useState(false);
-
+  const { authUser } = useAuth(); // Get the authenticated user
 
 
   const toggleDropdown = (e) => {
@@ -281,19 +282,22 @@ const openShareModal = (folder) => {
     return { userExists, userEmail };
   }
 
+
+  
+
   const handleShareFolder = async (folder, usernameOrEmail, permissionLevel, loggedInUserEmail, userDisplayName) => {
     console.log("handleSharefolder called with:", folder, usernameOrEmail, permissionLevel);
   
     try {
-      // Check if the folder is sensitive
-      if (folder.sensitive) {
-        console.log("Folder is sensitive, checking password...");
-        const enteredPassword = await promptForPassword(); // Implement this function as needed
-        if (enteredPassword !== folder.password) {
-          alert("Incorrect password. You cannot share this folder.");
-          return;
-        }
-      }
+      // // Check if the folder is sensitive
+      // if (folder.sensitive) {
+      //   console.log("Folder is sensitive, checking password...");
+      //   const enteredPassword = await promptForPassword(); // Implement this function as needed
+      //   if (enteredPassword !== folder.password) {
+      //     alert("Incorrect password. You cannot share this folder.");
+      //     return;
+      //   }
+      // }
   
       // Check if the user exists
       const { userExists, userEmail } = await checkUserExists(usernameOrEmail); // Retrieve the username
@@ -308,8 +312,10 @@ const openShareModal = (folder) => {
           const viewerFolderData = {
             ...folder,
             sharedBy: folder.createBy,
+            senderUserName: authUser.username,
             sharedWith: userEmail, // Use the username instead of the email
             sensitive: false,
+            pinned: false,
             password: null, // Remove sensitive information
             permission: permissionLevel,
           };
@@ -476,10 +482,10 @@ let actionButtons;
   } else {
     actionButtons = (
       // Standard dropdown for normal context
-      <div className="folder-actions">
+      <div className="folder-actions z-2">
        <Dropdown>
         <DropdownTrigger>
-          <button onClick={toggleDropdown} className="absolute top-0 right-0 m-2 flex items-center z-10">
+          <button onClick={toggleDropdown} className="absolute top-0 right-0 m-2 flex items-center z-[100]">
             <AiOutlineInfoCircle className="text-gray-300 text-2xl" />
           </button>
         </DropdownTrigger>

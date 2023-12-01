@@ -391,7 +391,7 @@ const Search = ({ onSearch }) => {
       </div>
 
       {/* Profile */}
-      <div className="relative ml-10 mr-10" ref={dropdownRef}>
+      <div className="relative ml-10 mr-10 z-[10]" ref={dropdownRef}>
       <Tooltip
         showArrow={false}
         content="Profile"

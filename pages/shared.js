@@ -138,7 +138,7 @@ export default function Shared() {
           isSharedContext={true}
         />
       )}
-      <div className='mx-3'>{item.sharedBy}</div>
+      <div className='mx-3'>{item.senderUserName}</div>
     </div>
   ))
 ) : (

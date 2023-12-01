@@ -63,10 +63,11 @@ function FileItem({ file, onFileImageClick, onToggleStar, index, isTrashItem, on
 
   const [isEditing, setIsEditing] = useState(false);
   const [editableContent, setEditableContent] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   // Assuming file has properties like name and imageUrl
   const fileName = file ? file.name : 'No file selected'; // Default text if file is not provided
-  const fileImage = file ? file.imageUrl : './default.png'; // Path to a default image
+  const fileImage = file ? file.imageUrl : '/default.png'; // Path to a default image
 
   const handleEditClick = async (file) => {
     const content = await fetchFileContent(file);
@@ -224,15 +225,15 @@ const openShareModal = (file) => {
     console.log("handleShareFile called with:", file, usernameOrEmail, permissionLevel);
   
     try {
-      // Check if the file is sensitive
-      if (file.sensitive) {
-        console.log("File is sensitive, checking password...");
-        const enteredPassword = await promptForPassword(); // Implement this function as needed
-        if (enteredPassword !== file.password) {
-          alert("Incorrect password. You cannot share this file.");
-          return;
-        }
-      }
+    //   // Check if the file is sensitive
+    //   // if (file.sensitive) {
+    //   //   console.log("File is sensitive, checking password...");
+    //   //   // const enteredPassword = await promptForPassword(); // Implement this function as needed
+    //   //   if (enteredPassword !== file.password) {
+    //   //     alert("Incorrect password. You cannot share this file.");
+    //   //     return;
+    //   //   }
+    
   
       // Check if the user exists
       const { userExists, userEmail } = await checkUserExists(usernameOrEmail); // Retrieve the username
@@ -247,8 +248,10 @@ const openShareModal = (file) => {
           const viewerFileData = {
             ...file,
             sharedBy: file.createdBy,
+            senderUserName: authUser.username,
             sharedWith: userEmail, // Use the username instead of the email
             sensitive: false,
+            pinned: false,
             password: null, // Remove sensitive information
             permission: permissionLevel,
           };
@@ -294,6 +297,7 @@ const openShareModal = (file) => {
       setShowToastMsg("An error occurred while sharing the file.");
     }
   };
+
 
   // Format File Size
   const formatFileSize = (size) => {
@@ -501,10 +505,11 @@ const FileInfo = ({ file }) => (
               <DropdownSection title="Actions" showDivider>
                 <DropdownItem
                   key="Restore"
-                  shortcut="⌘N"
+                  shortcut="⌘R"
                   startContent={<MdRestore className={iconClasses} />}
                   className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
                   onClick={() => onRestore(file)} // Only set isRenaming to true here
+                  textValue="Restore"
                 >
                   Restore
                   <div className="text-xs text-gray-500">
@@ -516,7 +521,10 @@ const FileInfo = ({ file }) => (
                   shortcut="⌘N"
                   startContent={<FaTrash className={cn(iconClasses, "text-red-400")} />}
                   className="text-red-400 hover:bg-[#292929] hover:border-red-400 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
-                  onClick={() => onDeleteForever(file)}>
+                  onClick={() => onDeleteForever(file)}
+                  textValue="DeleteForever"
+                  >
+                    
                   Delete Forever
                   <div className="text-xs text-red-400">
                     <span className='text-gray-400 font-bold'>{getTimeLeft(file.deletedAt)}</span>
@@ -555,6 +563,7 @@ const FileInfo = ({ file }) => (
               startContent={<MdOutlineDriveFileRenameOutline className={iconClasses} />}
               className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
               onClick={() => handleFileActionClick(file)} // Only set isRenaming to true here
+              textValue="Rename"
             >
               Rename
               <div className="text-xs text-gray-500">
@@ -567,6 +576,7 @@ const FileInfo = ({ file }) => (
               startContent={<FaDownload className={iconClasses} />}
               className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
               onClick={() => downloadFile(file)}
+              textValue="Download"
             >
               Download
               <div className="text-xs text-gray-500">
@@ -582,6 +592,7 @@ const FileInfo = ({ file }) => (
               shortcut="⌘D"
               startContent={<FaTrash className={cn(iconClasses, "text-red-400")} />}
               onClick={() => deleteFile(file)}
+              textValue="Delete"
             >
               Delete
               <div className="text-xs text-red-400">
@@ -642,6 +653,7 @@ const FileInfo = ({ file }) => (
                       startContent={<MdOutlineDriveFileRenameOutline className={iconClasses} />}
                       className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
                       onClick={() => handleFileActionClick(file)} // Only set isRenaming to true here
+                      textValue="Rename"
                     >
                       Rename
                       <div className="text-xs text-gray-500">
@@ -667,6 +679,7 @@ const FileInfo = ({ file }) => (
                 startContent={file.pinned ? <RiUnpinFill className={iconClasses} /> : <TiPin className={iconClasses} />}
                 className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
                 onClick={() => togglePin(file)}
+                textValue="pin"
                 >
                 {file.pinned ? 'Unpin' : 'Pin'}
                 <div className="text-xs text-gray-500">
@@ -683,6 +696,7 @@ const FileInfo = ({ file }) => (
                       style={{ boxSizing: 'border-box' }}
                       // onClick={() => handleShareFile(file)}
                       onClick={() => openShareModal(file)}
+                      textValue="Share"
                       >
                       Share
                       <div className="text-xs text-gray-500">
@@ -698,6 +712,7 @@ const FileInfo = ({ file }) => (
                         className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
                         style={{ boxSizing: 'border-box' }}
                         onClick={handleUnlockClick}
+                        textValue="Unlock"
                       >
                         Unlock
                         <div className="text-xs text-gray-500">
@@ -713,6 +728,7 @@ const FileInfo = ({ file }) => (
                         className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
                         style={{ boxSizing: 'border-box' }}
                         onClick={handleLockClick}
+                        textValue="Lock"
                       >
                         Lock
                         <div className="text-xs text-gray-500">
@@ -744,6 +760,7 @@ const FileInfo = ({ file }) => (
                       shortcut="⌘D"
                       startContent={<FaTrash className={cn(iconClasses, "text-red-400")} />}
                       onClick={() => deleteFile(file)}
+                      textValue="Delete"
                     >
                       Delete
                       <div className="text-xs text-red-400">
@@ -831,7 +848,8 @@ const FileInfo = ({ file }) => (
     setIsShareModalOpen(false);
   }}
   file={fileToShare}
-/>
+  errorMessage={errorMessage}
+  />
 
         {showResetModal && (
           <ResetModal
