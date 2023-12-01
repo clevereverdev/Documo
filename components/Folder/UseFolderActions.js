@@ -235,7 +235,36 @@ const validateResetCodeAndSetNewPassword = async (folder, enteredCode, newPasswo
     setShowToastMsg('Incorrect reset code.');
   }
 };
-  
+
+
+// TOGGLE PINNED STATUS OF FOLDER
+const togglePinned = async (folder) => {
+  if (!folder) {
+    console.error("Invalid folder object passed to togglePinned:", folder);
+    return;
+  }
+
+  // Check the current number of pinned folders
+  const pinnedFoldersQuery = query(collection(db, "Folders"), where("pinned", "==", true));
+  const pinnedFoldersSnapshot = await getDocs(pinnedFoldersQuery);
+  if (pinnedFoldersSnapshot.docs.length >= 5 && !folder.pinned) {
+    showToastMsg("Maximum of 5 folders can be pinned.");
+    return;
+  }
+
+  const folderRef = doc(db, "Folders", folder.id.toString());
+  const newPinnedStatus = !folder.pinned;
+
+  try {
+    await updateDoc(folderRef, {
+      pinned: newPinnedStatus
+    });
+    setShowToastMsg(`Folder "${folder.name}" ${newPinnedStatus ? "pinned" : "unpinned"} successfully!`);
+  } catch (error) {
+    console.error("Error updating folder pinned status:", error);
+    setShowToastMsg('Error updating folder pinned status.');
+  }
+};
     
-    return { deleteFolder, toggleStarred, downloadFolderAsZip, renameFolder, sendResetCode, validateResetCodeAndSetNewPassword    };
+    return { deleteFolder, toggleStarred, downloadFolderAsZip, renameFolder, sendResetCode, validateResetCodeAndSetNewPassword, togglePinned    };
 };

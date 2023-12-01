@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from "react";
-import { deleteDoc, doc, getFirestore, updateDoc, collection, query, where, onSnapshot, setDoc, getDoc } from "firebase/firestore";
+import { deleteDoc, doc, getFirestore, updateDoc, collection, query, where, onSnapshot, setDoc, getDoc, getDocs } from "firebase/firestore";
 import { app } from "../../firebase/firebase";
 import { ShowToastContext } from "../../context/ShowToastContext";
 import { useNotifications } from '../../context/NotificationContext';
@@ -249,7 +249,37 @@ export const useFileActions = () => {
         }, file.id);
     };
 
-    return { deleteFile, toggleStar, downloadFile, renameFile, lockFile, unlockFile };
+
+    // TOGGLE PINNED STATUS OF FILE
+const togglePin = async (file) => {
+    if (!file) {
+        console.error("Invalid file object passed to togglePin:", file);
+        return;
+    }
+
+    // Check the current number of pinned files
+    const pinnedFilesQuery = query(collection(db, "files"), where("pinned", "==", true));
+    const pinnedFilesSnapshot = await getDocs(pinnedFilesQuery);
+    if (pinnedFilesSnapshot.docs.length >= 5 && !file.pinned) {
+        setshowToastMsg("Maximum of 5 files can be pinned.");
+        return;
+    }
+
+    const fileRef = doc(db, "files", file.id.toString());
+    const newPinnedStatus = !file.pinned;
+
+    try {
+        await updateDoc(fileRef, {
+            pinned: newPinnedStatus
+        });
+        setShowToastMsg(`File "${file.name}" ${newPinnedStatus ? "pinned" : "unpinned"} successfully!`);
+    } catch (error) {
+        console.error("Error updating file pin status:", error);
+        setShowToastMsg('Error updating file pin status.');
+    }
+};
+
+    return { deleteFile, toggleStar, downloadFile, renameFile, lockFile, unlockFile, togglePin };
 };
 
 export const useFileRename = (file, renameFileCallback) => {
