@@ -63,6 +63,13 @@ function FolderItem({ folder, isTrashItem, isSharedContext, onToggleDropdown, on
     }
   };
 
+ // Folder name length
+ const truncateFolderName = (name, length = 15) => {
+  if (name.length > length) {
+    return `${name.substring(0, length)}...`;
+  }
+  return name;
+};
   const handleDownload = (e) => {
     e.stopPropagation(); // Stop click event from bubbling up to parent elements
     downloadFolderAsZip(folder.id); // Call the function and pass the folder's ID
@@ -594,7 +601,9 @@ let actionButtons;
     </div>
 
       <div>
+      <div className='flex justify-center items-center'>
       <Image src='/folder.png' alt='folder' width={40} height={40} />
+      </div>
     {folder.pinned && (
       <div className="absolute top-0 left-0">
         {/* Replace with your actual pinned icon */}
@@ -614,7 +623,7 @@ let actionButtons;
             <button type="submit" className="button-styles mt-2">Save</button>
           </form>
         ) : (
-          <h2 className='line-clamp-2 text-[12px] text-center'>{folder.name}</h2>
+          <h2 className='text-[12px] text-center'>{truncateFolderName(folder.name)}</h2>
         )}
 {showFolderPasswordModal && (
   <FolderPasswordModal
