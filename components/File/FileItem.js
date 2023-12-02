@@ -17,6 +17,7 @@ import ShareFileModal from 'components/File/ShareFileModel';
 import { TiPin } from "react-icons/ti";
 import { RiUnpinFill } from "react-icons/ri";
 import { TbPinnedFilled } from "react-icons/tb";
+import { HiLockClosed } from "react-icons/hi2";
 
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
@@ -62,6 +63,11 @@ function FileItem({ file, onFileImageClick, onToggleStar, index, isTrashItem, on
 
   const [isEditing, setIsEditing] = useState(false);
   const [editableContent, setEditableContent] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  // Assuming file has properties like name and imageUrl
+  const fileName = file ? file.name : 'No file selected'; // Default text if file is not provided
+  const fileImage = file ? file.imageUrl : '/default.png'; // Path to a default image
 
   const handleEditClick = async (file) => {
     const content = await fetchFileContent(file);
@@ -219,15 +225,15 @@ const openShareModal = (file) => {
     console.log("handleShareFile called with:", file, usernameOrEmail, permissionLevel);
   
     try {
-      // Check if the file is sensitive
-      if (file.sensitive) {
-        console.log("File is sensitive, checking password...");
-        const enteredPassword = await promptForPassword(); // Implement this function as needed
-        if (enteredPassword !== file.password) {
-          alert("Incorrect password. You cannot share this file.");
-          return;
-        }
-      }
+    //   // Check if the file is sensitive
+    //   // if (file.sensitive) {
+    //   //   console.log("File is sensitive, checking password...");
+    //   //   // const enteredPassword = await promptForPassword(); // Implement this function as needed
+    //   //   if (enteredPassword !== file.password) {
+    //   //     alert("Incorrect password. You cannot share this file.");
+    //   //     return;
+    //   //   }
+    
   
       // Check if the user exists
       const { userExists, userEmail } = await checkUserExists(usernameOrEmail); // Retrieve the username
@@ -242,8 +248,10 @@ const openShareModal = (file) => {
           const viewerFileData = {
             ...file,
             sharedBy: file.createdBy,
+            senderUserName: authUser.username,
             sharedWith: userEmail, // Use the username instead of the email
             sensitive: false,
+            pinned: false,
             password: null, // Remove sensitive information
             permission: permissionLevel,
           };
@@ -289,6 +297,7 @@ const openShareModal = (file) => {
       setShowToastMsg("An error occurred while sharing the file.");
     }
   };
+
 
   // Format File Size
   const formatFileSize = (size) => {
@@ -464,6 +473,14 @@ const handlePinClick = (e) => {
   togglePin(file);
 };
 
+const FileInfo = ({ file }) => (
+  <div className="flex items-center justify-center space-x-2 m-2">
+        <img src={displayImageSrc} alt="File" className="h-8 w-9 bg-gray-600 p-1 rounded-lg" />
+    <span className="text-gray-400 text-center font-extrabold text-xs border-gray-600 border-2 rounded-md px-2 py-1.5">{truncateFileName(file.name)}</span>
+  </div>
+  
+);
+
     // Conditional rendering logic
     let actionButtons;
     if (isTrashItem) {
@@ -488,10 +505,11 @@ const handlePinClick = (e) => {
               <DropdownSection title="Actions" showDivider>
                 <DropdownItem
                   key="Restore"
-                  shortcut="⌘N"
+                  shortcut="⌘R"
                   startContent={<MdRestore className={iconClasses} />}
                   className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
                   onClick={() => onRestore(file)} // Only set isRenaming to true here
+                  textValue="Restore"
                 >
                   Restore
                   <div className="text-xs text-gray-500">
@@ -503,7 +521,10 @@ const handlePinClick = (e) => {
                   shortcut="⌘N"
                   startContent={<FaTrash className={cn(iconClasses, "text-red-400")} />}
                   className="text-red-400 hover:bg-[#292929] hover:border-red-400 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
-                  onClick={() => onDeleteForever(file)}>
+                  onClick={() => onDeleteForever(file)}
+                  textValue="DeleteForever"
+                  >
+                    
                   Delete Forever
                   <div className="text-xs text-red-400">
                     <span className='text-gray-400 font-bold'>{getTimeLeft(file.deletedAt)}</span>
@@ -542,6 +563,7 @@ const handlePinClick = (e) => {
               startContent={<MdOutlineDriveFileRenameOutline className={iconClasses} />}
               className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
               onClick={() => handleFileActionClick(file)} // Only set isRenaming to true here
+              textValue="Rename"
             >
               Rename
               <div className="text-xs text-gray-500">
@@ -554,6 +576,7 @@ const handlePinClick = (e) => {
               startContent={<FaDownload className={iconClasses} />}
               className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
               onClick={() => downloadFile(file)}
+              textValue="Download"
             >
               Download
               <div className="text-xs text-gray-500">
@@ -569,6 +592,7 @@ const handlePinClick = (e) => {
               shortcut="⌘D"
               startContent={<FaTrash className={cn(iconClasses, "text-red-400")} />}
               onClick={() => deleteFile(file)}
+              textValue="Delete"
             >
               Delete
               <div className="text-xs text-red-400">
@@ -600,147 +624,157 @@ const handlePinClick = (e) => {
             </Tooltip>
           </div>
           <Image src={userAvatar} width={30} height={30} alt="User Avatar" className="self-center ml-auto mx-1" />
-          <div className="flex gap-2 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-200" style={{ position: 'relative', display: 'inline-block' }}>
-            <Dropdown>
-              <DropdownTrigger>
-                <button className="flex items-center space-x-2 p-2 rounded-full focus:outline-none hover:bg-opacity-50 hover:bg-gray-600 z-[1001]"
-                  onMouseEnter={() => setShowTooltip(true)}
-                  onMouseLeave={() => setShowTooltip(false)}
+            <div className="flex gap-2 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-200" style={{ position: 'relative', display: 'inline-block' }}>
+              <Dropdown>
+                <DropdownTrigger>
+                  <button className="flex items-center space-x-2 p-2 rounded-full focus:outline-none hover:bg-opacity-50 hover:bg-gray-600 z-[1001]"
+                    onMouseEnter={() => setShowTooltip(true)}
+                    onMouseLeave={() => setShowTooltip(false)}
+                  >
+                    <MoreHorizIcon className="text-gray-300 text-2xl" />
+                    {showTooltip && (
+                      <div className="absolute top-[70px] left-3 transform -translate-x-1/2 -translate-y-full bg-gray-300 text-gray-700 font-bold text-xs py-1 px-2 rounded-lg z-10">
+                        More
+                      </div>
+
+                    )}
+                  </button>
+
+                </DropdownTrigger>
+                <DropdownMenu variant="faded" aria-label="Dropdown menu with description" className='bg-[#18181b] rounded-xl py-2'>
+                  <DropdownItem className="!p-0" disabled>
+                   <FileInfo file={file} />
+                  </DropdownItem>
+                  <DropdownSection title="Actions" showDivider>
+    
+                    <DropdownItem
+                      key="Rename"
+                      shortcut="⌘N"
+                      startContent={<MdOutlineDriveFileRenameOutline className={iconClasses} />}
+                      className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
+                      onClick={() => handleFileActionClick(file)} // Only set isRenaming to true here
+                      textValue="Rename"
+                    >
+                      Rename
+                      <div className="text-xs text-gray-500">
+                        Give a name
+                      </div>
+                    </DropdownItem>
+                    <DropdownItem
+                      key="Download"
+                      shortcut="⌘C"
+                      startContent={<FaDownload className={iconClasses} />}
+                      className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
+                      onClick={() => downloadFile(file)}
+                    >
+                      Download
+                      <div className="text-xs text-gray-500">
+                        Download in local
+                      </div>
+                    </DropdownItem>
+              
+                <DropdownItem
+                key="pin"
+                shortcut="⌘P"
+                startContent={file.pinned ? <RiUnpinFill className={iconClasses} /> : <TiPin className={iconClasses} />}
+                className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
+                onClick={() => togglePin(file)}
+                textValue="pin"
                 >
-                  <MoreHorizIcon className="text-gray-300 text-2xl" />
-                  {showTooltip && (
-                    <div className="absolute top-[70px] left-3 transform -translate-x-1/2 -translate-y-full bg-gray-300 text-gray-700 font-bold text-xs py-1 px-2 rounded-lg z-10">
-                      More
-                    </div>
+                {file.pinned ? 'Unpin' : 'Pin'}
+                <div className="text-xs text-gray-500">
+                  {file.pinned ? 'Unpin this file' : 'Pin this file'}
+                </div>
+              </DropdownItem>
 
-                  )}
-                </button>
-
-              </DropdownTrigger>
-              <DropdownMenu variant="faded" aria-label="Dropdown menu with description" className='bg-[#18181b] rounded-xl py-2'>
-                <DropdownSection title="Actions" showDivider>
-                  <DropdownItem
-                    key="Rename"
-                    shortcut="⌘N"
-                    startContent={<MdOutlineDriveFileRenameOutline className={iconClasses} />}
-                    className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
-                    onClick={() => handleFileActionClick(file)} // Only set isRenaming to true here
-                  >
-                    Rename
-                    <div className="text-xs text-gray-500">
-                      Give a name
-                    </div>
-                  </DropdownItem>
-                  <DropdownItem
-                    key="Download"
-                    shortcut="⌘C"
-                    startContent={<FaDownload className={iconClasses} />}
-                    className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
-                    onClick={() => downloadFile(file)}
-                  >
-                    Download
-                    <div className="text-xs text-gray-500">
-                      Download in local
-                    </div>
-                  </DropdownItem>
-            
-              <DropdownItem
-              key="pin"
-              shortcut="⌘P"
-              startContent={file.pinned ? <RiUnpinFill className={iconClasses} /> : <TiPin className={iconClasses} />}
-              className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
-              onClick={() => togglePin(file)}
-              >
-              {file.pinned ? 'Unpin' : 'Pin'}
-              <div className="text-xs text-gray-500">
-                {file.pinned ? 'Unpin this file' : 'Pin this file'}
-              </div>
-            </DropdownItem>
-
-                  <DropdownItem
-                    key="Share"
-                    shortcut="⌘E"
-                    showDivider
-                    startContent={<FaShare className={iconClasses} />}
-                    className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
-                    style={{ boxSizing: 'border-box' }}
-                    // onClick={() => handleShareFile(file)}
-                    onClick={() => openShareModal(file)}
-                    >
-                    Share
-                    <div className="text-xs text-gray-500">
-                      Share with friends
-                    </div>
-                  </DropdownItem>
-                  {isSensitive ? (
                     <DropdownItem
-                      key="Unlock"
+                      key="Share"
                       shortcut="⌘E"
                       showDivider
-                      startContent={<LockOpenIcon className={iconClasses} />}
+                      startContent={<FaShare className={iconClasses} />}
                       className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
                       style={{ boxSizing: 'border-box' }}
-                      onClick={handleUnlockClick}
-                    >
-                      Unlock
+                      // onClick={() => handleShareFile(file)}
+                      onClick={() => openShareModal(file)}
+                      textValue="Share"
+                      >
+                      Share
                       <div className="text-xs text-gray-500">
-                        Unlock it to see
+                        Share with friends
                       </div>
                     </DropdownItem>
-                  ) : (
+                    {isSensitive ? (
+                      <DropdownItem
+                        key="Unlock"
+                        shortcut="⌘E"
+                        showDivider
+                        startContent={<LockOpenIcon className={iconClasses} />}
+                        className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
+                        style={{ boxSizing: 'border-box' }}
+                        onClick={handleUnlockClick}
+                        textValue="Unlock"
+                      >
+                        Unlock
+                        <div className="text-xs text-gray-500">
+                          Unlock it to see
+                        </div>
+                      </DropdownItem>
+                    ) : (
+                      <DropdownItem
+                        key="Lock"
+                        shortcut="⌘E"
+                        showDivider
+                        startContent={<LockIcon className={iconClasses} />}
+                        className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
+                        style={{ boxSizing: 'border-box' }}
+                        onClick={handleLockClick}
+                        textValue="Lock"
+                      >
+                        Lock
+                        <div className="text-xs text-gray-500">
+                          Protect with lock
+                        </div>
+                      </DropdownItem>
+                    )}
                     <DropdownItem
-                      key="Lock"
-                      shortcut="⌘E"
-                      showDivider
-                      startContent={<LockIcon className={iconClasses} />}
-                      className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
-                      style={{ boxSizing: 'border-box' }}
-                      onClick={handleLockClick}
+    key="Print Image"
+    startContent={<AiOutlinePrinter className={iconClasses} />}
+    onClick={() => isImage && handlePrintImage(file.imageUrl)}
+    className={!isImage ? 'opacity-50 cursor-not-allowed text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]' : 'text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]'}
+    disabled={!isImage} // Disable the item if not an image
+
+  >
+    Print Image
+    <div className="text-xs text-gray-500">
+      {isImage ? 'Print this image' : 'Not available for this file type'}
+    </div>
+  </DropdownItem>
+
+                  </DropdownSection>
+
+                  <DropdownSection title="Danger zone">
+                    <DropdownItem
+                      key="Delete"
+                      className="text-red-400 hover:bg-[#292929] hover:border-red-400 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
+                      color="danger"
+                      shortcut="⌘D"
+                      startContent={<FaTrash className={cn(iconClasses, "text-red-400")} />}
+                      onClick={() => deleteFile(file)}
+                      textValue="Delete"
                     >
-                      Lock
-                      <div className="text-xs text-gray-500">
-                        Protect with lock
+                      Delete
+                      <div className="text-xs text-red-400">
+                        Move to trash
                       </div>
                     </DropdownItem>
-                  )}
-                  <DropdownItem
-  key="Print Image"
-  startContent={<AiOutlinePrinter className={iconClasses} />}
-  onClick={() => isImage && handlePrintImage(file.imageUrl)}
-  className={!isImage ? 'opacity-50 cursor-not-allowed text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]' : 'text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]'}
-  disabled={!isImage} // Disable the item if not an image
+                  </DropdownSection>
+                </DropdownMenu>
+              </Dropdown>
 
->
-  Print Image
-  <div className="text-xs text-gray-500">
-    {isImage ? 'Print this image' : 'Not available for this file type'}
-  </div>
-</DropdownItem>
-
-                </DropdownSection>
-
-                <DropdownSection title="Danger zone">
-                  <DropdownItem
-                    key="Delete"
-                    className="text-red-400 hover:bg-[#292929] hover:border-red-400 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
-                    color="danger"
-                    shortcut="⌘D"
-                    startContent={<FaTrash className={cn(iconClasses, "text-red-400")} />}
-                    onClick={() => deleteFile(file)}
-                  >
-                    Delete
-                    <div className="text-xs text-red-400">
-                      Move to trash
-                    </div>
-                  </DropdownItem>
-                </DropdownSection>
-              </DropdownMenu>
-            </Dropdown>
-
+            </div>
           </div>
-        </div>
-      );
-    }
+        );
+      }
 
     return (
       <>
@@ -777,7 +811,7 @@ const handlePinClick = (e) => {
                     )}
                     {isSensitive && (
                       <>
-                        <LockIcon className='text-black bg-[#1ED760] rounded-full h-6 w-6 p-[2px] mr-1.5' style={{ fontSize: '13px' }} />
+                     <HiLockClosed className='text-black bg-[#1ED760] rounded-full h-4 w-4 p-[2px] mr-1.5' style={{ fontSize: '13px' }}/>
                         <button className="flex justify-center items-center text-white text-[7.5px] cursor-default bg-gray-600 p-2 w-3 h-4 rounded-sm mr-1.5">S</button>
                         <span className='text-xs mr-1.5'>locked</span>
                       </>
@@ -814,7 +848,8 @@ const handlePinClick = (e) => {
     setIsShareModalOpen(false);
   }}
   file={fileToShare}
-/>
+  errorMessage={errorMessage}
+  />
 
         {showResetModal && (
           <ResetModal
