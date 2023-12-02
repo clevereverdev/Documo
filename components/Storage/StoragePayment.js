@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
+import { doc, updateDoc, getDoc, setDoc, getFirestore } from 'firebase/firestore';
+import { app } from '../../firebase/firebase'; 
+import { useAuth } from "../../firebase/auth"; // Import your useAuth hook
 
 const StoragePayment = ({ selectedPlan, onUpdateStorage, onClose }) => {
+  const { authUser } = useAuth();
+  const db = getFirestore(app); // Make sure 'app' is your Firebase app instance
+
   const [cardInfo, setCardInfo] = useState({
     email: '',
     cardNumber: '',
@@ -22,18 +28,45 @@ const StoragePayment = ({ selectedPlan, onUpdateStorage, onClose }) => {
     zip: false
   });
 
-  const handlePurchase = () => {
+  const handlePurchase = async () => {
     // Check if all required fields are filled and the credit card number is valid
     if (isFormValid() && isCardNumberValid(cardInfo.cardNumber)) {
-      // Trigger the storage update without any validation
       const additionalStorageBytes = convertToBytes(selectedPlan.storage);
       onUpdateStorage(additionalStorageBytes);
-      onClose(); // Close the payment details
+      if (!authUser?.username) {
+        console.error('No user id available to update storage plan.');
+        alert('Unable to update the plan. User is not identified.');
+        return;
+      }
+  
+      const userDocRef = doc(db, 'users', authUser.username);
+  
+      try {
+        // Check if the user's document exists
+        const docSnap = await getDoc(userDocRef);
+        if (!docSnap.exists()) {
+          // If it doesn't exist, create it with the initial plan details
+          await setDoc(userDocRef, {
+              name: selectedPlan.name
+          });
+        } else {
+          // If it exists, update the plan name within the plan subfield
+          await updateDoc(userDocRef, {
+            'plan.name': selectedPlan.name,
+          });
+        }
+  
+        console.log("User's plan updated successfully to:", selectedPlan.name);
+        onClose(); // Close the payment details only after the update is successful
+      } catch (error) {
+        console.error("Error updating user's plan:", error);
+        alert("Error updating the plan. Please try again.");
+      }
     } else {
-      // Display an error message to the user
       alert("Please fill in all the required fields and enter a valid 16-digit credit card number.");
     }
   };
+  
 
   // Utility function to convert storage string to bytes
   const convertToBytes = (storageString) => {

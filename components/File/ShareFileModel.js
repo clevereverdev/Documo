@@ -160,7 +160,7 @@ const truncateFileName = (name, length = 35) => {
          {file.sensitive && showError && <div className="text-red-500 m-7">{errorMessage}</div>}
 
         {/* Verify button */}
-        <button className="w-80 rounded-2xl bg-[#1F51FF] text-white p-4 transform transition-transform hover:bg-[#4169E1]"
+        <button className="w-80 rounded-2xl bg-[#3EA88B] text-white p-4 transform transition-transform hover:bg-[#53B499]"
         onClick={handlePasswordSubmit}>Confirm</button>
       </div>
     ) : (
@@ -237,7 +237,7 @@ const truncateFileName = (name, length = 35) => {
                 {/* Buttons */}
                 <div className="flex space-x-2 mt-8">
                   <button
-                    className="w-40 rounded-2xl bg-[#1F51FF] text-white p-4 hover:bg-[#4169E1]"
+                    className="w-40 rounded-2xl bg-[#3EA88B] text-white p-4 hover:bg-[#53B499]"
                     onClick={handleSubmit}
                   >
                     Share

@@ -369,7 +369,7 @@ const handleTogglePin = async (file) => {
             <h2 className='ml-5' onClick={handleSortByName}>
               Name
               {sortColumn === 'name' && (
-                <span className={`ml-2 ${sortOrder === 'asc' ? 'animate-bounce-up' : 'animate-bounce-down'} text-[#1ED760]`}>
+                <span className={`ml-2 ${sortOrder === 'asc' ? 'animate-bounce-up' : 'animate-bounce-down'} text-[#3EA88B]`}>
                   {sortOrder === 'asc' ? <ArrowDropUpOutlinedIcon /> : <ArrowDropDownOutlinedIcon />}
                 </span>
               )}
@@ -377,7 +377,7 @@ const handleTogglePin = async (file) => {
             <h2 className='ml-4' onClick={handleSortByDateModified}>
               Date Modified
               {sortColumn === 'dateModified' && (
-                <span className={`ml-2 ${sortOrder === 'asc' ? 'animate-bounce-up' : 'animate-bounce-down'} text-[#1ED760]`}>
+                <span className={`ml-2 ${sortOrder === 'asc' ? 'animate-bounce-up' : 'animate-bounce-down'} text-[#3EA88B]`}>
                   {sortOrder === 'asc' ? <ArrowDropUpOutlinedIcon /> : <ArrowDropDownOutlinedIcon />}
                 </span>
               )}
@@ -385,7 +385,7 @@ const handleTogglePin = async (file) => {
             <h2 className='ml-[-2]' onClick={handleSortBySize}>
               Size
               {sortColumn === 'size' && (
-                <span className={`ml-2 ${sortOrder === 'asc' ? 'animate-bounce-up' : 'animate-bounce-down'} text-[#1ED760]`}>
+                <span className={`ml-2 ${sortOrder === 'asc' ? 'animate-bounce-up' : 'animate-bounce-down'} text-[#3EA88B]`}>
                   {sortOrder === 'asc' ? <ArrowDropUpOutlinedIcon /> : <ArrowDropDownOutlinedIcon />}
                 </span>
               )}
@@ -393,7 +393,7 @@ const handleTogglePin = async (file) => {
             <h2 onClick={handleSortByKind}>
               Kind
               {sortColumn === 'kind' && (
-                <span className={`ml-2 ${sortOrder === 'asc' ? 'animate-bounce-up' : 'animate-bounce-down'} text-[#1ED760]`}>
+                <span className={`ml-2 ${sortOrder === 'asc' ? 'animate-bounce-up' : 'animate-bounce-down'} text-[#3EA88B]`}>
                   {sortOrder === 'asc' ? <ArrowDropUpOutlinedIcon /> : <ArrowDropDownOutlinedIcon />}
                 </span>
               )}

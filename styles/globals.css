@@ -51,7 +51,7 @@ body {
 .layout__main-content {
   margin-left: 17rem; /* Margin equals the width of the sidebar */
   flex-grow: 1;
-  transition: margin-left 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+/* transition: margin-left 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1); */
 }
 
 @media (max-width: 640px) {
@@ -456,6 +456,61 @@ body {
 }
 
 
+.pagination-btn {
+  background: none;
+  border: 1px solid white;
+  padding: 5px 15px;
+  margin: 0 5px;
+  cursor: pointer;
+  border-radius: 20px;
+}
+
+.pagination-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-number {
+  padding: 5px 14px;
+  cursor: pointer;
+  border-radius: 100%;
+  border: 2px solid white;
+}
+
+.pagination-number:hover{
+  background: #869ab8;
+  color: black
+
+}
+
+.pagination-number.active {
+  background: white;
+  color: black;
+  Font-Weight: 500;
+
+}
+
+.pagination-ellipsis {
+  padding: 5px 10px;
+}
+
+.folder-item, .file-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) repeat(5, min-content);
+  align-items: center;
+  padding: 2px 2px; /* Adjust padding as needed */
+  gap: 3px; /* Adjust gap as needed */
+}
+
+.folder-item > div, .file-item > div {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.custom-item {
+  margin: -9px -3px; /* Adjust the top and bottom margin as needed */
+}
 
 
 

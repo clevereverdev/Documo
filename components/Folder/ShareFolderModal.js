@@ -206,7 +206,7 @@ return (
 
                         {/* Buttons */}
                         <div className="flex space-x-2 mt-4">
-                            <button className="w-40 rounded-2xl bg-[#1F51FF] text-white p-4 hover:bg-[#4169E1]"
+                            <button className="w-40 rounded-2xl bg-[#3EA88B] text-white p-4 hover:bg-[#53B499]"
                                 onClick={handleSubmit}>Share</button>
                             <button className="w-40 rounded-2xl bg-[#EE4B2B] text-white p-4 hover:bg-[#E97451]"
                                 onClick={onClose}>Cancel</button>

@@ -13,9 +13,13 @@ import { faSearch, faXmark } from '@fortawesome/free-solid-svg-icons';
 import NotificationsTwoToneIcon from '@mui/icons-material/NotificationsTwoTone';
 import RocketOutlinedIcon from '@mui/icons-material/RocketOutlined';
 import Notifications from './Notifications';
+import { app } from "../firebase/firebase";
+import { getFirestore, doc, getDoc} from "firebase/firestore";
+
 
 
 const Search = ({ onSearch }) => {
+  const db = getFirestore(app); 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false); ``
   const dropdownRef = useRef(null);
   const { authUser } = useAuth();
@@ -33,6 +37,26 @@ const Search = ({ onSearch }) => {
     const savedSearchHistory = localStorage.getItem('searchHistory');
     return savedSearchHistory ? JSON.parse(savedSearchHistory) : [];
   });
+
+  const [userPlanName, setUserPlanName] = useState('Free'); // Default plan name
+  useEffect(() => {
+    const fetchUserPlan = async () => {
+      if (authUser?.username) {
+        const userDocRef = doc(db, 'users', authUser.username);
+        try {
+          const docSnap = await getDoc(userDocRef);
+          if (docSnap.exists()) {
+            const userData = docSnap.data();
+            setUserPlanName(userData.plan?.name || 'Free'); // Use the plan name from Firestore or default to 'Free'
+          }
+        } catch (error) {
+          console.error("Error fetching user's plan:", error);
+        }
+      }
+    };
+  
+    fetchUserPlan();
+  }, [authUser, db]);
 
 
   const allFiles = [];
@@ -414,7 +438,9 @@ const Search = ({ onSearch }) => {
                 <div className="flex items-center">
                   <img src={selectedAvatar} alt="Profile Avatar" className="w-12 h-12 rounded-full mr-3" />
                   <div>
-                    <span className="block text-sm font-bold">{authUser.username}<span className="text-xs bg-yellow-400 text-black px-1 rounded m-2 font-Payton">PRO</span></span>
+                    <span className="block text-sm font-bold">{authUser.username}
+                    <span className="text-xs bg-yellow-400 text-black px-1 rounded m-2 font-Payton">{userPlanName}</span>
+                    </span>
                     <span className="text-xs text-gray-300">{authUser.email}</span>
                   </div>
                 <button className='relative w-8 h-8 flex items-center justify-center rounded-full focus:outline-none hover:bg-gray-900 text-xl font-semibold left-3 bottom-3 cursor-pointer' onClick={profilehandleClose}>✖</button>
