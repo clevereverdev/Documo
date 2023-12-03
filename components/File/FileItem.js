@@ -807,11 +807,11 @@ const FileInfo = ({ file }) => (
                  <span className="text-sm text-gray-300 mb-1">{truncateFileName(file.name)}</span>
                   <div className='flex items-center'>
                     {file.pinned && (
-                     <TbPinnedFilled className='text-black bg-[#1ED760] rounded-full h-4 w-4 p-[1px] mr-1.5' style={{ fontSize: '13px' }}/>
+                     <TbPinnedFilled className='text-black bg-[#3EA88B] rounded-full h-4 w-4 p-[1px] mr-1.5' style={{ fontSize: '13px' }}/>
                     )}
                     {isSensitive && (
                       <>
-                     <HiLockClosed className='text-black bg-[#1ED760] rounded-full h-4 w-4 p-[2px] mr-1.5' style={{ fontSize: '13px' }}/>
+                     <HiLockClosed className='text-black bg-[#3EA88B] rounded-full h-4 w-4 p-[2px] mr-1.5' style={{ fontSize: '13px' }}/>
                         <button className="flex justify-center items-center text-white text-[7.5px] cursor-default bg-gray-600 p-2 w-3 h-4 rounded-sm mr-1.5">S</button>
                         <span className='text-xs mr-1.5'>locked</span>
                       </>

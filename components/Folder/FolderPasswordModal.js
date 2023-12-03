@@ -204,7 +204,7 @@ const handleSubmit = async () => {
         <div className="absolute text-sm flex items-center justify-center top-4 right-4 hover:bg-gray-700 h-6 w-6 rounded-full">
           <FaTimes onClick={onClose} className="text-gray-400 cursor-pointer" />
         </div>
-        <div className="text-gray-300 text-lg font-bold m-2">
+        <div className="flex flex-col items-center text-gray-300 text-lg font-bold m-2">
       {isUnlocking ? 'Unlock Folder' : 'Keep your Folder locked'}
       <div className="text-xs text-gray-400">Your privacy is our first priority</div>
         </div>
@@ -213,8 +213,8 @@ const handleSubmit = async () => {
         {isUnlocking ? (
 <>
   {resetStep === 'request' && !showForgotPasswordInput && (
-    <div className={`relative`}>
-     <span className="absolute top-5 left-12">
+    <div className={`relative ${inputShake ? 'shake' : ''}`}>
+    <span className="absolute top-5 left-12">
             <FaLock className="text-gray-400" />
           </span>
           <input
@@ -250,7 +250,7 @@ const handleSubmit = async () => {
     </div>
     <div className="flex space-x-4">
       <button 
-        className="w-80 rounded-2xl bg-[#1F51FF] text-white p-4 transform transition-transform hover:bg-[#4169E1]"
+        className="w-80 rounded-2xl bg-[#3EA88B] text-white p-4 transform transition-transform hover:bg-[#53B499]"
         onClick={handleResetCodeSubmit}
       >
         Submit Code
@@ -280,7 +280,7 @@ const handleSubmit = async () => {
      
     <div className="flex space-x-4">
       <button
-        className="w-80 rounded-2xl bg-[#1F51FF] text-white p-4 transform transition-transform hover:bg-[#4169E1]"
+        className="w-80 rounded-2xl bg-[#3EA88B] text-white p-4 transform transition-transform hover:bg-[#53B499]"
         onClick={handleNewPasswordSubmit}
       >
         Set New Password
@@ -298,14 +298,14 @@ const handleSubmit = async () => {
       <input
         type="text"
         placeholder="Enter Email or Username"
-        className="w-80 ml-[35px]font-medium border bg-transparent border-[#374151] hover:border-gray-400 p-4 pl-10 rounded-2xl outline-none focus:border-white pr-10" /* Adjusted classes */
+        className="w-80 font-medium border bg-transparent border-[#374151] hover:border-gray-400 p-4 pl-10 rounded-2xl outline-none focus:border-white pr-10" /* Adjusted classes */
         value={userIdentifier}
         onChange={(e) => setUserIdentifier(e.target.value)}
         />
     </div>
     <div className="flex space-x-4">
       <button 
-        className="w-80 rounded-2xl bg-[#1F51FF] text-white p-4 transform transition-transform hover:bg-[#4169E1]"
+        className="w-80 rounded-2xl bg-[#3EA88B] text-white p-4 transform transition-transform hover:bg-[#53B499]"
         onClick={handleForgotPasswordClick}
       >
        Send Code
@@ -359,7 +359,7 @@ const handleSubmit = async () => {
 {  (isUnlocking || (!isUnlocking && resetStep === 'request')) && !showForgotPasswordInput && (
           <div className="flex space-x-4">
             <button 
-              className="w-80 rounded-2xl bg-[#1F51FF] text-white p-4 transform transition-transform hover:bg-[#4169E1]"
+              className="w-80 rounded-2xl bg-[#3EA88B] text-white p-4 transform transition-transform hover:bg-[#53B499]"
               onClick={handleSubmit}
             >
               Submit

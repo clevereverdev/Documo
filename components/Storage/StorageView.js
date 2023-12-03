@@ -41,6 +41,7 @@ const StorageView = () => {
   }, []);
 
   const purchaseAdditionalStorage = async (additionalBytes) => {
+   
     if (authUser?.username) {
       const userDocRef = doc(db, 'users', authUser.username);
       const docSnap = await getDoc(userDocRef);
@@ -50,7 +51,7 @@ const StorageView = () => {
         const newTotalBytes = currentStorageLimit + additionalBytes;
 
         await updateDoc(userDocRef, {
-          storageLimit: newTotalBytes
+          storageLimit: newTotalBytes,
         });
 
         setTotalStorageGivenBytes(newTotalBytes);
@@ -61,6 +62,9 @@ const StorageView = () => {
       console.error('The user does not have a username set in authUser.');
     }
   };
+
+
+
 
 
   // // Calculate total used storage bytes
