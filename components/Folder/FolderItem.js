@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { getFirestore, doc, updateDoc, getDoc, collection, setDoc, arrayUnion } from "firebase/firestore";
 import { onSnapshot } from "firebase/firestore";
 import { useRouter } from 'next/router';
@@ -49,6 +49,19 @@ function FolderItem({ folder, isTrashItem, isSharedContext, onToggleDropdown, on
       // Handle error (e.g., show error notification)
     }
   };
+
+  const [isPinned, setIsPinned] = useState(folder.pinned);
+
+  useEffect(() => {
+    // Update local state when folder prop changes
+    setIsPinned(folder.pinned);
+  }, [folder.pinned]);
+
+  const handleTogglePinned = async () => {
+    // Call the passed prop function to update the pinned status in parent
+    await onTogglePinned(folder);
+  };
+
   const handleToggleStarred = async (e) => {
     e.stopPropagation(); // Prevent click event from bubbling up
     try {
@@ -166,6 +179,7 @@ function getTimeLeft(deletedAt) {
 
   
 const handleLock = async (password) => {
+  e.stopPropagation(); // Prevent click event from bubbling up to the parent
   console.log("Inside handleLock with password:", password);
 
   if (password) {
@@ -206,6 +220,7 @@ const handleIncorrectPassword = () => {
 };
 
 const handleUnlock = async (enteredPassword) => {
+  e.stopPropagation(); // Prevent click event from bubbling up to the parent
   console.log("Entered Password:", enteredPassword); // Debug log
   console.log("Stored Password:", folder.password); // Debug log
 
@@ -245,12 +260,23 @@ const [shareWithUser, setShareWithUser] = useState('');
 const [folderToShare, setFolderToShare] = useState(null);
 const [editorFolderUnsubscribe, setEditorFolderUnsubscribe] = useState(null); // Initialize editorFoldereUnsubscribe
 
-const openShareModal = (folder) => {
+// const openShareModal = (folder, e) => {
+//   e.stopPropagation(); // Prevent click event from bubbling up to the parent
+//   console.log("Opening share modal for folder:", folder);
+//   setFolderToShare(folder);
+//   setIsShareModalOpen(true);
+// };
+const openShareModal = (folder, e) => {
+  if (e && e.stopPropagation) {
+    e.stopPropagation(); // Prevent click event from bubbling up to the parent
+  }
   console.log("Opening share modal for folder:", folder);
   setFolderToShare(folder);
   setIsShareModalOpen(true);
 };
-  
+
+
+
 
   async function checkUserExists(usernameOrEmail) {
     console.log("Checking user exists for:", usernameOrEmail);
@@ -285,8 +311,10 @@ const openShareModal = (folder) => {
 
   
 
-  const handleShareFolder = async (folder, usernameOrEmail, permissionLevel, loggedInUserEmail, userDisplayName) => {
+  const handleShareFolder = async (folder, usernameOrEmail, permissionLevel, loggedInUserEmail, e) => {
     console.log("handleSharefolder called with:", folder, usernameOrEmail, permissionLevel);
+    e.stopPropagation(); // Prevent click event from bubbling up to the parent
+
   
     try {
       // // Check if the folder is sensitive
@@ -482,10 +510,10 @@ let actionButtons;
   } else {
     actionButtons = (
       // Standard dropdown for normal context
-      <div className="folder-actions z-2">
+      <div className="folder-actions ">
        <Dropdown>
         <DropdownTrigger>
-          <button onClick={toggleDropdown} className="absolute top-0 right-0 m-2 flex items-center z-[100]">
+          <button onClick={toggleDropdown} className="absolute top-0 right-0 m-2 flex items-center z-[1]">
             <AiOutlineInfoCircle className="text-gray-300 text-2xl" />
           </button>
         </DropdownTrigger>
@@ -521,8 +549,7 @@ let actionButtons;
               shortcut="⌘P"
               startContent={folder.pinned ? <RiUnpinFill className={iconClasses} /> : <TiPin className={iconClasses} />}
               className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
-              onClick={() => onTogglePinned(folder)}
-              >
+              onClick={handleTogglePinned}              >
               {folder.pinned ? 'Unpin' : 'Pin'}
               <div className="text-xs text-gray-500">
                 {folder.pinned ? 'Unpin this folder' : 'Pin this folder'}
@@ -538,7 +565,7 @@ let actionButtons;
                     className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
                     style={{ boxSizing: 'border-box' }}
                     // onClick={() => handleShareFile(file)}
-                    onClick={() => openShareModal(folder)}
+                    onClick={(e) => openShareModal(folder, e)}
                     >
                     Share
                     <div className="text-xs text-gray-500">
@@ -600,7 +627,7 @@ let actionButtons;
 
   
   return (
-    <div className={`relative w-[120px] gap-4 flex flex-col justify-center items-center h-[120px] bg-gray-500 rounded-2xl`} onClick={navigateToFolder}>
+    <div className={`relative w-[120px] gap-4 flex flex-col justify-center items-center h-[120px] rounded-2xl`} onClick={navigateToFolder}>
       {/* Dropdown button */}
       <div className="folder-item">
       {actionButtons}
@@ -608,7 +635,7 @@ let actionButtons;
 
       <div>
       <div className='flex justify-center items-center'>
-      <Image src='/folder.png' alt='folder' width={40} height={40} />
+      <Image src='/folder.png' alt='folder' width={40} height={40}/>
       </div>
     {folder.pinned && (
       <div className="absolute top-0 left-0">

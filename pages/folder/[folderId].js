@@ -135,6 +135,10 @@ function FolderDetails() {
     const Dashboard = () => {
       router.push('/');
     };
+
+    const SubFolder = () => {
+      router.push('../');
+    };
   
 
   return (
@@ -157,7 +161,7 @@ function FolderDetails() {
           </Tooltip>
          
           {<IoIosArrowBack className='mx-1'/>} 
-          <h2 className='font-bold text-xl text-gray-400 px-3 italic hover:text-gray-200'>{name}</h2>(<MdLocationPin className='text-red-500'/>)
+          <h2 className='font-bold text-xl text-gray-400 px-3 italic hover:text-gray-200' onClick={SubFolder}>{name}</h2>(<MdLocationPin className='text-red-500'/>)
           </div>
           {folderList.length > 0 ? (
             <FolderList
