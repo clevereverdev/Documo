@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { getFirestore, doc, updateDoc, getDoc, collection, setDoc, arrayUnion } from "firebase/firestore";
+import { getFirestore, doc, updateDoc, getDoc, collection, setDoc, arrayUnion, query, getDocs, where } from "firebase/firestore";
 import { onSnapshot } from "firebase/firestore";
 import { useRouter } from 'next/router';
 import { app } from "../../firebase/firebase";
@@ -14,12 +14,12 @@ import { FaDownload, FaTrash, FaShare } from "react-icons/fa6";
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import FolderPasswordModal from './FolderPasswordModal'; // Import the new component
-import { ShowToastContext } from "../../context/ShowToastContext";
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import ShareFolderModal from './ShareFolderModal';
 import { TiPin } from "react-icons/ti";
 import { RiUnpinFill } from "react-icons/ri";
 import { useAuth } from "../../firebase/auth";
+import { ShowToastContext } from "../../context/ShowToastContext";
 
 
 function FolderItem({ folder, isTrashItem, isSharedContext, onToggleDropdown, onRestore, onDeleteForever, onFolderDeleted, onFolderRenamed, onFolderStarToggled, onTogglePinned }) {
@@ -50,17 +50,61 @@ function FolderItem({ folder, isTrashItem, isSharedContext, onToggleDropdown, on
     }
   };
 
-  const [isPinned, setIsPinned] = useState(folder.pinned);
+  const [isPinned, setIsPinned] = useState();
+
+  // Inside FolderItem.js, assuming you have a useEffect hook with the following:
+  const handleTogglePinned = async () => {
+    if (!folder) {
+      console.error("Invalid folder object passed to togglePinned:", folder);
+      return;
+    }
+  
+    // Check the current number of pinned folders
+    const pinnedFoldersQuery = query(collection(db, "Folders"), where("pinned", "==", true));
+    const pinnedFoldersSnapshot = await getDocs(pinnedFoldersQuery);
+    if (pinnedFoldersSnapshot.docs.length >= 5 && !folder.pinned) {
+      setShowToastMsg("Maximum of 5 folders can be pinned.");
+      return;
+    }
+  
+    const folderRef = doc(db, "Folders", folder.id);
+    const newPinnedStatus = !isPinned; // Toggle the current state
+  
+    try {
+      await updateDoc(folderRef, {
+        pinned: newPinnedStatus
+      });
+      addNotification('image', {
+        src: './folder.png', // Assuming './folder.png' is a valid path to your folder icon
+        message: `Folder "${folder.name}" ${newPinnedStatus ? 'pinned' : 'unpinned'} successfully`,
+        name: folder.name,
+        isFolder: true, // Assuming you want to differentiate between folder and file notifications
+        isStarred: newPinnedStatus, // This will be true if the folder has been starred, false if unstarred
+        isUnstarred: !newPinnedStatus
+    });
+      // The toast message should be shown here only if the above operation is successful
+      setShowToastMsg(`Folder "${folder.name}" ${newPinnedStatus ? "pinned" : "unpinned"} successfully!`);
+    } catch (error) {
+      console.error("Error toggling pin:", error);
+      // Handle error, maybe show an error toast message here
+    }
+  };
 
   useEffect(() => {
-    // Update local state when folder prop changes
-    setIsPinned(folder.pinned);
-  }, [folder.pinned]);
+    const folderRef = doc(db, "Folders", folder.id);
+  
+    const unsubscribe = onSnapshot(folderRef, (doc) => {
+      if (doc.exists()) {
+        setIsPinned(doc.data().pinned);
+      }
+    }, (error) => {
+      console.error("Error listening to folder updates:", error);
+    });
+  
+    return () => unsubscribe();
+  }, [folder.id, db]);
+  
 
-  const handleTogglePinned = async () => {
-    // Call the passed prop function to update the pinned status in parent
-    await onTogglePinned(folder);
-  };
 
   const handleToggleStarred = async (e) => {
     e.stopPropagation(); // Prevent click event from bubbling up
@@ -178,7 +222,7 @@ function getTimeLeft(deletedAt) {
 }
 
   
-const handleLock = async (password) => {
+const handleLock = async (password, e) => {
   e.stopPropagation(); // Prevent click event from bubbling up to the parent
   console.log("Inside handleLock with password:", password);
 
@@ -547,12 +591,12 @@ let actionButtons;
               <DropdownItem
               key="pin"
               shortcut="⌘P"
-              startContent={folder.pinned ? <RiUnpinFill className={iconClasses} /> : <TiPin className={iconClasses} />}
+              startContent={folder.isPinned ? <RiUnpinFill className={iconClasses} /> : <TiPin className={iconClasses} />}
               className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
               onClick={handleTogglePinned}              >
-              {folder.pinned ? 'Unpin' : 'Pin'}
+              {isPinned ? 'Unpin' : 'Pin'} {/* Dynamically set text based on `isPinned` state */}
               <div className="text-xs text-gray-500">
-                {folder.pinned ? 'Unpin this folder' : 'Pin this folder'}
+                {isPinned ? 'Unpin this folder' : 'Pin this folder'}
               </div>
             </DropdownItem>
 
@@ -637,7 +681,7 @@ let actionButtons;
       <div className='flex justify-center items-center'>
       <Image src='/folder.png' alt='folder' width={40} height={40}/>
       </div>
-    {folder.pinned && (
+    {isPinned && (
       <div className="absolute top-0 left-0">
         {/* Replace with your actual pinned icon */}
         <TiPin className='text-4xl text-green-500' />
