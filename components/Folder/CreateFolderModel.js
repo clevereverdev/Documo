@@ -62,7 +62,7 @@ function CreateFolderModal({ isOpen, onClose, onFolderCreated }) {
 return (
   <>
     {isOpen && (
-      <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-gray-800 bg-opacity-90 backdrop-blur-lg">
+      <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-gray-800 bg-opacity-90 backdrop-blur-lg z-20">
         <div className="bg-[#171717] rounded-xl p-6 w-96">
           <div className="flex justify-end">
             <button
@@ -85,17 +85,18 @@ return (
             onChange={(e) => setFolderName(e.target.value)}
           />
           <div className="flex justify-between mt-4">
-            <button
-              className="bg-gray-700 text-white rounded-md p-3 w-1/2 mr-2 focus:outline-none hover:bg-gray-600" onClick={onClose}
-            >
-              Cancel
-            </button>
 
             <button
-              className="w-1/2 bg-blue-500 text-white rounded-md p-3 focus:outline-none hover:bg-blue-600"
+              className="w-1/2 bg-[#3EA88B] text-white rounded-md p-3 mr-2 focus:outline-none hover:bg-[#53B499]"
               onClick={() => onCreate()}
             >
               Create
+            </button>
+
+            <button
+              className="bg-gray-700 text-white rounded-md p-3 w-1/2  focus:outline-none hover:bg-gray-600" onClick={onClose}
+            >
+              Cancel
             </button>
           </div>
         </div>

@@ -13,6 +13,7 @@ import { pdfjs } from 'react-pdf';
 import { BiLeftArrowCircle, BiRightArrowCircle } from "react-icons/bi";
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 import useStorageData from '../Storage/StorageData'; // Adjust the path as needed
+import { FaLock } from "react-icons/fa";
 
 
 function UploadFileModal({ closeModal, onFileCreated }) {
@@ -458,32 +459,39 @@ useEffect(() => {
             </div>
           )}
           {sensitiveFound && !passwordVerified && (
-            <div className="absolute inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-              <div className="p-4 bg-white rounded-lg text-center">
-                <p className="text-red-600">Sensitive content detected.</p>
+            <div className="absolute flex justify-center items-center mt-4">
+              <div className="p-4 rounded-2xl text-center m-5">
+                {/* <p className="text-red-500 font-bold text-md">Sensitive content detected.</p> */}
                 {!passwordSet && (
                   <>
+                  <span className="absolute top-[63px] left-[50px]">
+              <FaLock className="text-gray-400" />
+            </span>
                     <input
                       type="password"
                       value={userSetPassword}
                       onChange={(e) => setUserSetPassword(e.target.value)}
-                      placeholder="Set your password"
-                      className="mt-2"
+                      placeholder="Set a password"
+                      className="w-50 font-medium border bg-transparent border-white hover:border-gray-400 p-4 pl-10 rounded-2xl outline-none focus:border-white pr-10"
                     />
-                    <button onClick={handleSetPassword} className="mt-2 bg-blue-500 text-white p-2 rounded hover:bg-blue-700">Set Password</button>
+                    <button className="px-[50px] mb-5 bg-[#3EA88B] text-white p-4 rounded-2xl m-2 hover:bg-[#53B499]" onClick={handleSetPassword}>Confirm</button>
                   </>
                 )}
                 {passwordSet && (
                   <>
-                    <p>Please enter the password to proceed.</p>
+                    {/* <p>Please enter the password to proceed.</p> */}
+                    <span className="absolute top-[63px] left-[50px]">
+              <FaLock className="text-gray-400" />
+            </span>
                     <input
-                      type="password"
+                      type='password'
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Enter password to verify"
-                      className="mt-2"
+                      placeholder="Verify password"
+                      className="w-60 font-medium border bg-transparent border-white hover:border-gray-400 p-4 pl-10 rounded-2xl outline-none focus:border-white pr-10"
+
                     />
-                    <button onClick={verifyPassword} className="mt-2 bg-blue-500 text-white p-2 rounded hover:bg-blue-700">Verify</button>
+                    <button onClick={verifyPassword} className="px-[50px] mb-5 bg-[#3EA88B] text-white p-4 rounded-2xl m-2 hover:bg-[#53B499]">Verify</button>
                   </>
                 )}
               </div>
@@ -491,19 +499,19 @@ useEffect(() => {
           )}
           <div id="result" className="mt-5">{resultMsg}</div>
 
-          <div className="flex justify-between mt-12">
+          <div className="flex justify-between mt-[100px]">
+            <button
+              className="w-1/2 bg-[#3EA88B] text-white rounded-md mx-2 p-3 focus:outline-none hover:bg-[#53B499]"
+              onClick={handleNextClick}
+            >
+              Next
+            </button>
             <button
               className="bg-gray-700 text-white rounded-md p-3 w-1/2 mr-2 focus:outline-none hover:bg-gray-600" onClick={handleCancelClick}
             >
               Cancel
             </button>
 
-            <button
-              className="w-1/2 bg-blue-500 text-white rounded-md p-3 focus:outline-none hover:bg-blue-600"
-              onClick={handleNextClick}
-            >
-              Next
-            </button>
           </div>
         </div>
       </div>

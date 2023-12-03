@@ -14,6 +14,7 @@ function FolderList({ folderList, fileList, onFolderDeleted, isBig = true }) {
   const [activeFolder, setActiveFolder] = useState();
   const [activeDropdownId, setActiveDropdownId] = useState(null);
   const [showArrows, setShowArrows] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   const handleDropdownToggle = (folderId) => {
     setActiveDropdownId(activeDropdownId === folderId ? null : folderId);
@@ -34,26 +35,24 @@ function FolderList({ folderList, fileList, onFolderDeleted, isBig = true }) {
   }, [folderList]);
 
 
-  // const onFolderClick = async (e, index, item) => {
-  //   e.preventDefault();
-  //   e.stopPropagation();
+  const openShareModal = (folder, e) => {
+    e.stopPropagation();
+    setIsShareModalOpen(true); // Add this line to set the state
+    // Existing code...
+  };
+  
 
-  //   // Only prompt for password if the folder is locked and not already unlocked
-  //   if (item.locked && !item.isUnlocked) {
-  //     const enteredPassword = prompt('This folder is locked. Enter the password:');
-  //     if (enteredPassword !== item.password) {
-  //       alert('Incorrect password.');
-  //       return; // Do not navigate if the password is incorrect
-  //     }
-  //   }
-
-  //   // Navigate to the folder
-  //   setActiveFolder(index);
-  //   router.push({
-  //     pathname: "/folder/" + item.id,
-  //     query: { name: item.name, id: item.id },
-  //   });
-  // };
+  const onFolderClick = (index, item) => {
+    setActiveFolder(index);
+    router.push({
+      pathname: "/folder/" + item.id,
+      query: {
+        name: item.name,
+        id: item.id,
+      },
+    });
+  };
+  
 
   const onFolderRenamed = (folderId, newName) => {
     // Update the state of folderList with the new name
@@ -197,8 +196,8 @@ return (
             {currentFolders.map((item, index) => {
               const filesForFolder = Array.isArray(fileList) ? fileList.filter(file => file.parentFolderId === item.id) : [];
               return (
-                <div key={item.id} className="folder-item-clickable cursor-pointer" onClick={(e) => onFolderClick(e, index, item)}>
-                  <FolderItem
+                <div key={index} onClick={() => onFolderClick(index, item)}>
+                <FolderItem
                     folder={item}
                     fileList={filesForFolder}
                     onToggleDropdown={() => handleDropdownToggle(item.id)}
@@ -213,9 +212,15 @@ return (
             })}
           </div>
         ) : (
-          <div>
-            {folderList.map((item) => (
-              <FolderItemSmall key={item.id} folder={item} />
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-1 m-1">
+          
+            {currentFolders.map((item, index, setBreadcrumbs) => (
+              <div key={index} 
+              onClick={() => onFolderClick(index, item)}
+              >
+              <FolderItemSmall key={item.id} folder={item} setBreadcrumbs={setBreadcrumbs} // Pass setBreadcrumbs down to FolderItemSmall
+ />
+              </div>
             ))}
           </div>
         )}
