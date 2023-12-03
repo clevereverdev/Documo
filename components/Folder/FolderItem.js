@@ -222,8 +222,7 @@ function getTimeLeft(deletedAt) {
 }
 
   
-const handleLock = async (password, e) => {
-  e.stopPropagation(); // Prevent click event from bubbling up to the parent
+const handleLock = async (password) => {
   console.log("Inside handleLock with password:", password);
 
   if (password) {

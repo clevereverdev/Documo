@@ -35,18 +35,29 @@ function FolderList({ folderList, fileList, onFolderDeleted, isBig = true }) {
       query(collection(db, "Folders")),
       (snapshot) => {
         const folders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        // Sort folders based on the pinned status
-        const sorted = folders.sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
-        setLocalFolderList(sorted);
+        setLocalFolderList(folders);
         setIsLoading(false);
       },
       (error) => {
         console.error("Error fetching folders: ", error);
       }
     );
-
-    return () => unsubscribe(); // Cleanup on unmount
+  
+    return () => unsubscribe();
   }, [db]);
+
+  useEffect(() => {
+    const sorted = localFolderList.sort((a, b) => {
+      if (a.pinned && !b.pinned) {
+        return -1;
+      } else if (!a.pinned && b.pinned) {
+        return 1;
+      }
+    });
+    setSortedFolders(sorted);
+  }, [localFolderList]);
+    
+  
 
   
   const openShareModal = (folder, e) => {
@@ -56,16 +67,16 @@ function FolderList({ folderList, fileList, onFolderDeleted, isBig = true }) {
   };
   
 
-  const onFolderClick = (index, item) => {
-    setActiveFolder(index);
-    router.push({
-      pathname: "/folder/" + item.id,
-      query: {
-        name: item.name,
-        id: item.id,
-      },
-    });
-  };
+  // const onFolderClick = (index, item) => {
+  //   setActiveFolder(index);
+  //   router.push({
+  //     pathname: "/folder/" + item.id,
+  //     query: {
+  //       name: item.name,
+  //       id: item.id,
+  //     },
+  //   });
+  // };
   
 
   const onFolderRenamed = (folderId, newName) => {
@@ -117,7 +128,8 @@ useEffect(() => {
   const indexOfLastFolder = currentPage * foldersPerPage;
   const indexOfFirstFolder = indexOfLastFolder - foldersPerPage;
   setSortedFolders(localFolderList.slice(indexOfFirstFolder, indexOfLastFolder));
-}, [localFolderList, currentPage]);
+}, [localFolderList, currentPage, foldersPerPage]);
+
 
 // Generate page numbers for pagination
 const pageNumbers = [];
@@ -209,10 +221,13 @@ return (
       <>
         {isBig ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 m-3">
-          {sortedFolders.map((item, index) => {
+    {sortedFolders.map((item, index) => {
             const filesForFolder = Array.isArray(fileList) ? fileList.filter(file => file.parentFolderId === item.id) : [];
             return (
-              <div key={item.id} onClick={() => onFolderClick(index, item)}> {/* Changed key to item.id for uniqueness */}
+              <div key={item.id} 
+              // onClick={() => onFolderClick(index, item)}
+              > 
+              {/* Changed key to item.id for uniqueness */}
                 <FolderItem
                     folder={item}
                     fileList={filesForFolder}
