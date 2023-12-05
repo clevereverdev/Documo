@@ -40,7 +40,7 @@ export default function Layout({ children, setFolderList, setFileList }) {
     { href: '/starred', title: 'Starred' },
     { href: '/shared', title: 'Shared' },
     { href: '/trash', title: 'Trash' },
-    { href: '/settings', title: 'Settings' },
+    { href: '/photos', title: 'Settings' },
   ];
 
   const onNewFolderAdded = (newFolder) => {

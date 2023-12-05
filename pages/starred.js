@@ -35,7 +35,8 @@ export default function Starred() {
       const files = fileSnapshot.docs.map(doc => {
         const data = doc.data();
         const extension = getFileExtension(data.name); // Extract the file extension
-        return { ...data, id: doc.id, type: extension }; // Use the extracted extension
+        return { ...data, id: doc.id, type: extension, pinned: false
+        }; // Use the extracted extension
       });
       
       // Combine with folders (assuming folders are handled separately)
@@ -44,6 +45,7 @@ export default function Starred() {
       ...doc.data(),
       id: doc.id,
       type: 'folder',
+      pinned: false,
       imageUrl: '/folder.png', // Static image URL for folders
       size: 'Unknown' // Folders will always have 'Unknown' size
     }));
@@ -90,26 +92,33 @@ const searchStarredItems = (searchTerm) => {
   };
 
 // Add this function inside your Starred.js component
-const toggleStar = async (file) => {
-  const fileRef = doc(db, "files", file.id);
+const toggleStar = async (item) => {
+  // Determine the collection based on the item type
+  const collectionName = item.type === 'folder' ? 'Folders' : 'files';
+  const itemRef = doc(db, collectionName, item.id);
 
   // Toggle the 'starred' property
-  const newStarredStatus = !file.starred;
-  await updateDoc(fileRef, {
-    starred: newStarredStatus
-  });
+  const newStarredStatus = !item.starred;
+  try {
+    await updateDoc(itemRef, {
+      starred: newStarredStatus
+    });
 
-  // Update the local state to reflect the change
-  const updateStarredItems = (items) => items.map(f => {
-    if (f.id === file.id) {
-      return { ...f, starred: newStarredStatus };
-    }
-    return f;
-  });
+    // Update the local state to reflect the change
+    const updateStarredItems = (items) => items.map(f => {
+      if (f.id === item.id) {
+        return { ...f, starred: newStarredStatus };
+      }
+      return f;
+    });
 
-  setStarredItems(prevItems => updateStarredItems(prevItems));
-  setFilteredStarredItems(prevItems => updateStarredItems(prevItems));
+    setStarredItems(prevItems => updateStarredItems(prevItems));
+    setFilteredStarredItems(prevItems => updateStarredItems(prevItems));
+  } catch (error) {
+    console.error("Error updating document: ", error);
+  }
 };
+
 
 
 

@@ -63,20 +63,19 @@ function FolderList({ folderList, fileList, onFolderDeleted, isBig = true }) {
   const openShareModal = (folder, e) => {
     e.stopPropagation();
     setIsShareModalOpen(true); // Add this line to set the state
-    // Existing code...
   };
   
 
-  // const onFolderClick = (index, item) => {
-  //   setActiveFolder(index);
-  //   router.push({
-  //     pathname: "/folder/" + item.id,
-  //     query: {
-  //       name: item.name,
-  //       id: item.id,
-  //     },
-  //   });
-  // };
+  const onFolderClick = (index, item) => {
+    setActiveFolder(index);
+    router.push({
+      pathname: "/folder/" + item.id,
+      query: {
+        name: item.name,
+        id: item.id,
+      },
+    });
+  };
   
 
   const onFolderRenamed = (folderId, newName) => {
@@ -225,7 +224,7 @@ return (
             const filesForFolder = Array.isArray(fileList) ? fileList.filter(file => file.parentFolderId === item.id) : [];
             return (
               <div key={item.id} 
-              // onClick={() => onFolderClick(index, item)}
+              onDoubleClick={() => onFolderClick(index, item)} // Changed to onDoubleClick
               > 
               {/* Changed key to item.id for uniqueness */}
                 <FolderItem
