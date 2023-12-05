@@ -7,11 +7,16 @@ import Layout from "@/Sidebar";
 import SearchBar from "@/Search";
 import StorageView from '../components/Storage/StorageView';
 import styles from "../styles/Home.module.css";
+import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, DropdownSection, cn, Tooltip } from "@nextui-org/react";
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import { MdRestore } from "react-icons/md";
+import { FaTrash } from "react-icons/fa6";
 
 export default function Trash() {
   const [deletedItems, setDeletedItems] = useState([]);
   const [filteredDeletedItems, setFilteredDeletedItems] = useState([]);
   const [searchHistory, setSearchHistory] = useState([]);
+  const iconClasses = "text-xl text-default-500 pointer-events-none flex-shrink-0";
 
   useEffect(() => {
     const savedHistory = localStorage.getItem('deletedSearchHistory');
@@ -35,7 +40,7 @@ export default function Trash() {
       const files = fileSnapshot.docs.map(doc => {
         const data = doc.data();
         const extension = getFileExtension(data.name); // Extract the file extension
-        return { ...data, id: doc.id, type: extension }; // Use the extracted extension
+        return { ...data, id: doc.id, type: extension, pinned: false }; // Use the extracted extension
       });
       
       // Combine with folders (assuming folders are handled separately)
@@ -44,6 +49,7 @@ export default function Trash() {
       ...doc.data(),
       id: doc.id,
       type: 'folder',
+      pinned: false,
       imageUrl: '/folder.png', // Static image URL for folders
       size: 'Unknown' // Folders will always have 'Unknown' size
     }));
@@ -171,6 +177,39 @@ const searchDeletedItems = (searchTerm) => {
           
           
       }, [db])
+
+      function getTimeLeft(deletedAt) {
+        const deletedAtDate = new Date(deletedAt.seconds * 1000);
+        // Add 30 days to deletedAtDate
+        deletedAtDate.setDate(deletedAtDate.getDate() + 30);
+    
+        // Current date and time
+        const now = new Date();
+    
+        // Check if the current date and time have passed the deletedAtDate
+        if (now > deletedAtDate) {
+          return "File deleted";
+        } else {
+          // Calculate the difference in milliseconds
+          const timeDiff = deletedAtDate - now;
+    
+          // Convert milliseconds to days
+          const daysLeft = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+          const hoursLeft = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const minutesLeft = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+    
+    
+          if (daysLeft > 1) {
+            return `${daysLeft} days left`;
+          } else if (hoursLeft > 0) {
+            return `${hoursLeft} hours left`;
+          } else if (minutesLeft > 0) {
+            return `${minutesLeft} minutes left`;
+          } else {
+            return `Less than a minute left`;
+          }
+        }
+      }
     
 
   return (
@@ -196,20 +235,65 @@ const searchDeletedItems = (searchTerm) => {
     {/* Render combined starred items (folders and files) */}
 {filteredDeletedItems.length ? (
    filteredDeletedItems.map((item, index) => {
-    if (item.deleted) {
-      return null; // Skip rendering deleted items
-    }
-    const isFolder = item.type === 'Folder';
-    return isFolder ? (
-      <FolderItem 
-        key={item.id}
-        folder={item}
-        index={index + 1}
-        isTrashItem={true}
-        onRestore={() => restoreFolder(item)}
-        onDeleteForever={() => deleteFolderForever(item)}
-      />
-      
+    const dateOptions = { year: 'numeric', month: 'short', day: '2-digit' };
+    const dateModified = item.deletedAt ? new Date(item.deletedAt.seconds * 1000).toLocaleDateString('en-US', dateOptions) : 'Unknown';
+    const isFolder = item.type === 'folder';
+  return isFolder ? (
+    <div className='grid grid-cols-[min-content,3.9fr,1.8fr,1.2fr,1fr,1fr,auto] gap-6 text-sm items-center p-2 hover:bg-[#343434] rounded-md' key={item.id}>
+      <div className="text-center ml-2">{index + 1}</div>
+      <div className="flex items-center">
+        <img src="/folder.png"  width={35} height={35} className="flex justify-center items-center bg-gray-700 w-11 h-11 p-1 mr-2" alt="Folder" />
+        <span>{item.name}</span>
+      </div>
+      <div className='mx-4'>{dateModified}</div>
+      <div className='mx-3'>{item.size}</div>
+      <div className='ml-8'>{item.type}</div>
+      <div className="file-actions absolute right-[465px]">
+          <Dropdown>
+            <DropdownTrigger>
+              <button className="flex items-center mr-5 p-2 rounded-full focus:outline-none hover:bg-opacity-50 hover:bg-gray-600 z-[1001]"
+                
+              >
+                <MoreHorizIcon className="text-gray-300 text-2xl" />
+               
+              </button>
+            </DropdownTrigger>
+            <DropdownMenu variant="faded" aria-label="Dropdown menu with description" className='bg-[#18181b] rounded-xl py-2'>
+              <DropdownSection title="Actions" showDivider>
+                <DropdownItem
+                  key="Restore"
+                  shortcut="⌘R"
+                  startContent={<MdRestore className={iconClasses} />}
+                  className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
+                  onClick={() => restoreFolder(item)}
+                  textValue="Restore"
+                >
+                  Restore
+                  <div className="text-xs text-gray-500">
+                    Restore
+                  </div>
+                </DropdownItem>
+                <DropdownItem
+                  key="DeleteForever"
+                  shortcut="⌘N"
+                  startContent={<FaTrash className={cn(iconClasses, "text-red-400")} />}
+                  className="text-red-400 hover:bg-[#292929] hover:border-red-400 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
+                  onClick={() => deleteFolderForever(item)}
+                  textValue="DeleteForever"
+                  >
+                    
+                  Delete Forever
+                  <div className="text-xs text-red-400">
+                    <span className='text-gray-400 font-bold'>{getTimeLeft(item.deletedAt)}</span>
+                  </div>
+                </DropdownItem>
+
+              </DropdownSection>
+            </DropdownMenu>
+          </Dropdown>
+        </div>
+        
+      </div>
     ) : (
       <FileItem 
         key={item.id}

@@ -44,7 +44,6 @@ function FileItem({ file, onFileImageClick, onToggleStar, index, isTrashItem, on
 
   const [isSensitive, setIsSensitive] = useState(file.sensitive);
   const [afile, setFile] = useState(file);
-  const [showTooltip, setShowTooltip] = useState(false);
 
   const [starred, setStarred] = useState(file.starred);
 
@@ -489,16 +488,11 @@ const FileInfo = ({ file }) => (
           <Dropdown>
             <DropdownTrigger>
               <button className="flex items-center mr-5 p-2 rounded-full focus:outline-none hover:bg-opacity-50 hover:bg-gray-600 z-[1001]"
-                onMouseEnter={() => setShowTooltip(true)}
-                onMouseLeave={() => setShowTooltip(false)}
+                
               >
                 <MoreHorizIcon className="text-gray-300 text-2xl" />
-                {showTooltip && (
-                  <div className="absolute top-[280px] right-[440px] transform -translate-x-1/2 -translate-y-full bg-gray-300 text-gray-700 font-bold text-xs py-1 px-2 rounded-lg z-[1001]">
-                    More
-                  </div>
-
-                )}
+                
+                  
               </button>
             </DropdownTrigger>
             <DropdownMenu variant="faded" aria-label="Dropdown menu with description" className='bg-[#18181b] rounded-xl py-2'>
@@ -542,16 +536,12 @@ const FileInfo = ({ file }) => (
         <Dropdown>
         <DropdownTrigger>
           <button className="flex items-center space-x-2 p-2 rounded-full focus:outline-none hover:bg-opacity-50 hover:bg-gray-600 z-[1001]"
-            onMouseEnter={() => setShowTooltip(true)}
-            onMouseLeave={() => setShowTooltip(false)}
+            
           >
             <MoreHorizIcon className="text-gray-300 text-2xl" />
-            {showTooltip && (
-              <div className="absolute top-[70px] left-3 transform -translate-x-1/2 -translate-y-full bg-gray-300 text-gray-700 font-bold text-xs py-1 px-2 rounded-lg z-10">
-                More
-              </div>
-
-            )}
+            
+             
+           
           </button>
 
         </DropdownTrigger>
@@ -628,16 +618,14 @@ const FileInfo = ({ file }) => (
               <Dropdown>
                 <DropdownTrigger>
                   <button className="flex items-center space-x-2 p-2 rounded-full focus:outline-none hover:bg-opacity-50 hover:bg-gray-600 z-[1001]"
-                    onMouseEnter={() => setShowTooltip(true)}
-                    onMouseLeave={() => setShowTooltip(false)}
+                    
                   >
                     <MoreHorizIcon className="text-gray-300 text-2xl" />
-                    {showTooltip && (
                       <div className="absolute top-[70px] left-3 transform -translate-x-1/2 -translate-y-full bg-gray-300 text-gray-700 font-bold text-xs py-1 px-2 rounded-lg z-10">
                         More
                       </div>
 
-                    )}
+                  
                   </button>
 
                 </DropdownTrigger>

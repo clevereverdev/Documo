@@ -4,7 +4,8 @@ import FolderItem from "./FolderItem";
 import { useRouter } from "next/router";
 import FolderItemSmall from "./FolderItemSmall";
 import { useFolderActions } from "../Folder/UseFolderActions"
-import { AiOutlineLeft, AiOutlineRight } from 'react-icons/ai';
+import { app } from "../../firebase/firebase";
+import { getFirestore, collection, query, onSnapshot } from "firebase/firestore";
 
 
 function FolderList({ folderList, fileList, onFolderDeleted, isBig = true }) {
@@ -15,6 +16,7 @@ function FolderList({ folderList, fileList, onFolderDeleted, isBig = true }) {
   const [activeDropdownId, setActiveDropdownId] = useState(null);
   const [showArrows, setShowArrows] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const db = getFirestore(app);
 
   const handleDropdownToggle = (folderId) => {
     setActiveDropdownId(activeDropdownId === folderId ? null : folderId);
@@ -26,19 +28,41 @@ function FolderList({ folderList, fileList, onFolderDeleted, isBig = true }) {
     setLocalFolderList(folderList);
   }, [folderList]);
 
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
-    if (Array.isArray(folderList)) {
-      const sorted = [...folderList].sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
-      setSortedFolders(sorted);
-      setShowArrows(sorted.length > 5); // Show both arrows when there are more than 5 folders
-    }
-  }, [folderList]);
+    const unsubscribe = onSnapshot(
+      query(collection(db, "Folders")),
+      (snapshot) => {
+        const folders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setLocalFolderList(folders);
+        setIsLoading(false);
+      },
+      (error) => {
+        console.error("Error fetching folders: ", error);
+      }
+    );
+  
+    return () => unsubscribe();
+  }, [db]);
 
+  useEffect(() => {
+    const sorted = localFolderList.sort((a, b) => {
+      if (a.pinned && !b.pinned) {
+        return -1;
+      } else if (!a.pinned && b.pinned) {
+        return 1;
+      }
+    });
+    setSortedFolders(sorted);
+  }, [localFolderList]);
+    
+  
 
+  
   const openShareModal = (folder, e) => {
     e.stopPropagation();
     setIsShareModalOpen(true); // Add this line to set the state
-    // Existing code...
   };
   
 
@@ -99,9 +123,12 @@ const foldersPerPage = 5; // Set the number of folders per page
 const totalPages = Math.ceil(folderList.length / foldersPerPage);
 
 // Calculate the folders to be displayed on the current page
-const indexOfLastFolder = currentPage * foldersPerPage;
-const indexOfFirstFolder = indexOfLastFolder - foldersPerPage;
-const currentFolders = sortedFolders.slice(indexOfFirstFolder, indexOfLastFolder);
+useEffect(() => {
+  const indexOfLastFolder = currentPage * foldersPerPage;
+  const indexOfFirstFolder = indexOfLastFolder - foldersPerPage;
+  setSortedFolders(localFolderList.slice(indexOfFirstFolder, indexOfLastFolder));
+}, [localFolderList, currentPage, foldersPerPage]);
+
 
 // Generate page numbers for pagination
 const pageNumbers = [];
@@ -192,11 +219,14 @@ return (
     ) : (
       <>
         {isBig ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 m-3">
-            {currentFolders.map((item, index) => {
-              const filesForFolder = Array.isArray(fileList) ? fileList.filter(file => file.parentFolderId === item.id) : [];
-              return (
-                <div key={index} onClick={() => onFolderClick(index, item)}>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 m-3">
+    {sortedFolders.map((item, index) => {
+            const filesForFolder = Array.isArray(fileList) ? fileList.filter(file => file.parentFolderId === item.id) : [];
+            return (
+              <div key={item.id} 
+              onDoubleClick={() => onFolderClick(index, item)} // Changed to onDoubleClick
+              > 
+              {/* Changed key to item.id for uniqueness */}
                 <FolderItem
                     folder={item}
                     fileList={filesForFolder}

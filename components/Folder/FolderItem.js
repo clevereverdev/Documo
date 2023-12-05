@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { getFirestore, doc, updateDoc, getDoc, collection, setDoc, arrayUnion } from "firebase/firestore";
+import { getFirestore, doc, updateDoc, getDoc, collection, setDoc, arrayUnion, query, getDocs, where } from "firebase/firestore";
 import { onSnapshot } from "firebase/firestore";
 import { useRouter } from 'next/router';
 import { app } from "../../firebase/firebase";
@@ -9,17 +9,17 @@ import { BsStarFill, BsStar } from 'react-icons/bs';
 import { useFolderActions } from "../Folder/UseFolderActions";
 import { useNotifications } from '../../context/NotificationContext';
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, DropdownSection, cn, Tooltip } from "@nextui-org/react";
-import { MdOutlineDriveFileRenameOutline, MdRestore } from "react-icons/md";
-import { FaDownload, FaTrash, FaShare } from "react-icons/fa6";
+import { MdOutlineDriveFileRenameOutline, MdRestore, MdPushPin } from "react-icons/md";
+import { FaDownload, FaTrash, FaShare, FaLock } from "react-icons/fa6";
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import FolderPasswordModal from './FolderPasswordModal'; // Import the new component
-import { ShowToastContext } from "../../context/ShowToastContext";
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import ShareFolderModal from './ShareFolderModal';
 import { TiPin } from "react-icons/ti";
 import { RiUnpinFill } from "react-icons/ri";
 import { useAuth } from "../../firebase/auth";
+import { ShowToastContext } from "../../context/ShowToastContext";
 
 
 function FolderItem({ folder, isTrashItem, isSharedContext, onToggleDropdown, onRestore, onDeleteForever, onFolderDeleted, onFolderRenamed, onFolderStarToggled, onTogglePinned }) {
@@ -50,17 +50,61 @@ function FolderItem({ folder, isTrashItem, isSharedContext, onToggleDropdown, on
     }
   };
 
-  const [isPinned, setIsPinned] = useState(folder.pinned);
+  const [isPinned, setIsPinned] = useState();
+
+  // Inside FolderItem.js, assuming you have a useEffect hook with the following:
+  const handleTogglePinned = async () => {
+    if (!folder) {
+      console.error("Invalid folder object passed to togglePinned:", folder);
+      return;
+    }
+  
+    // Check the current number of pinned folders
+    const pinnedFoldersQuery = query(collection(db, "Folders"), where("pinned", "==", true));
+    const pinnedFoldersSnapshot = await getDocs(pinnedFoldersQuery);
+    if (pinnedFoldersSnapshot.docs.length >= 5 && !folder.pinned) {
+      setShowToastMsg("Maximum of 5 folders can be pinned.");
+      return;
+    }
+  
+    const folderRef = doc(db, "Folders", folder.id);
+    const newPinnedStatus = !isPinned; // Toggle the current state
+  
+    try {
+      await updateDoc(folderRef, {
+        pinned: newPinnedStatus
+      });
+      addNotification('image', {
+        src: './folder.png', // Assuming './folder.png' is a valid path to your folder icon
+        message: `Folder "${folder.name}" ${newPinnedStatus ? 'pinned' : 'unpinned'} successfully`,
+        name: folder.name,
+        isFolder: true, // Assuming you want to differentiate between folder and file notifications
+        isStarred: newPinnedStatus, // This will be true if the folder has been starred, false if unstarred
+        isUnstarred: !newPinnedStatus
+    });
+      // The toast message should be shown here only if the above operation is successful
+      setShowToastMsg(`Folder "${folder.name}" ${newPinnedStatus ? "pinned" : "unpinned"} successfully!`);
+    } catch (error) {
+      console.error("Error toggling pin:", error);
+      // Handle error, maybe show an error toast message here
+    }
+  };
 
   useEffect(() => {
-    // Update local state when folder prop changes
-    setIsPinned(folder.pinned);
-  }, [folder.pinned]);
+    const folderRef = doc(db, "Folders", folder.id);
+  
+    const unsubscribe = onSnapshot(folderRef, (doc) => {
+      if (doc.exists()) {
+        setIsPinned(doc.data().pinned);
+      }
+    }, (error) => {
+      console.error("Error listening to folder updates:", error);
+    });
+  
+    return () => unsubscribe();
+  }, [folder.id, db]);
+  
 
-  const handleTogglePinned = async () => {
-    // Call the passed prop function to update the pinned status in parent
-    await onTogglePinned(folder);
-  };
 
   const handleToggleStarred = async (e) => {
     e.stopPropagation(); // Prevent click event from bubbling up
@@ -179,7 +223,6 @@ function getTimeLeft(deletedAt) {
 
   
 const handleLock = async (password) => {
-  e.stopPropagation(); // Prevent click event from bubbling up to the parent
   console.log("Inside handleLock with password:", password);
 
   if (password) {
@@ -220,7 +263,6 @@ const handleIncorrectPassword = () => {
 };
 
 const handleUnlock = async (enteredPassword) => {
-  e.stopPropagation(); // Prevent click event from bubbling up to the parent
   console.log("Entered Password:", enteredPassword); // Debug log
   console.log("Stored Password:", folder.password); // Debug log
 
@@ -266,10 +308,7 @@ const [editorFolderUnsubscribe, setEditorFolderUnsubscribe] = useState(null); //
 //   setFolderToShare(folder);
 //   setIsShareModalOpen(true);
 // };
-const openShareModal = (folder, e) => {
-  if (e && e.stopPropagation) {
-    e.stopPropagation(); // Prevent click event from bubbling up to the parent
-  }
+const openShareModal = (folder) => {
   console.log("Opening share modal for folder:", folder);
   setFolderToShare(folder);
   setIsShareModalOpen(true);
@@ -311,22 +350,11 @@ const openShareModal = (folder, e) => {
 
   
 
-  const handleShareFolder = async (folder, usernameOrEmail, permissionLevel, loggedInUserEmail, e) => {
+  const handleShareFolder = async (folder, usernameOrEmail, permissionLevel, loggedInUserEmail) => {
     console.log("handleSharefolder called with:", folder, usernameOrEmail, permissionLevel);
-    e.stopPropagation(); // Prevent click event from bubbling up to the parent
 
   
     try {
-      // // Check if the folder is sensitive
-      // if (folder.sensitive) {
-      //   console.log("Folder is sensitive, checking password...");
-      //   const enteredPassword = await promptForPassword(); // Implement this function as needed
-      //   if (enteredPassword !== folder.password) {
-      //     alert("Incorrect password. You cannot share this folder.");
-      //     return;
-      //   }
-      // }
-  
       // Check if the user exists
       const { userExists, userEmail } = await checkUserExists(usernameOrEmail); // Retrieve the username
   
@@ -342,6 +370,7 @@ const openShareModal = (folder, e) => {
             sharedBy: folder.createBy,
             senderUserName: authUser.username,
             sharedWith: userEmail, // Use the username instead of the email
+            sharedAt: new Date(),
             sensitive: false,
             pinned: false,
             password: null, // Remove sensitive information
@@ -359,8 +388,10 @@ const openShareModal = (folder, e) => {
           const folderRef = doc(db, "Folders", folder.id.toString());
           if (userExists) {
             await updateDoc(folderRef, {
+              senderUserName: authUser.username,
               sharedWith: arrayUnion(userEmail),
               sharedBy: folder.createBy,
+              sharedAt: new Date(),
             });
           } else {
             console.error("userDisplayName is undefined or null.");
@@ -520,7 +551,7 @@ let actionButtons;
         <DropdownMenu variant="faded" aria-label="Dropdown menu with description" className='bg-[#18181b] rounded-xl py-2'>
           <DropdownSection title="Actions" showDivider>
             <DropdownItem
-              key="new"
+              key="Rename"
               shortcut="⌘N"
               startContent={<MdOutlineDriveFileRenameOutline className={iconClasses} />}
               className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
@@ -532,7 +563,7 @@ let actionButtons;
               </div>
             </DropdownItem>
             <DropdownItem
-              key="copy"
+              key="Download"
               shortcut="⌘C"
               startContent={<FaDownload className={iconClasses} />}
               className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
@@ -547,12 +578,12 @@ let actionButtons;
               <DropdownItem
               key="pin"
               shortcut="⌘P"
-              startContent={folder.pinned ? <RiUnpinFill className={iconClasses} /> : <TiPin className={iconClasses} />}
+              startContent={folder.isPinned ? <RiUnpinFill className={iconClasses} /> : <TiPin className={iconClasses} />}
               className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
               onClick={handleTogglePinned}              >
-              {folder.pinned ? 'Unpin' : 'Pin'}
+              {isPinned ? 'Unpin' : 'Pin'} {/* Dynamically set text based on `isPinned` state */}
               <div className="text-xs text-gray-500">
-                {folder.pinned ? 'Unpin this folder' : 'Pin this folder'}
+                {isPinned ? 'Unpin this folder' : 'Pin this folder'}
               </div>
             </DropdownItem>
 
@@ -627,22 +658,29 @@ let actionButtons;
 
   
   return (
-    <div className={`relative w-[120px] gap-4 flex flex-col justify-center items-center h-[120px] rounded-2xl`} onClick={navigateToFolder}>
+    <div className={`relative w-[120px] gap-4 flex flex-col justify-center items-center h-[120px] rounded-lg bg-gray-700`} onClick={navigateToFolder}>
       {/* Dropdown button */}
       <div className="folder-item">
       {actionButtons}
     </div>
 
       <div>
-      <div className='flex justify-center items-center'>
-      <Image src='/folder.png' alt='folder' width={40} height={40}/>
+      <div className='flex justify-center items-center cursor-pointer'>
+      <Image src='/folder.png' alt='folder' width={45} height={45}/>
       </div>
-    {folder.pinned && (
-      <div className="absolute top-0 left-0">
-        {/* Replace with your actual pinned icon */}
-        <TiPin className='text-4xl text-green-500' />
+    {isPinned && (
+      <div className="absolute top-0 left-0 bg-[#3EA88B] rounded-full p-1">
+        
+        <MdPushPin className='text-xl text-black' />
       </div>
     )}
+     {folder.locked && (
+      <div className="absolute top-0 left-5 bg-red-400 rounded-full p-1 z-10">
+        
+        <FaLock className='text-xl text-black' />
+      </div> 
+      )}
+
         {isRenaming ? (
           <form onSubmit={handleRenameSubmit} onClick={(e) => e.stopPropagation()} className="flex flex-col items-center p-2">
             <input

@@ -101,14 +101,15 @@ const toggleStarred = async (folder) => {
     // DOWNLOAD FOLDER AS ZIP
     const downloadFolderAsZip = async (folderId) => {
         // Assuming 'folderId' is the ID of the folder for which files are to be downloaded
+        
         const folderRef = doc(db, "Folders", folderId);
         const folderDoc = await getDoc(folderRef);
-      
-        if (!folderDoc.exists) {
+        
+        if (!folderDoc.exists()) { // Note the parentheses to call the method
           console.error("Folder not found!");
           return;
         }
-      
+        
         const folderData = folderDoc.data();
         const filesQuery = query(collection(db, "files"), where("parentFolderId", "==", folderId));
         const querySnapshot = await getDocs(filesQuery);

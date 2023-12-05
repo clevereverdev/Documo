@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useContext } from 'react';
 import { BsFolder, BsBoxArrowRight, BsFillPersonFill, BsCaretDownFill, BsSun } from "react-icons/bs";
 import { BiUser } from "react-icons/bi";
 import { RiPaintBrushLine } from "react-icons/ri";
-import { MdHistory } from "react-icons/md";
+import { MdHistory, MdLanguage } from "react-icons/md";
 import { useAuth } from "../firebase/auth";
 import { LuScanFace } from "react-icons/lu";
 import { Tooltip } from "@nextui-org/react";
@@ -15,6 +15,8 @@ import RocketOutlinedIcon from '@mui/icons-material/RocketOutlined';
 import Notifications from './Notifications';
 import { app } from "../firebase/firebase";
 import { getFirestore, doc, getDoc} from "firebase/firestore";
+import { FaPaperPlane, FaBell } from "react-icons/fa6";
+import { FaTimes } from "react-icons/fa";
 
 
 
@@ -39,6 +41,7 @@ const Search = ({ onSearch }) => {
   });
 
   const [userPlanName, setUserPlanName] = useState('Free'); // Default plan name
+
   useEffect(() => {
     const fetchUserPlan = async () => {
       if (authUser?.username) {
@@ -142,6 +145,16 @@ const Search = ({ onSearch }) => {
     '/Default_avatar.png',
     '/Avatar_1.png',
     '/Avatar_2.png',
+    '/Avatar_3.png',
+    '/Avatar_4.png',
+    '/Avatar_5.png',
+    '/Avatar_6.png',
+    '/Avatar_7.png',
+    '/Avatar_8.png',
+    '/Avatar_9.png',
+    '/Avatar_11.png',
+    '/Avatar_12.png',
+
   ];
 
   const handleAvatarSelect = (selectedAvatarUrl) => {
@@ -433,39 +446,45 @@ const Search = ({ onSearch }) => {
           </button>
           </Tooltip>
           {isDropdownOpen && (
-            <div className="absolute mt-2 w-60 bg-gray-600 text-white rounded-lg shadow-lg">
+            <div className="absolute mt-2 w-60 bg-[#292929] text-white rounded-lg shadow-lg">
               <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700">
                 <div className="flex items-center">
                   <img src={selectedAvatar} alt="Profile Avatar" className="w-12 h-12 rounded-full mr-3" />
                   <div>
                     <span className="block text-sm font-bold">{authUser.username}
-                    <span className="text-xs bg-yellow-400 text-black px-1 rounded m-2 font-Payton">{userPlanName}</span>
+                    <span className="text-xs bg-yellow-400 text-black px-1 rounded m-2 font-bold">{userPlanName}</span>
                     </span>
                     <span className="text-xs text-gray-300">{authUser.email}</span>
                   </div>
-                <button className='relative w-8 h-8 flex items-center justify-center rounded-full focus:outline-none hover:bg-gray-900 text-xl font-semibold left-3 bottom-3 cursor-pointer' onClick={profilehandleClose}>✖</button>
+                <button className='absolute text-sm flex items-center justify-center top-1 right-1 hover:bg-gray-700 h-6 w-6 rounded-full' onClick={profilehandleClose}>
+                <FaTimes className="text-gray-400 cursor-pointer" />
+                </button>
                 </div>
               </div>
-              <a href="#" className="flex items-center px-4 py-3 hover:bg-gray-800 rounded-full font-semibold text-gray-300 text-[13px]">
-                <BsFillPersonFill className="text-2xl text-[#e2e8f0] mr-2" /> Profile Settings
+              <a href="#" className="flex items-center px-4 py-3 hover:bg-[#393939] rounded-full font-semibold text-gray-300 text-[13px] mt-3">
+                <FaPaperPlane className="text-2xl text-[#e2e8f0] mr-2" /> Plan: {userPlanName}
               </a>
-              <a href="#" className="flex items-center px-4 py-3 hover:bg-gray-800 rounded-full font-semibold text-gray-300 text-[13px]">
-                <BsSun className="text-2xl text-[#e2e8f0] mr-2" /> Light Mode
+              
+              <div className="flex items-center px-4 py-3 hover:bg-[#393939] rounded-full font-semibold text-gray-300 text-[13px] cursor-pointer" onClick={() => setIsAvatarDropdownOpen(!isAvatarDropdownOpen)}>
+  <LuScanFace className="text-2xl text-[#e2e8f0] mr-2 " /> Change Avatar <span className="text-xs bg-[#1ED760] text-black px-1 rounded ml-10 animate-blink font-Payton">New</span>
+  {isAvatarDropdownOpen && (
+    <div ref={avatarDropdownRef} className="flex items-center justify-center absolute right-[250px] mt-2 w-[190px] bg-[#292929] text-white border border-gray-700 rounded-lg shadow-lg">
+      <div className="grid grid-cols-4 gap-1">
+        {avatarOptions.map((avatar, index) => (
+          <div key={index} className="flex items-center py-2 hover:scale-110 cursor-pointer" onClick={() => setSelectedAvatar(avatar)}>
+            <img src={avatar} alt="Avatar Option" className="w-10 h-10 rounded-full" />
+            {/* <h1 className="text-sm">{avatar.split('/').pop().split('.')[0]}</h1> */}
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
+</div>
+
+              <a href="#" className="flex items-center px-4 py-3 hover:bg-[#393939]  rounded-full font-semibold text-gray-300 text-[13px]">
+                <MdLanguage className="text-2xl text-[#e2e8f0] mr-2" /> English (United States)
               </a>
-              <div className="flex items-center px-4 py-3 hover:bg-gray-800 rounded-full font-semibold text-gray-300 text-[13px]" onClick={() => setIsAvatarDropdownOpen(!isAvatarDropdownOpen)}>
-                <LuScanFace className="text-2xl text-[#e2e8f0] mr-2" /> Change Avatar <span className="text-xs bg-[#1ED760] text-black px-1 rounded ml-10 animate-blink font-Payton">New</span>
-                {isAvatarDropdownOpen && (
-                  <div ref={avatarDropdownRef} className="absolute left-0 mt-2 w-48 bg-gray-900 text-white border border-gray-700 rounded-lg shadow-lg">
-                    {avatarOptions.map(avatar => (
-                      <div key={avatar} className="flex items-center px-4 py-2 hover:bg-gray-800 cursor-pointer" onClick={() => setSelectedAvatar(avatar)}>
-                        <img src={avatar} alt="Avatar Option" className="w-8 h-8 rounded-full mr-2" />
-                        <span className="text-sm">{avatar.split('/').pop().split('.')[0]}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <a href="#" className="flex items-center px-4 py-3 hover:bg-gray-800 rounded-full font-semibold text-gray-300 text-[13px]" onClick={signOut}>
+              <a href="#" className="flex items-center px-4 py-3 hover:bg-[#393939]  rounded-full font-semibold text-gray-300 text-[13px]" onClick={signOut}>
                 <BsBoxArrowRight className="text-2xl text-[#e2e8f0] mr-2" /> Sign Out
               </a>
             </div>
