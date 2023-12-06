@@ -380,7 +380,7 @@ const Search = ({ onSearch }) => {
 
 
       {/* WHAT'S NEW */}
-      <div className="relative ml-10 mr-10" ref={newDropdownRef}>
+      <div className="relative ml-10 mr-10 z-10" ref={newDropdownRef}>
         <Tooltip
           showArrow={false}
           content="What's New"
@@ -397,10 +397,12 @@ const Search = ({ onSearch }) => {
           </button>
         </Tooltip>
         {isNewDropdownOpen && (
-          <div className="absolute mt-2 w-72 bg-gray-600 text-white rounded-lg shadow-lg">
+          <div className="absolute mt-2 w-72 bg-[#292929] text-white rounded-lg shadow-lg">
             <div className="flex justify-between items-center px-4 py-3 border-b border-gray-700">
-              <span className="text-lg font-bold text-[#1ED760] font-Payton">What's new</span>
-              <button className="text-sm text-blue-400 font-semibold font-Payton" onClick={handleClose}>Close</button>
+              <span className="text-lg font-bold text-[#3EA88B]">What's new</span>
+              <button className='absolute text-sm flex items-center justify-center top-1 right-1 hover:bg-gray-700 h-6 w-6 rounded-full' onClick={handleClose}>
+                <FaTimes className="text-gray-400 cursor-pointer" />
+              </button>
             </div>
             <div className="px-4 py-3 flex items-start">
               <RiPaintBrushLine className="text-5xl text-[#e2e8f0] mr-2" />
@@ -466,7 +468,7 @@ const Search = ({ onSearch }) => {
               </a>
               
               <div className="flex items-center px-4 py-3 hover:bg-[#393939] rounded-full font-semibold text-gray-300 text-[13px] cursor-pointer" onClick={() => setIsAvatarDropdownOpen(!isAvatarDropdownOpen)}>
-  <LuScanFace className="text-2xl text-[#e2e8f0] mr-2 " /> Change Avatar <span className="text-xs bg-[#1ED760] text-black px-1 rounded ml-10 animate-blink font-Payton">New</span>
+  <LuScanFace className="text-2xl text-[#e2e8f0] mr-2 " /> Change Avatar <span className="text-xs bg-[#3EA88B] text-black px-1 rounded ml-10 animate-blink font-Payton">New</span>
   {isAvatarDropdownOpen && (
     <div ref={avatarDropdownRef} className="flex items-center justify-center absolute right-[250px] mt-2 w-[190px] bg-[#292929] text-white border border-gray-700 rounded-lg shadow-lg">
       <div className="grid grid-cols-4 gap-1">

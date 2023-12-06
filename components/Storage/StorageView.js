@@ -146,7 +146,7 @@ const StorageView = () => {
   const othersPercentage = (others.reduce((sum, file) => sum + file.size, 0) / totalStorageGivenBytes) * 100;
 
   return (
-    <div className="flex flex-col justify-between h-screen p-4">
+    <div className="flex flex-col justify-between max-h-[97vh]">
       <h1 className="text-lg mb-4 font-bold text-center">Storage</h1>
       <div className="flex flex-col items-center flex-grow">
         <svg height="300px" width="300px" viewBox="0 0 300 300">

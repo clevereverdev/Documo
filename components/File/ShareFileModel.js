@@ -193,7 +193,7 @@ const truncateFileName = (name, length = 35) => {
                   />
   
                   {/* User info and permission selector */}
-                  <h2 className="font-bold text-white text-[13px] mt-3 mr-[200px]">People with access</h2>
+                  <h2 className="font-bold text-white text-[13px] mt-3 mr-[230px]">People with access</h2>
                   <div className="flex items-start justify-between mt-4">
                     <div className="flex items-start">
                       <div className="flex-shrink-0 mr-3">
