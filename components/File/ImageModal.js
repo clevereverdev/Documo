@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { FaLock } from "react-icons/fa";
 
 function ImageModal({ imageUrl, isSensitive, onClose, filePassword }) {
   const [password, setPassword] = useState("");
@@ -15,8 +16,8 @@ function ImageModal({ imageUrl, isSensitive, onClose, filePassword }) {
     
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-        <div className="relative bg-white p-4">
-          <button onClick={onClose}>Close</button>
+        <div className="relative bg-[#292929] p-4 rounded-xl">
+          <button className="text-[#3EA88B] text-lg" onClick={onClose}>close</button>
           <img
             src={imageUrl}
             alt="Large view"
@@ -25,13 +26,18 @@ function ImageModal({ imageUrl, isSensitive, onClose, filePassword }) {
           />
           {isSensitive && (
             <div>
+               <span className="absolute bottom-[55px] left-8">
+            <FaLock className="text-gray-400" />
+          </span>
               <input
                 type="password"
                 placeholder="Enter password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                className="font-medium border bg-transparent border-[#374151] hover:border-gray-400 p-4 pl-10 w-80 rounded-2xl outline-none focus:border-white my-4 pr-10"
               />
-              <button onClick={handlePasswordSubmit}>Submit</button>
+              <button className="w-40 mx-3 rounded-lg bg-[#3EA88B] text-white p-4 transform transition-transform hover:bg-[#53B499]"
+              onClick={handlePasswordSubmit}>Submit</button>
             </div>
           )}
         </div>

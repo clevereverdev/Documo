@@ -9,16 +9,17 @@ import SettingsSharpIcon from '@mui/icons-material/SettingsSharp';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import PermMediaOutlinedIcon from '@mui/icons-material/PermMediaOutlined';
 import CreateNewFolderOutlinedIcon from '@mui/icons-material/CreateNewFolderOutlined';
+import PhotoCameraBackIcon from '@mui/icons-material/PhotoCameraBack';
 import Loader from "../components/Loader"; // Import your Loader component
 import { IoIosAddCircleOutline } from "react-icons/io";
 import { app } from "../firebase/firebase";
-import { getFirestore, doc, getDoc} from "firebase/firestore";
+import { getFirestore, doc, getDoc } from "firebase/firestore";
 import { useAuth } from "../firebase/auth";
 import CreateFolderModel from './Folder/CreateFolderModel';
 import UploadFileModal from './File/UploadFileModel';
 
 export default function Layout({ children, setFolderList, setFileList }) {
-  const db = getFirestore(app); 
+  const db = getFirestore(app);
   const router = useRouter();
   const { signOut } = useAuth();
   const { authUser } = useAuth();
@@ -28,19 +29,19 @@ export default function Layout({ children, setFolderList, setFileList }) {
 
   const iconMapping = {
     'Cloud': <DashboardCustomizeOutlinedIcon className="icon-class" />,
+    'Photos': <PhotoCameraBackIcon className="icon-class" />,
     'Starred': <StarBorderOutlinedIcon className="icon-class" />,
     'Shared': <PeopleAltOutlinedIcon className="icon-class" />,
     'Trash': <DeleteOutlinedIcon className="icon-class" />,
-    'Settings': <SettingsSharpIcon className="icon-class" />,
     'Logout': <LogoutOutlinedIcon className="icon-class" />,
   };
 
   const menuItems = [
     { href: '/', title: 'Cloud' },
+    { href: '/photos', title: 'Photos' },
     { href: '/starred', title: 'Starred' },
     { href: '/shared', title: 'Shared' },
     { href: '/trash', title: 'Trash' },
-    { href: '/photos', title: 'Settings' },
   ];
 
   const onNewFolderAdded = (newFolder) => {
@@ -49,7 +50,7 @@ export default function Layout({ children, setFolderList, setFileList }) {
 
     }
   };
-  
+
   const onNewFileAdded = (newFileData) => {
     if (setFileList) {
       setFileList(currentFiles => [...currentFiles, newFileData]);
@@ -65,7 +66,7 @@ export default function Layout({ children, setFolderList, setFileList }) {
     setIsModalOpen(true); // This opens the Add Folder modal
     setShowDropdown(false); // This will close the dropdown
   };
-  
+
   const handleNavigation = async (targetPath) => {
     setIsLoading(true); // Show the loader
     // Perform the navigation logic, e.g., updating the route
@@ -89,7 +90,7 @@ export default function Layout({ children, setFolderList, setFileList }) {
         }
       }
     };
-  
+
     fetchUserPlan();
   }, [authUser, db]);
 
@@ -103,65 +104,65 @@ export default function Layout({ children, setFolderList, setFileList }) {
           <div className="flex flex-col justify-start item-center">
             <div className="flex items-center justify-center"> { /* Assuming you want it vertically and horizontally centered on the screen */}
               <Link href="/">
-              <div className="flex items-center">
-  <div className="ml-1 relative mb-1">
-  <span className="absolute top-3 right-[88px] text-[11px] text-black bg-yellow-600 rounded-md font-bold px-2 transform -rotate-45 z-10">{userPlanName}</span>
-    <span className="text-5xl bg-gray-300 inline-block text-transparent bg-clip-text font-Payton relative">
-      D
-    </span>
-    <span className="text-2xl bg-gray-300 inline-block text-transparent bg-clip-text font-Payton">ocomo</span>
-    <span className="absolute top-5 left-34 text-xs">©</span>
-  </div>
-</div>
+                <div className="flex items-center">
+                  <div className="ml-1 relative mb-1">
+                    <span className="absolute top-3 right-[88px] text-[11px] text-black bg-yellow-600 rounded-md font-bold px-2 transform -rotate-45 z-10">{userPlanName}</span>
+                    <span className="text-5xl bg-gray-300 inline-block text-transparent bg-clip-text font-Payton relative">
+                      D
+                    </span>
+                    <span className="text-2xl bg-gray-300 inline-block text-transparent bg-clip-text font-Payton">ocomo</span>
+                    <span className="absolute top-5 left-34 text-xs">©</span>
+                  </div>
+                </div>
               </Link>
             </div>
             <nav className='mt-3'>
               <ul>
-              <div className="mt-4">
-      {/* Dropdown Toggle Button */}
-      <div
-        className="flex justify-center items-center m-auto bg-[#3EA88B] hover:bg-[#53B499] text-white font-bold py-3 w-[130px] rounded-full cursor-pointer duration-300"
-        onClick={() => setShowDropdown(!showDropdown)}
-      >
-      <IoIosAddCircleOutline className='text-3xl mr-3'/>Add
-      </div>
+                <div className="mt-4">
+                  {/* Dropdown Toggle Button */}
+                  <div
+                    className="flex justify-center items-center m-auto bg-[#3EA88B] hover:bg-[#53B499] text-white font-bold py-3 w-[130px] rounded-full cursor-pointer duration-300"
+                    onClick={() => setShowDropdown(!showDropdown)}
+                  >
+                    <IoIosAddCircleOutline className='text-3xl mr-3' />Add
+                  </div>
 
-      {/* Dropdown Menu */}
-      {showDropdown && (
-        <div className="mt-2 w-[130px] ml-3 py-2 w-30 bg-transparent opacity-35 rounded-lg shadow-xl">
-          <div
-            className="flex items-center px-4 py-2 hover:bg-gray-600 cursor-pointer transition duration-300 rounded-full"
-            onClick={handleAddFile}
-          >
-            <img src="/UploadFile.png" alt="File" className='w-8 h-8 mr-3' />
-            <span className="text-[9px] text-gray-300"><span className='text-[14px]'>+</span> FILE</span>
-          </div>
-          <div
-            className="flex items-center px-4 py-2 hover:bg-gray-600 cursor-pointer transition duration-300 rounded-full"
-            onClick={handleAddFolder}
-          >
-            <img src="/UploadFolder.png" alt="Folder" className='w-8 h-8 mr-3' />
-            <span className="text-[9px] text-gray-300"><span className='text-[14px]'>+</span> FOLDER</span>
-          </div>
-        </div>
-      )}
-    </div>
-              {menuItems.map(({ href, title }) => (
-                <li className='m-3' key={title}>
-                  <Link href={href}>
-                    <div
-                      className={`flex items-center gap-4 pl-3 py-3 w-[130px] rounded-full group cursor-pointer transition-transform duration-300 m-auto ${router.asPath === href
-                        ? 'bg-[white] text-black' // The style for the active element
-                        : 'hover:shadow-lg hover:scale-110 hover:bg-gray-600 hover:text-white' // The style for all non-active elements
-                        }`}
-                      onClick={() => handleNavigation(href)}
-                    >
-                      {iconMapping[title]}
-                      <span>{title}</span>
+                  {/* Dropdown Menu */}
+                  {showDropdown && (
+                    <div className="mt-2 w-[130px] ml-3 py-2 w-30 bg-transparent opacity-35 rounded-lg shadow-xl">
+                      <div
+                        className="flex items-center px-4 py-2 hover:bg-gray-600 cursor-pointer transition duration-300 rounded-full"
+                        onClick={handleAddFile}
+                      >
+                        <img src="/UploadFile.png" alt="File" className='w-8 h-8 mr-3' />
+                        <span className="text-[9px] text-gray-300"><span className='text-[14px]'>+</span> FILE</span>
+                      </div>
+                      <div
+                        className="flex items-center px-4 py-2 hover:bg-gray-600 cursor-pointer transition duration-300 rounded-full"
+                        onClick={handleAddFolder}
+                      >
+                        <img src="/UploadFolder.png" alt="Folder" className='w-8 h-8 mr-3' />
+                        <span className="text-[9px] text-gray-300"><span className='text-[14px]'>+</span> FOLDER</span>
+                      </div>
                     </div>
-                  </Link>
-                </li>
-              ))}
+                  )}
+                </div>
+                {menuItems.map(({ href, title }) => (
+                  <li className='m-3' key={title}>
+                    <Link href={href}>
+                      <div
+                        className={`flex items-center gap-4 pl-3 py-3 w-[130px] rounded-full group cursor-pointer transition-transform duration-300 m-auto ${router.asPath === href
+                          ? 'bg-[white] text-black' // The style for the active element
+                          : 'hover:shadow-lg hover:scale-110 hover:bg-gray-600 hover:text-white' // The style for all non-active elements
+                          }`}
+                        onClick={() => handleNavigation(href)}
+                      >
+                        {iconMapping[title]}
+                        <span>{title}</span>
+                      </div>
+                    </Link>
+                  </li>
+                ))}
               </ul>
               {/* Add File & Add Folder buttons */}
               {/* <div className="mt-4">
@@ -186,19 +187,19 @@ export default function Layout({ children, setFolderList, setFileList }) {
             </div>
           </div>
         </div>
-        <main className='main-content flex-1 ml-[188px] rounded-l-2xl rounded-r-2xl border-5 m-3 overflow-y-hidden' style={{ background: 'linear-gradient(to bottom, #121212, #292929)'}}>
+        <main className='main-content flex-1 ml-[188px] rounded-l-2xl rounded-r-2xl border-5 m-3 overflow-y-hidden' style={{ background: 'linear-gradient(to bottom, #121212, #292929)' }}>
           {children}
         </main>
 
         <CreateFolderModel
-      onFolderCreated={onNewFolderAdded}
-      isOpen={isModalOpen}
-      
-      onClose={() => setIsModalOpen(false)}
-        />        
+          onFolderCreated={onNewFolderAdded}
+          isOpen={isModalOpen}
+
+          onClose={() => setIsModalOpen(false)}
+        />
         <dialog id="upload_file" className="modal">
           <UploadFileModal
-           onFileCreated={onNewFileAdded}
+            onFileCreated={onNewFileAdded}
             closeModal={() => window.upload_file.close()} />
         </dialog>
       </div>

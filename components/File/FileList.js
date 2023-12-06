@@ -78,35 +78,35 @@ function FileList({ fileList, file }) {
     setIsDropdownOpen(newDropdownState);
   };
 
- 
 
 
-useEffect(() => {
-  // Update the localFileList state when fileList prop changes
-  setLocalFileList(fileList);
-}, [fileList]);
 
-useEffect(() => {
-  // Sort files only if localFileList is an array
-  if (Array.isArray(localFileList)) {
-    const sorted = [...localFileList].sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
-    setSortedFiles(sorted);
-  }
-}, [localFileList]);
+  useEffect(() => {
+    // Update the localFileList state when fileList prop changes
+    setLocalFileList(fileList);
+  }, [fileList]);
 
-const handleTogglePin = async (file) => {
-  console.log("Toggling pin for file:", file);
-  await togglePin(file);
-
-  // Update the localFileList state
-  const updatedFiles = localFileList.map(f => {
-    if (f.id === file.id) {
-      return { ...f, pinned: !f.pinned };
+  useEffect(() => {
+    // Sort files only if localFileList is an array
+    if (Array.isArray(localFileList)) {
+      const sorted = [...localFileList].sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
+      setSortedFiles(sorted);
     }
-    return f;
-  });
-  setLocalFileList(updatedFiles); // Update local state
-};
+  }, [localFileList]);
+
+  const handleTogglePin = async (file) => {
+    console.log("Toggling pin for file:", file);
+    await togglePin(file);
+
+    // Update the localFileList state
+    const updatedFiles = localFileList.map(f => {
+      if (f.id === file.id) {
+        return { ...f, pinned: !f.pinned };
+      }
+      return f;
+    });
+    setLocalFileList(updatedFiles); // Update local state
+  };
 
   useEffect(() => {
     console.log("isDropdownOpen:", isDropdownOpen); // Add this line
@@ -401,19 +401,25 @@ const handleTogglePin = async (file) => {
             <h2>Actions</h2>
           </div>
           <div className='overflow-auto' style={{ flex: 1, maxHeight: 'calc(55vh - 100px)' }}>
-          {sortedFiles.map((item, index) => (
-              <FileItem
-                file={item}
-                index={index + 1} // Add 1 since index starts at 0
-                key={index}
-                onFileImageClick={handleFileImageClick}
-                onToggleStar={handleToggleStar}
-                onFileDeleted={handleFileDeleted}
-                togglePin={handleTogglePin}
-
-
-              />
-            ))}
+            {sortedFiles.length > 0 ? (
+              sortedFiles.map((item, index) => (
+                <FileItem
+                  file={item}
+                  index={index + 1} // Add 1 since index starts at 0
+                  key={index}
+                  onFileImageClick={handleFileImageClick}
+                  onToggleStar={handleToggleStar}
+                  onFileDeleted={handleFileDeleted}
+                  togglePin={handleTogglePin}
+                />
+              ))
+            ) : (
+              <div className="flex flex-col items-center justify-center mt-[8rem]">
+                <img src="NoFiles.webp" alt="No Files" className="w-[100px] h-[100px]" />
+                <p className="text-gray-400 mt-2 text-sm">You have not uploaded any files yet</p>
+                <p className="text-gray-500 text-xs">Please click that Add button</p>
+              </div>
+            )}
           </div>
 
           {isModalOpen && currentFile && (
