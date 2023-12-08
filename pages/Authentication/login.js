@@ -11,7 +11,7 @@ import { FaEnvelope, FaEye, FaEyeSlash, FaLock } from "react-icons/fa";
 import 'react-toastify/dist/ReactToastify.css'; // CSS import
 import { toast } from 'react-toastify'; // Toast import
 import { getFirestore, doc, getDoc } from "firebase/firestore";
-
+import Image from 'next/image'
 
 const provider = new GoogleAuthProvider();
 const db = getFirestore();
@@ -136,9 +136,11 @@ const LoginForm = () => {
             <div className="w-full lg:w-[60%] p-8 md:p-14 flex items-center justify-center lg:justify-start">
                 <div className="p-8 w-[600px] text-center">
                     <div className="flex items-center justify-center">
-                        <img
+                        <Image
                             src="/logo.png"
-                            alt="Your Alt Text"
+                            alt="Logo"
+                            width={500}
+                            height={500}
                             className="h-[65px] w-[65px]" />
                         <h1 className="text-7xl font-extrabold relative m-3">
                             <span className="text-7xl bg-gray-300 inline-block text-transparent bg-clip-text font-Payton">D</span>
@@ -229,7 +231,7 @@ const LoginForm = () => {
                         </button>
                     </div>
                     <p className="mt-7 ml-1 text-sm">
-                        Don't have an account?{" "}
+                        Don&apos;t have an account?{" "}
                         <span
                             className="font-bold text-[#3EA88B] hover:text-[#53B499] cursor-pointer"
                             onClick={goSignUp}>

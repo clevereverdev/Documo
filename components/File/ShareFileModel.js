@@ -133,7 +133,7 @@ const truncateFileName = (name, length = 35) => {
           <div className={`flex flex-col items-center justify-center ${inputShake ? 'shake' : ''}`}>
           <img src='./Lockedshare.png' alt="Locked Share" className="rounded-full w-[200px] h-[160px]" />
 <span className='text-[15px] text-white font-bold'><span className='text-red-500 font-bold font-Payton text-lg '>WARNING!!</span> Sharing sensitive files at your own risk.</span>
-<span className='text-xs text-gray-400 mb-7'>Dont't expose confidential information to unauthorized access.</span>
+<span className='text-xs text-gray-400 mb-7'>Don&apos;st expose confidential information to unauthorized access.</span>
           {/* Password input field */}
            {/* Container for input and icons */}
         <div className="relative w-80"> 

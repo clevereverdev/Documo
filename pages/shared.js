@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useContext } from "react";
+import Image from 'next/image'
 import { collection, getFirestore, query, onSnapshot, where, doc, getDoc, getDocs, deleteDoc, updateDoc } from "firebase/firestore";
 import Layout from "@/Sidebar";
 import FileItem from "@/File/FileItem";
@@ -279,7 +280,7 @@ filteredFiles.map((item, index) => {
     key={item.id}>
    <div className="text-center ml-2">{index + 1}</div>
   <div className="flex items-center">
-    <img src="/folder.png" width={35} height={35} className="flex justify-center items-center bg-gray-700 w-11 h-11 p-1 mr-2" alt="Folder" />
+    <Image src="/folder.png" width={35} height={35} className="flex justify-center items-center bg-gray-700 w-11 h-11 p-1 mr-2" alt="Folder" />
     <div>
     {editingFolderId === item.id ? (
         console.log("Showing input for folder ID:", item.id),
@@ -369,10 +370,10 @@ Move to trash
 
       ) : (
         <div className='flex flex-col items-center justify-center text-gray-400 mt-[100px]'>
-          <img src="/starred.png" height="400" width="400" alt="No items" className='mb-4' />
-          <div className="text-xl text-gray-200 font-Payton">No starred documents yet.</div>
-          <div className="text-sm text-gray-400">Add Documents that you want to easily find later</div>
-        </div>
+        <Image src="/Shared.png" height="400" width="400" alt="No items" className='mb-4' />
+        <div className="text-xl text-gray-200 font-Payton">Files and Folders others shared with you</div>
+        <div className="text-sm text-gray-400">Say goodbye to email attachments and say hello to real time collaboration</div>
+      </div>
       )}
       
   </div>
