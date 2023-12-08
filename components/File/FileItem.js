@@ -839,13 +839,13 @@ const FileInfo = ({ file }) => (
   errorMessage={errorMessage}
   />
 
-        {showResetModal && (
+        {/* {showResetModal && (
           <ResetModal
             show={showResetModal}
             onClose={() => setShowResetModal(false)}
             onResetSubmit={handleResetSubmit}
           />
-        )}
+        )} */}
       </>
     );
 

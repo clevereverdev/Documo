@@ -105,7 +105,7 @@ return (
          <span className='text-[15px] text-white font-bold'>
              <span className='text-red-500 font-bold font-Payton text-lg '>WARNING!!</span> Sharing sensitive folders at your own risk.
          </span>
-         <span className='text-xs text-gray-400 mb-7'>Don't expose confidential information to unauthorized access.</span>
+         <span className='text-xs text-gray-400 mb-7'>Don&apos;t expose confidential information to unauthorized access.</span>
          
          {/* Container for input and icons */}
          <div className="relative w-80"> 

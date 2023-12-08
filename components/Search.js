@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
+
 import { BsFolder, BsBoxArrowRight, BsFillPersonFill, BsCaretDownFill, BsSun } from "react-icons/bs";
 import { BiUser } from "react-icons/bi";
 import { RiPaintBrushLine } from "react-icons/ri";
@@ -399,7 +400,7 @@ const Search = ({ onSearch }) => {
         {isNewDropdownOpen && (
           <div className="absolute mt-2 w-72 bg-[#292929] text-white rounded-lg shadow-lg">
             <div className="flex justify-between items-center px-4 py-3 border-b border-gray-700">
-              <span className="text-lg font-bold text-[#3EA88B]">What's new</span>
+              <span className="text-lg font-bold text-[#3EA88B]">What&apos;s new</span>
               <button className='absolute text-sm flex items-center justify-center top-1 right-1 hover:bg-gray-700 h-6 w-6 rounded-full' onClick={handleClose}>
                 <FaTimes className="text-gray-400 cursor-pointer" />
               </button>

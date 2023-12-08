@@ -6,7 +6,7 @@ import { sendPasswordResetEmail } from 'firebase/auth';
 import 'react-toastify/dist/ReactToastify.css';
 import { toast } from 'react-toastify';
 
-function reset_password() {
+function ResetPassword() {
     const router = useRouter();
     const [resetEmail, setResetEmail] = useState('');
 
@@ -109,4 +109,4 @@ function reset_password() {
     );
 }
 
-export default reset_password;
+export default ResetPassword;

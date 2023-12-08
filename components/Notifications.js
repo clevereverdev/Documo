@@ -200,7 +200,7 @@ const Notifications = ({ onClose, notifications, removeNotification, clearAllNot
         ) : (
           <div className="flex flex-col items-center justify-center mt-40">
             <img src="/All_Caught_Up.png" alt="All caught up" className="w-70 h-40" /> {/* Replace with your own image */}
-            <span className="text-2xl text-blue-500 mt-4 font-bold">Great! You're all caught up</span>
+            <span className="text-2xl text-blue-500 mt-4 font-bold">Great! You&apos;sre all caught up</span>
             <span className="text-sm text-gray-500 mt-1">Files and Folders that needs your attention will be appear here</span>
           </div>
         )}
