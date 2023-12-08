@@ -258,7 +258,7 @@ export default function Shared() {
     <div className='m-2 rounded-b-2xl h-[600px]'>
       <h2 className='text-[25px] text-blue-400 font-bold mb-4'>Shared Items</h2>
     
-      <div className='grid grid-cols-1 md:grid-cols-[min-content,3.8fr,2.0fr,1.0fr,0.6fr,1fr,auto] gap-6 text-[13px] font-semibold border-b-[1px] pb-2 mt-3 mx-4 border-gray-600 text-gray-400'>        <h2>#</h2>
+      <div className='grid grid-cols-1 md:grid-cols-[min-content,3.8fr,2.0fr,1.0fr,0.6fr,2.3fr,auto] gap-6 text-[13px] font-semibold border-b-[1px] pb-2 mt-3 mx-4 border-gray-600 text-gray-400'>        <h2>#</h2>
         <h2>Name</h2>
         <h2>Date Modified</h2>
         <h2>Size</h2>
@@ -275,7 +275,7 @@ filteredFiles.map((item, index) => {
   const dateModified = item.sharedAt ? new Date(item.sharedAt.seconds * 1000).toLocaleDateString('en-US', dateOptions) : 'Unknown';
   const fileExtension = isFolder ? 'folder' : item.name.split('.').pop(); // Extracts 'png' from "image.png"
   return isFolder ? (
-    <div className='grid grid-cols-1 md:grid-cols-[min-content,2.7fr,1.2fr,1fr,1fr,1fr,auto] gap-6 text-[14px] items-center p-2 hover:bg-[#343434] rounded-md' 
+    <div className='grid grid-cols-1 md:grid-cols-[min-content,1.7fr,0.9fr,0.6fr,1fr,1fr,auto] gap-6 text-[14px] items-center p-2 hover:bg-[#343434] rounded-md' 
     key={item.id}>
    <div className="text-center ml-2">{index + 1}</div>
   <div className="flex items-center">
@@ -302,8 +302,8 @@ filteredFiles.map((item, index) => {
     <div className=''>{item.size}</div>
     <div className=''>{item.type}</div>
 
-    <div className='absolute right-[490px] text-[15px]'>{item.senderUserName}</div>
-    <div className="file-actions absolute right-[565px]">
+    <div className='absolute right-[450px] text-[15px]'>{item.senderUserName}</div>
+    <div className="file-actions absolute right-[610px]">
     <Dropdown>
   <DropdownTrigger>
   <button className="flex items-center mr-5 p-2 rounded-full focus:outline-none hover:bg-opacity-50 hover:bg-gray-600 z-[1001]"
@@ -356,13 +356,13 @@ Move to trash
       </div>
     </div>
      ) : (
-      <div className='flex items-center hover:bg-[#343434] rounded-md group h-[60px] my-3'>
+      <div className='flex flex-col-2 items-center hover:bg-[#343434] rounded-md group h-[60px] my-3'>
       <FileItem
         file={{ ...item, sensitive: false, password: '' }}
         index={index + 1}
         isSharedContext={true}
       />
-      <div className='absolute right-[490px] text-[15px]'>{item.senderUserName}</div>
+    <div className='absolute right-[450px] text-[15px]'>{item.senderUserName}</div>
     </div>
   );
         })

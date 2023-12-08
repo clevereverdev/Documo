@@ -295,7 +295,7 @@ body {
 }
 
 .filter-btn.active {
-  background-color: #1ED760;
+  background-color: #3EA88B;
   color: black;
 }
 
@@ -526,6 +526,26 @@ body {
 
 .animate-blink {
   animation: blink 2s infinite;
+}
+
+/* styles/global.css */
+@keyframes rotateAndDisappear {
+  0%, 100% {
+    transform: rotateY(0deg);
+    opacity: 1;
+  }
+  25%, 75% {
+    transform: rotateX(90deg);
+    opacity: 1;
+  }
+  50% {
+    transform: rotateY(180deg);
+    opacity: 0;
+  }
+}
+
+.animate-rotate-disappear {
+  animation: rotateAndDisappear 8s ease-in-out infinite;
 }
 
 
