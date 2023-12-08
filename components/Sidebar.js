@@ -100,13 +100,13 @@ export default function Layout({ children, setFolderList, setFileList }) {
     <div className='max-h-screen flex flex-col'>
       {isLoading && <Loader />}
       <div className='flex flex-col md:flex-row flex-1'>
-        <div className="p-6 w-[167px] h-[calc(100%-1.5rem)] z-60 fixed top-0.75rem left-0 lg:w-65 rounded-l-3xl rounded-r-3xl flex justify-center bg-[#121212] m-3">
+        <div className="p-6 w-[167px] h-[calc(100%-1.5rem)] z-60 fixed top-0.75rem left-0 lg:w-65 rounded-l-3xl rounded-r-3xl flex justify-center bg-gradient-to-b from-[#121212] to-[#292929] m-3">
           <div className="flex flex-col justify-start item-center">
             <div className="flex items-center justify-center"> { /* Assuming you want it vertically and horizontally centered on the screen */}
               <Link href="/">
                 <div className="flex items-center">
                   <div className="ml-1 relative mb-1">
-                    <span className="absolute top-3 right-[88px] text-[11px] text-black bg-yellow-600 rounded-md font-bold px-2 transform -rotate-45 z-10">{userPlanName}</span>
+                    <span className="absolute bottom-6 right-[35px] text-[11px] text-black bg-yellow-400 rounded-md font-bold px-2 transform -rotate-50 z-10 animate-rotate-disappear">{userPlanName}</span>
                     <span className="text-5xl bg-gray-300 inline-block text-transparent bg-clip-text font-Payton relative">
                       D
                     </span>

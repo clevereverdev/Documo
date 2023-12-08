@@ -122,7 +122,7 @@ const Notifications = ({ onClose, notifications, removeNotification, clearAllNot
     {/* Overlay icon container */}
     <div className="absolute bottom-0 right-0 p-1 ">
       {/* Overlay icon */}
-      <div className="bg-green-500 rounded-full text-black h-5 w-5 flex items-center justify-center">
+      <div className="bg-[#3EA88B] rounded-full text-black h-5 w-5 flex items-center justify-center">
         {overlayIcon}
       </div>
     </div>
@@ -164,7 +164,7 @@ const Notifications = ({ onClose, notifications, removeNotification, clearAllNot
         </button>
         </div>
         </Tooltip>
-        <div className=" top-0 w-full p-8 bg-[#12121]">
+        <div className=" top-0 w-full p-8 bg-[#121212]">
           <h2 className="text-2xl font-bold text-center text-white m-2">Notifications</h2>
           <div className="filter-buttons flex justify-center space-x-4 my-2">
       <button onClick={() => handleFilterChange('all')} className={`filter-btn ${currentFilter === 'all' ? 'active' : ''}`}>All</button>

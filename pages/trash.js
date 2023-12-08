@@ -224,7 +224,7 @@ const searchDeletedItems = (searchTerm) => {
   <div className='m-2 rounded-b-2xl h-[600px]'>
     <h2 className='text-[25px] text-blue-400 font-bold mb-4'>Trash Items</h2>
   
-    <div className='grid grid-cols-1 md:grid-cols-[min-content,3.9fr,1.8fr,1.2fr,1fr,1fr,auto] gap-6 text-[13px] font-semibold border-b-[1px] pb-2 mt-3 mx-4 border-gray-600 text-gray-400'>
+    <div className='grid grid-cols-1 md:grid-cols-[min-content,4.9fr,2.4fr,1.5fr,0.8fr,0.2fr,auto] gap-6 text-[13px] font-semibold border-b-[1px] pb-2 mt-3 mx-4 border-gray-600 text-gray-400'>
       <h2>#</h2>
       <h2>Name</h2>
       <h2>Date Modified</h2>
@@ -239,7 +239,7 @@ const searchDeletedItems = (searchTerm) => {
     const dateModified = item.deletedAt ? new Date(item.deletedAt.seconds * 1000).toLocaleDateString('en-US', dateOptions) : 'Unknown';
     const isFolder = item.type === 'folder';
   return isFolder ? (
-    <div className='grid grid-cols-[min-content,3.9fr,1.8fr,1.2fr,1fr,1fr,auto] gap-6 text-sm items-center p-2 hover:bg-[#343434] rounded-md' key={item.id}>
+    <div className='grid grid-cols-[min-content,4.2fr,2.1fr,1.2fr,0.9fr,1fr,auto] gap-6 text-sm items-center p-2 hover:bg-[#343434] rounded-md' key={item.id}>
       <div className="text-center ml-2">{index + 1}</div>
       <div className="flex items-center">
         <img src="/folder.png"  width={35} height={35} className="flex justify-center items-center bg-gray-700 w-11 h-11 p-1 mr-2" alt="Folder" />
@@ -248,7 +248,7 @@ const searchDeletedItems = (searchTerm) => {
       <div className='mx-4'>{dateModified}</div>
       <div className='mx-3'>{item.size}</div>
       <div className='ml-8'>{item.type}</div>
-      <div className="file-actions absolute right-[465px]">
+      <div className="file-actions absolute right-[449px]">
           <Dropdown>
             <DropdownTrigger>
               <button className="flex items-center mr-5 p-2 rounded-full focus:outline-none hover:bg-opacity-50 hover:bg-gray-600 z-[1001]"
