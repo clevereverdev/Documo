@@ -7,11 +7,13 @@ import Layout from "@/Sidebar";
 import SearchBar from "@/Search";
 import StorageView from '../components/Storage/StorageView';
 import styles from "../styles/Home.module.css";
+import { useAuth } from "../firebase/auth";
 
 export default function Starred() {
   const [starredItems, setStarredItems] = useState([]);
   const [filteredStarredItems, setFilteredStarredItems] = useState([]);
   const [searchHistory, setSearchHistory] = useState([]);
+  const { authUser } = useAuth();
 
   useEffect(() => {
     const savedHistory = localStorage.getItem('starredSearchHistory');
@@ -28,8 +30,15 @@ export default function Starred() {
   }
 
   useEffect(() => {
-    const filesQuery = query(collection(db, "files"), where("starred", "==", true));
-    const foldersQuery = query(collection(db, "Folders"), where("starred", "==", true));
+    if (authUser && authUser.email) { // Check if authUser is not null and has an email
+    const filesQuery = query(collection(db, "files"), 
+    where("starred", "==", true),
+    where("createdBy", "==", authUser.email)
+    );
+    const foldersQuery = query(collection(db, "Folders"), 
+    where("starred", "==", true),
+    where("createBy", "==", authUser.email)
+    );
 
     const unsubscribeFiles = onSnapshot(filesQuery, (fileSnapshot) => {
       const files = fileSnapshot.docs.map(doc => {
@@ -61,7 +70,8 @@ export default function Starred() {
       unsubscribeFiles();
       //unsubscribeFolders(); // Uncomment if necessary
     };
-  }, [db]);
+  };
+  }, [db, authUser]);
 
 
   // Define a search function for starred files

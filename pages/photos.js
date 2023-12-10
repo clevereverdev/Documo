@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { getFirestore, collection, getDocs } from "firebase/firestore";
+import { getFirestore, collection, getDocs, where, query } from "firebase/firestore";
 import { app } from "../firebase/firebase";
 import Layout from "@/Sidebar";
 import { IoImages, IoLockClosed } from "react-icons/io5"; // Import lock icon from IoIcons
 import PasswordModal from "@/File/PasswordModal";
+import { useAuth } from "../firebase/auth";
 
 // Allowed image file types
 const imageTypes = ['png', 'jpg', 'jpeg', 'webp', 'heic'];
@@ -12,13 +13,15 @@ const Photos = () => {
   const [items, setItems] = useState([]);
   const [groupedItems, setGroupedItems] = useState({});
   const db = getFirestore(app);
+  const { authUser } = useAuth();
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
     const fetchItems = async () => {
-      const itemsRef = collection(db, "files");
-      const querySnapshot = await getDocs(itemsRef);
+      if (authUser && authUser.email) {
+        const itemsRef = collection(db, "files");
+        const querySnapshot = await getDocs(query(itemsRef, where("createdBy", '==', authUser.email)));
       const fetchedItems = querySnapshot.docs.map(doc => {
         const data = doc.data();
         const modifiedAt = data.modifiedAt?.toDate ? data.modifiedAt.toDate() : new Date();
@@ -26,10 +29,14 @@ const Photos = () => {
         return { id: doc.id, ...data, modifiedAt, sensitive };
       }).filter(item => imageTypes.includes(item.type));
       setItems(fetchedItems);
+    }
     };
-
+// Call fetchItems only if authUser exists
+if (authUser) {
+  fetchItems();
+}
     fetchItems();
-  }, [db]);
+  }, [db, authUser]);
 
   useEffect(() => {
     // Group items by year and month

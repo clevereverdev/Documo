@@ -55,6 +55,7 @@ function FileItem({ file, onFileImageClick, onToggleStar, index, isTrashItem, on
 
   const [showResetModal, setShowResetModal] = useState(false);
   const [resetCode, setResetCode] = useState(null);
+  const [currentAction, setCurrentAction] = useState(null);
 
 
   const [key, setKey] = useState(0); // Added state to force re-render
@@ -67,6 +68,7 @@ function FileItem({ file, onFileImageClick, onToggleStar, index, isTrashItem, on
   // Assuming file has properties like name and imageUrl
   const fileName = file ? file.name : 'No file selected'; // Default text if file is not provided
   const fileImage = file ? file.imageUrl : '/default.png'; // Path to a default image
+  const [postUnlockAction, setPostUnlockAction] = useState(null);
 
   const handleEditClick = async (file) => {
     const content = await fetchFileContent(file);
@@ -124,8 +126,18 @@ function FileItem({ file, onFileImageClick, onToggleStar, index, isTrashItem, on
   }, [file, db]);
 
 
-  const handlePrintImage = (imageUrl) => {
-    // Create an iframe element
+  const handlePrintClick = (imageUrl) => {
+    if (file.sensitive) {
+      // Set action to 'printUnlock' for sensitive files when printing
+      setCurrentAction('printUnlock');
+      setShowPasswordModal(true);
+    } else {
+      printImage(imageUrl);
+    }
+  };
+  
+
+  const printImage = (imageUrl) => {
     const iframe = document.createElement('iframe');
     iframe.style.visibility = 'hidden';
     iframe.style.position = 'absolute';
@@ -173,7 +185,25 @@ function FileItem({ file, onFileImageClick, onToggleStar, index, isTrashItem, on
       }, 1000); // Wait for a second before removing to ensure print dialogue appears
     };
   };
-  const isImage = /\.(jpe?g|png|gif|bmp|webp)$/i.test(file.name);
+
+  // When submitting the password for printing
+  const handlePrintPasswordSubmit = async (enteredPassword) => {
+    setShowPasswordModal(false);
+    if (enteredPassword === afile.password) {
+      printImage(afile.imageUrl);
+    } else {
+      setShowToastMsg("Incorrect Password!");   
+      console.log("Incorrect Password!") 
+    }
+  };
+  
+  
+
+  const handlePrintSubmit = () => {
+    // Call the passed onSubmit function with the entered password
+    onSubmit(password);
+  };
+  const isImage = /\.(jpeg|png|gif|bmp|webp)$/i.test(file.name);
 
   
   
@@ -253,6 +283,7 @@ const openShareModal = (file) => {
             pinned: false,
             password: null, // Remove sensitive information
             permission: permissionLevel,
+            sharedAt: new Date(),
           };
   
           const viewerFileRef = doc(collection(db, "shared_files"));
@@ -268,6 +299,12 @@ const openShareModal = (file) => {
             await updateDoc(fileRef, {
               sharedWith: arrayUnion(userEmail),
               sharedBy: file.createdBy,
+              senderUserName: authUser.username,
+              permission: permissionLevel,
+              sensitive: false,
+              password: null, // Remove sensitive information
+              pinned: false,
+              sharedAt: new Date(),
             });
           } else {
             console.error("userDisplayName is undefined or null.");
@@ -390,13 +427,20 @@ const displayImageSrc = ['pdf', 'zip', 'csv', 'txt', 'mp3'].includes(fileExtensi
 
   const handleLockClick = () => {
     setIsUnlocking(false);
+    setCurrentAction('lock');
     setShowPasswordModal(true);
   };
-
+  
   const handleUnlockClick = () => {
     setIsUnlocking(true);
+    setCurrentAction('unlock');
     setShowPasswordModal(true);
   };
+  
+  // const handlePrintClick = () => {
+  //   setCurrentAction('print');
+  //   setShowPasswordModal(true);
+  // };
 
   const handlePasswordSubmit = async (enteredPassword) => {
     setShowPasswordModal(false);
@@ -408,6 +452,9 @@ const displayImageSrc = ['pdf', 'zip', 'csv', 'txt', 'mp3'].includes(fileExtensi
   };
 
   const handleLock = async (password) => {
+    setShowPasswordModal(false);
+    setCurrentAction(null);
+
     if (password) {
       try {
         const fileRef = doc(db, "files", file.id.toString());
@@ -436,35 +483,36 @@ const displayImageSrc = ['pdf', 'zip', 'csv', 'txt', 'mp3'].includes(fileExtensi
 
 
   const handleUnlock = async (enteredPassword) => {
-    if (enteredPassword === 'reset') {
-      // ... reset logic ...
-    } else if (enteredPassword === afile.password) {
-      if (enteredPassword === afile.password) {
-        try {
-          const fileRef = doc(db, "files", file.id.toString());
-          await updateDoc(fileRef, {
-            password: null,
-            sensitive: false
-          });
-          setIsSensitive(false);
-          setFile(previousFile => ({ ...previousFile, password: null }));
-          setShowToastMsg("File unlocked successfully.");
-          addNotification('image', {
-            src: displayImageSrc,
-            message: `File ${file.name} is unlocked successfully.`,
-            name: file.name,
-            isFile: true,
-            isUnlocked: true
-          }, file.id);
-        } catch (error) {
-          console.error("Error unlocking file:", error);
-          setShowToastMsg("Failed to unlock file.");
-        }
-      } else {
-        alert("Incorrect password!");
+    // Close the modal first, regardless of the outcome
+    setShowPasswordModal(false);
+    setCurrentAction(null);
+  
+    if (enteredPassword === afile.password) {
+      try {
+        const fileRef = doc(db, "files", file.id.toString());
+        await updateDoc(fileRef, {
+          password: null,
+          sensitive: false
+        });
+        setIsSensitive(false);
+        setFile(previousFile => ({ ...previousFile, password: null }));
+        setShowToastMsg("File unlocked successfully.");
+        addNotification('image', {
+          src: displayImageSrc,
+          message: `File ${file.name} is unlocked successfully.`,
+          name: file.name,
+          isFile: true,
+          isUnlocked: true
+        }, file.id);
+      } catch (error) {
+        console.error("Error unlocking file:", error);
+        setShowToastMsg("Failed to unlock file.");
       }
-    };
-  }
+    } else {
+      alert("Incorrect password!");
+    }
+  };
+  
 
 // Add the pin icon click handler
 const handlePinClick = (e) => {
@@ -617,16 +665,14 @@ const FileInfo = ({ file }) => (
             <div className="flex gap-2 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-200" style={{ position: 'relative', display: 'inline-block' }}>
               <Dropdown>
                 <DropdownTrigger>
-                  <button className="flex items-center space-x-2 p-2 rounded-full focus:outline-none hover:bg-opacity-50 hover:bg-gray-600 z-[1001]"
-                    
-                  >
-                    <MoreHorizIcon className="text-gray-300 text-2xl" />
-                      <div className="absolute top-[70px] left-3 transform -translate-x-1/2 -translate-y-full bg-gray-300 text-gray-700 font-bold text-xs py-1 px-2 rounded-lg z-10">
-                        More
-                      </div>
+                <button className="flex items-center space-x-2 p-2 rounded-full focus:outline-none hover:bg-opacity-50 hover:bg-gray-600 z-[1001] relative">
+  <div className="relative group flex items-center">
+    <MoreHorizIcon className="text-gray-300 text-2xl"/>
+  </div>
+</button>
 
-                  
-                  </button>
+
+
 
                 </DropdownTrigger>
                 <DropdownMenu variant="faded" aria-label="Dropdown menu with description" className='bg-[#18181b] rounded-xl py-2'>
@@ -725,18 +771,17 @@ const FileInfo = ({ file }) => (
                       </DropdownItem>
                     )}
                     <DropdownItem
-    key="Print Image"
-    startContent={<AiOutlinePrinter className={iconClasses} />}
-    onClick={() => isImage && handlePrintImage(file.imageUrl)}
-    className={!isImage ? 'opacity-50 cursor-not-allowed text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]' : 'text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]'}
-    disabled={!isImage} // Disable the item if not an image
-
-  >
-    Print Image
-    <div className="text-xs text-gray-500">
-      {isImage ? 'Print this image' : 'Not available for this file type'}
-    </div>
-  </DropdownItem>
+  key="Print Image"
+  startContent={<AiOutlinePrinter className={iconClasses} />}
+  onClick={() => isImage && handlePrintClick(file.imageUrl, file)} // Updated to use handlePrintClick
+  className={!isImage ? 'opacity-50 cursor-not-allowed text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]' : 'text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]'}
+  disabled={!isImage} // Disable the item if not an image
+>
+  Print Image
+  <div className="text-xs text-gray-500">
+    {isImage ? 'Print this image' : 'Not available for this file type'}
+  </div>
+</DropdownItem>
 
                   </DropdownSection>
 
@@ -819,12 +864,27 @@ const FileInfo = ({ file }) => (
         {showPasswordModal && (
   <PasswordModal
     show={showPasswordModal}
-    onClose={() => setShowPasswordModal(false)}
-    onSubmit={handlePasswordSubmit}
-    isUnlocking={isUnlocking}
-    file={afile} // Pass the file object to the modal
+    onClose={() => {
+      setShowPasswordModal(false);
+      setCurrentAction(null);
+    }}
+    onSubmit={(enteredPassword) => {
+      if (currentAction === 'printUnlock') {
+        handlePrintPasswordSubmit(enteredPassword);
+      } else if (currentAction === 'lock') {
+        handleLock(enteredPassword);
+      } else if (currentAction === 'unlock') {
+        handleUnlock(enteredPassword);
+      }
+      setCurrentAction(null);
+    }}
+    isUnlocking={currentAction === 'unlock' || currentAction === 'printUnlock'}
+    file={afile}
   />
 )}
+
+
+
 <ShareFileModal
   isOpen={isShareModalOpen}
   onClose={() => {
@@ -838,7 +898,7 @@ const FileInfo = ({ file }) => (
   file={fileToShare}
   errorMessage={errorMessage}
   />
-
+ 
         {/* {showResetModal && (
           <ResetModal
             show={showResetModal}

@@ -268,7 +268,32 @@ const Search = ({ onSearch }) => {
     }
 };
 
-  
+function truncateEmail(email, maxLength = 25) {
+  if (email.length <= maxLength) {
+      return email;
+  }
+
+  const domain = email.substring(email.lastIndexOf("@"));
+  const username = email.split('@')[0];
+  const availableLength = maxLength - domain.length - 3; // -3 for the ellipsis and some characters of username
+  const partLength = Math.floor(availableLength / 2);
+  const start = username.substring(0, partLength);
+  const end = username.substring(username.length - partLength, username.length);
+
+  return `${start}...${end}${domain}`;
+}
+
+let buttonWidth = "";
+
+if (authUser.username.length <= 6) {
+  buttonWidth = "160px";
+} else if (authUser.username.length <= 10) {
+  buttonWidth = "170px";
+} else if (authUser.username.length <= 15){
+  buttonWidth = "200px";
+} else {
+  buttonWidth = "300px";
+}
   
 
   return (
@@ -442,8 +467,9 @@ const Search = ({ onSearch }) => {
           <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             className=" w-[160px] flex items-center space-x-2 p-2 rounded-full focus:outline-none bg-[#282424] hover:shadow-lg hover:scale-105 "
+            style={{ width: buttonWidth }}
           >
-            <span className=" flex items-center text-[12px] text-white font-Payton"><span class="animate-waving-hand text-lg px-2">👋🏻</span> {authUser.username}</span>
+            <span className=" flex items-center text-[12px] text-white font-Payton"><span class="animate-waving-hand text-lg px-2">👋🏻</span>{authUser.username}</span>
             <img src={selectedAvatar} alt="Profile Avatar" className="w-8 h-8 rounded-full" />
             <BsCaretDownFill className="text-white" />
           </button>
@@ -457,7 +483,7 @@ const Search = ({ onSearch }) => {
                     <span className="block text-sm font-bold">{authUser.username}
                     <span className="text-xs bg-yellow-400 text-black px-1 rounded m-2 font-bold">{userPlanName}</span>
                     </span>
-                    <span className="text-xs text-gray-300">{authUser.email}</span>
+                    <span className="text-xs text-gray-300">{truncateEmail(authUser.email)}</span>
                   </div>
                 <button className='absolute text-sm flex items-center justify-center top-1 right-1 hover:bg-gray-700 h-6 w-6 rounded-full' onClick={profilehandleClose}>
                 <FaTimes className="text-gray-400 cursor-pointer" />
