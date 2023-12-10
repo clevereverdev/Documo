@@ -17,7 +17,8 @@ import Notifications from './Notifications';
 import { app } from "../firebase/firebase";
 import { getFirestore, doc, getDoc} from "firebase/firestore";
 import { FaPaperPlane, FaBell } from "react-icons/fa6";
-import { FaTimes } from "react-icons/fa";
+import { FaTimes, FaShieldAlt } from "react-icons/fa";
+import { MdSecurity } from "react-icons/md";
 
 
 
@@ -438,17 +439,17 @@ if (authUser.username.length <= 6) {
               </div>
             </div>
             <div className="px-4 py-3 flex items-start">
-              <BiUser className="text-5xl text-[#e2e8f0] mr-2" />
+              <MdSecurity className="text-[80px] text-[#e2e8f0] mr-2" />
               <div>
-                <h3 className="font-bold text-[#e2e8f0] font-Payton">Login with Username</h3>
-                <p className="text-xs text-gray-300">Simplified login process using just your unique username.</p>
+                <h3 className="font-bold text-[#e2e8f0] font-Payton">Protect your documents</h3>
+                <p className="text-xs text-gray-300">We have listened to you. Your priority is our first choice so we have implemented lock documnts feature.</p>
               </div>
             </div>
             <div className="px-4 py-3 flex items-start">
-              <BsFolder className="text-5xl text-[#e2e8f0] mr-2" />
+              <FaPaperPlane className="text-5xl text-[#e2e8f0] mr-2" />
               <div>
-                <h3 className="font-bold text-[#e2e8f0] font-Payton">Upload Files/Folder</h3>
-                <p className="text-xs text-gray-300">Easily manage and upload your files or entire folders in one go.</p>
+                <h3 className="font-bold text-[#e2e8f0] font-Payton">New Plans</h3>
+                <p className="text-xs text-gray-300">You need more storage new 4 plans are introduced go check it out.</p>
               </div>
             </div>
           </div>

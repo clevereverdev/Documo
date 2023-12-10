@@ -447,7 +447,7 @@ let actionButtons;
           <DropdownSection title="Actions" showDivider>
             <DropdownItem
               key="Restore"
-              shortcut="⌘N"
+              shortcut="⌘R"
               startContent={<MdRestore className={iconClasses} />}
               className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
               onClick={() => onRestore(folder)} // Only set isRenaming to true here
@@ -459,7 +459,7 @@ let actionButtons;
             </DropdownItem>
             <DropdownItem
               key="DeleteForever"
-              shortcut="⌘N"
+              shortcut="⌘F"
               startContent={<FaTrash className={cn(iconClasses, "text-red-400")} />}
               className="text-red-400 hover:bg-[#292929] hover:border-red-400 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
               onClick={() => onDeleteForever(folder)}>
@@ -496,8 +496,8 @@ let actionButtons;
       <DropdownMenu variant="faded" aria-label="Dropdown menu with description" className='bg-[#18181b] rounded-xl py-2'>
         <DropdownSection title="Actions" showDivider>
           <DropdownItem
-            key="new"
-            shortcut="⌘N"
+            key="Rename"
+            shortcut="⌘R"
             startContent={<MdOutlineDriveFileRenameOutline className={iconClasses} />}
             className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
             onClick={handleRenameClick} // Only set isRenaming to true here
@@ -508,8 +508,8 @@ let actionButtons;
             </div>
           </DropdownItem>
           <DropdownItem
-            key="copy"
-            shortcut="⌘C"
+            key="Download"
+            shortcut="⌘W"
             startContent={<FaDownload className={iconClasses} />}
             className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
             onClick={handleDownload}
@@ -553,7 +553,7 @@ let actionButtons;
           <DropdownSection title="Actions" showDivider>
             <DropdownItem
               key="Rename"
-              shortcut="⌘N"
+              shortcut="⌘R"
               startContent={<MdOutlineDriveFileRenameOutline className={iconClasses} />}
               className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
               onClick={handleRenameClick} // Only set isRenaming to true here
@@ -565,7 +565,7 @@ let actionButtons;
             </DropdownItem>
             <DropdownItem
               key="Download"
-              shortcut="⌘C"
+              shortcut="⌘W"
               startContent={<FaDownload className={iconClasses} />}
               className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
               onClick={handleDownload}
@@ -578,7 +578,7 @@ let actionButtons;
 
               <DropdownItem
               key="pin"
-              shortcut="⌘P"
+              shortcut="⌘Q"
               startContent={folder.isPinned ? <RiUnpinFill className={iconClasses} /> : <TiPin className={iconClasses} />}
               className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
               onClick={handleTogglePinned}              >
@@ -591,7 +591,7 @@ let actionButtons;
 
             <DropdownItem
                     key="Share"
-                    shortcut="⌘E"
+                    shortcut="⌘S"
                     showDivider
                     startContent={<FaShare className={iconClasses} />}
                     className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
@@ -607,7 +607,7 @@ let actionButtons;
             
             <DropdownItem
               key="Favorite"
-              shortcut="⌘E"
+              shortcut="⌘T"
               showDivider
               startContent={folder.starred ? <BsStarFill className={iconClasses} /> : <BsStar className={iconClasses} />}
               className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
@@ -622,7 +622,7 @@ let actionButtons;
 
             <DropdownItem
               key="Privacy"
-              shortcut="⌘P"
+              shortcut={folder.locked ? "⌘U": "⌘L"}
               showDivider
               startContent={folder.locked ? <LockOpenIcon className={iconClasses} /> : <LockIcon className={iconClasses} />}
               className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
