@@ -391,6 +391,7 @@ const openShareModal = (folder) => {
               senderUserName: authUser.username,
               sharedWith: arrayUnion(userEmail),
               sharedBy: folder.createBy,
+              permission: permissionLevel,
               sharedAt: new Date(),
             });
           } else {

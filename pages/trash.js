@@ -11,12 +11,14 @@ import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, DropdownSection,
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { MdRestore } from "react-icons/md";
 import { FaTrash } from "react-icons/fa6";
+import { useAuth } from "../firebase/auth";
 
 export default function Trash() {
   const [deletedItems, setDeletedItems] = useState([]);
   const [filteredDeletedItems, setFilteredDeletedItems] = useState([]);
   const [searchHistory, setSearchHistory] = useState([]);
   const iconClasses = "text-xl text-default-500 pointer-events-none flex-shrink-0";
+  const { authUser } = useAuth();
 
   useEffect(() => {
     const savedHistory = localStorage.getItem('deletedSearchHistory');
@@ -33,39 +35,41 @@ export default function Trash() {
   }
 
   useEffect(() => {
-    const filesQuery = query(collection(db, "deleted_files"));
-    const foldersQuery = query(collection(db, "deleted_folders"));
-
-    const unsubscribeFiles = onSnapshot(filesQuery, (fileSnapshot) => {
-      const files = fileSnapshot.docs.map(doc => {
-        const data = doc.data();
-        const extension = getFileExtension(data.name); // Extract the file extension
-        return { ...data, id: doc.id, type: extension, pinned: false }; // Use the extracted extension
+    if (authUser && authUser.email) { // Check if authUser is not null and has an email
+      // Define queries with where filter for the logged-in user
+      const filesQuery = query(collection(db, "deleted_files"), where("createdBy", "==", authUser.email));
+      const foldersQuery = query(collection(db, "deleted_folders"), where("createBy", "==", authUser.email));
+  
+      const unsubscribeFiles = onSnapshot(filesQuery, (fileSnapshot) => {
+        const files = fileSnapshot.docs.map(doc => {
+          const data = doc.data();
+          const extension = getFileExtension(data.name); // Extract the file extension
+          return { ...data, id: doc.id, type: extension, pinned: false }; // Use the extracted extension
+        });
+  
+        const unsubscribeFolders = onSnapshot(foldersQuery, (folderSnapshot) => {
+          const folders = folderSnapshot.docs.map(doc => ({
+            ...doc.data(),
+            id: doc.id,
+            type: 'folder',
+            pinned: false,
+            imageUrl: '/folder.png', // Static image URL for folders
+            size: 'Unknown' // Folders will always have 'Unknown' size
+          }));
+  
+          // Combine and set deleted items
+          setDeletedItems([...files, ...folders]);
+          setFilteredDeletedItems([...files, ...folders]);
+        });
+  
+        return () => {
+          unsubscribeFiles();
+          unsubscribeFolders(); // Make sure to unsubscribe when the component unmounts
+        };
       });
-      
-      // Combine with folders (assuming folders are handled separately)
-  const unsubscribeFolders = onSnapshot(foldersQuery, (folderSnapshot) => {
-    const folders = folderSnapshot.docs.map(doc => ({
-      ...doc.data(),
-      id: doc.id,
-      type: 'folder',
-      pinned: false,
-      imageUrl: '/folder.png', // Static image URL for folders
-      size: 'Unknown' // Folders will always have 'Unknown' size
-    }));
-        
-        // Combine and set starred items
-        setDeletedItems([...files, ...folders]);
-        setFilteredDeletedItems([...files, ...folders]);
-
-      });
-    });
-
-    return () => {
-      unsubscribeFiles();
-      //unsubscribeFolders(); // Uncomment if necessary
-    };
-  }, [db]);
+    }
+  }, [db, authUser]); // Include authUser in the dependency array
+  
 
 
   // Define a search function for starred files

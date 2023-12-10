@@ -193,24 +193,24 @@ const truncateFileName = (name, length = 35) => {
                   />
   
                   {/* User info and permission selector */}
-                  <h2 className="font-bold text-white text-[13px] mt-3 mr-[230px]">People with access</h2>
+                  <h2 className="font-bold text-white text-[13px] mt-3 mr-[200px]">People with access</h2>
                   <div className="flex items-start justify-between mt-4">
                     <div className="flex items-start">
-                      <div className="flex-shrink-0 mr-3">
+                    <div className="flex-shrink-0 mr-3 absolute fixed left-[570px]">
                         <Image src={userAvatar} width={40} height={40} alt="User Avatar" className="rounded-full" />
                       </div>
-                      <div className="flex flex-col justify-center m-[-2px]">
+                      <div className="flex flex-col justify-center absolute fixed left-[620px] ">
                         <span className="font-bold text-md">{authUser.username} (you)</span>
                         <span className="text-gray-500 text-xs">{authUser.email}</span>
                       </div>
                     </div>
-                    <div className="flex items-center ml-20 mt-2">
+                    <div className="flex items-center absolute fixed left-[830px] mt-2">
                       <span className="text-gray-500 text-xs">Owner</span>
                     </div>
                   </div>
   
                   {/* General access info */}
-                  <h2 className="font-bold text-white text-[13px] mt-4 mr-[230px]">General access</h2>
+                  <h2 className="font-bold text-white text-[13px] mt-[50px] mr-[230px]">General access</h2>
                   <div className="flex items-start justify-between mt-2">
                     <div className="flex-shrink-0 mr-3">
                       <img src="./share.png" width={45} height={45} alt="User Avatar" className="rounded-full" />
