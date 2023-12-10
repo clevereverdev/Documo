@@ -305,7 +305,7 @@ function FolderList({ folderList, fileList, onFolderDeleted, isBig = true, folde
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-1 m-1">
 
-              {currentFolders.map((item, index, setBreadcrumbs) => (
+              {folderList.map((item, index, setBreadcrumbs) => (
                 <div key={index}
                   onClick={() => onFolderClick(index, item)}
                 >

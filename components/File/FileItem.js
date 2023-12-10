@@ -683,7 +683,7 @@ const FileInfo = ({ file }) => (
     
                     <DropdownItem
                       key="Rename"
-                      shortcut="⌘N"
+                      shortcut="⌘R"
                       startContent={<MdOutlineDriveFileRenameOutline className={iconClasses} />}
                       className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
                       onClick={() => handleFileActionClick(file)} // Only set isRenaming to true here
@@ -696,7 +696,7 @@ const FileInfo = ({ file }) => (
                     </DropdownItem>
                     <DropdownItem
                       key="Download"
-                      shortcut="⌘C"
+                      shortcut="⌘W"
                       startContent={<FaDownload className={iconClasses} />}
                       className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
                       onClick={() => downloadFile(file)}
@@ -709,7 +709,7 @@ const FileInfo = ({ file }) => (
               
                 <DropdownItem
                 key="pin"
-                shortcut="⌘P"
+                shortcut="⌘Q"
                 startContent={file.pinned ? <RiUnpinFill className={iconClasses} /> : <TiPin className={iconClasses} />}
                 className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
                 onClick={() => togglePin(file)}
@@ -723,7 +723,7 @@ const FileInfo = ({ file }) => (
 
                     <DropdownItem
                       key="Share"
-                      shortcut="⌘E"
+                      shortcut="⌘S"
                       showDivider
                       startContent={<FaShare className={iconClasses} />}
                       className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
@@ -740,7 +740,7 @@ const FileInfo = ({ file }) => (
                     {isSensitive ? (
                       <DropdownItem
                         key="Unlock"
-                        shortcut="⌘E"
+                        shortcut="⌘U"
                         showDivider
                         startContent={<LockOpenIcon className={iconClasses} />}
                         className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
@@ -756,7 +756,7 @@ const FileInfo = ({ file }) => (
                     ) : (
                       <DropdownItem
                         key="Lock"
-                        shortcut="⌘E"
+                        shortcut="⌘L"
                         showDivider
                         startContent={<LockIcon className={iconClasses} />}
                         className="text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]"
@@ -772,6 +772,7 @@ const FileInfo = ({ file }) => (
                     )}
                     <DropdownItem
   key="Print Image"
+  shortcut="⌘P"
   startContent={<AiOutlinePrinter className={iconClasses} />}
   onClick={() => isImage && handlePrintClick(file.imageUrl, file)} // Updated to use handlePrintClick
   className={!isImage ? 'opacity-50 cursor-not-allowed text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]' : 'text-danger hover:bg-[#292929] hover:border-gray-600 hover:border-2 rounded-xl px-3 py-1 mx-2 w-[210px]'}
