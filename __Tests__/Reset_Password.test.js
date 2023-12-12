@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, fireEvent, screen } from '@testing-library/react';
-import ResetPassword from '../Pages/Authentication/Reset_Password';
+import ResetPassword from '../pages/Authentication/Reset_password';
 
 // Mocking external dependencies
 const mockPush = jest.fn();

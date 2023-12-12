@@ -137,7 +137,7 @@ const toggleStar = async (item) => {
 
   return (
     <Layout>
-      <div className="flex flex-col lg:flex-row min-h-[96vh] mb-[10px]"> {/* Add bottom margin */}
+      <div className="flex flex-col lg:flex-row min-h-[96vh] mb-[10px] max-w-[1250px]"> {/* Add bottom margin */}
         
         <div className="flex-1 overflow-auto"> {/* Main content area flex item */}
           <div className="m-6">

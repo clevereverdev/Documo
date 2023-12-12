@@ -1,4 +1,5 @@
 import React, { useContext, useState, useEffect, useRef } from 'react';
+import Image from 'next/image'
 import { AiOutlineAppstoreAdd, AiOutlineBars, AiOutlineInfoCircle } from 'react-icons/ai'; // Import icons
 import { BsFillTrashFill, BsFillPencilFill } from 'react-icons/bs'; // Import icons
 import FileItem from './FileItem';
@@ -415,7 +416,7 @@ function FileList({ fileList, file }) {
               ))
             ) : (
               <div className="flex flex-col items-center justify-center mt-[8rem]">
-                <img src="NoFiles.webp" alt="No Files" className="w-[100px] h-[100px]" />
+                <Image src="/NoFiles.webp" alt="No Files" height="300" width="300" className="w-[100px] h-[100px]" />
                 <p className="text-gray-400 mt-2 text-sm">You have not uploaded any files yet</p>
                 <p className="text-gray-500 text-xs">Please click that Add button</p>
               </div>

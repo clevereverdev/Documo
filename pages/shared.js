@@ -249,7 +249,7 @@ export default function Shared() {
 
     return (
       <Layout>
-        <div className="flex flex-col lg:flex-row min-h-[96vh] mb-[10px]"> {/* Add bottom margin */}
+        <div className="flex flex-col lg:flex-row min-h-[96vh] max-w-[1250px] b-t-[20px] mb-[10px]"> {/* Add bottom margin */}
           
           <div className="flex-1 overflow-auto"> {/* Main content area flex item */}
             <div className="m-6">

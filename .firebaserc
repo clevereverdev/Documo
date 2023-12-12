@@ -1,6 +1,7 @@
 {
   "projects": {
-    "hosting": "docomo-399203"
+    "hosting": "docomo-399203",
+    "default": "docomo-399203"
   },
   "targets": {}
 }

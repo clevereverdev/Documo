@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, fireEvent, screen } from '@testing-library/react';
-import LoginForm from '../Pages/Authentication/Login';
+import LoginForm from '../pages/Authentication/Login';
 
 // Mocking external dependencies
 const mockPush = jest.fn();

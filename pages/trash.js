@@ -12,6 +12,7 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { MdRestore } from "react-icons/md";
 import { FaTrash } from "react-icons/fa6";
 import { useAuth } from "../firebase/auth";
+import Image from 'next/image'
 
 export default function Trash() {
   const [deletedItems, setDeletedItems] = useState([]);
@@ -218,7 +219,7 @@ const searchDeletedItems = (searchTerm) => {
 
   return (
     <Layout>
-      <div className="flex flex-col lg:flex-row min-h-[96vh] mb-[10px]"> {/* Add bottom margin */}
+      <div className="flex flex-col lg:flex-row min-h-[96vh] max-w-[1250px] mb-[10px]"> {/* Add bottom margin */}
         
         <div className="flex-1 overflow-auto"> {/* Main content area flex item */}
           <div className="m-6">
@@ -311,7 +312,7 @@ const searchDeletedItems = (searchTerm) => {
   })
 ) : (
       <div className='flex flex-col items-center justify-center text-gray-400 mt-[100px]'>
-      <img src="/Trash.png" height="400" width="400" alt="No items" className='mb-4' />
+      <Image src="/trash.png" height="300" width="300" alt="Trash" className='mb-4' />
       <div className="text-xl text-gray-200 font-Payton">Trash is empty</div>
       <div className="text-sm text-gray-400">Trash items will appear here and will be deleted automatically after 30 days.</div>
     </div>
